@@ -3,6 +3,7 @@ import { Header } from './Header.tsx'
 import { Hero } from './Hero.tsx'
 import { LegislatorPreview } from './LegislatorPreview.tsx'
 import { Footer } from './Footer.tsx'
+import { Features } from './Features.tsx'
 
 export default function Landing() {
     return (
@@ -11,6 +12,7 @@ export default function Landing() {
             <Container maxW="7xl" py={8}>
                 <Hero />
                 <LegislatorPreview />
+                <Features />
             </Container>
             <Footer />
         </>
