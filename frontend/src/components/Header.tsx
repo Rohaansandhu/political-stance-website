@@ -31,7 +31,7 @@ export function Header() {
               display={{ base: "none", md: "flex" }}
               fontWeight="medium"
             >
-              {["Legislators", "Congress Data", "About"].map((label) => (
+              {["Home", "Legislators", "Congress Data", "About"].map((label) => (
                 <Link
                   key={label}
                   href={`#${label.toLowerCase().replace(" ", "-")}`}

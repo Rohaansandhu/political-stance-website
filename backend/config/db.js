@@ -1,12 +1,18 @@
 import mongoose from "mongoose";
 
-
 export const connectDB = async () => {
-    try {
-        const conn  = await mongoose.connect(process.env.MONGO_URI);
-        console.log(`MongoDB Connected: ${conn.connection.host}`);
-    } catch (error) {
-        console.log(`Error: ${error.message}`);
-        process.exit(1);
-    }
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.log(`Error: ${error.message}`);
+    process.exit(1);
+  }
+};
+
+export function getDB() {
+  if (!mongoose.connection.readyState) {
+    throw new Error("Database not initialized. Call connectDB() first.");
+  }
+  return mongoose.connection.db;
 }

@@ -1,4 +1,4 @@
-import { createSystem, defineConfig, defaultConfig } from "@chakra-ui/react"
+import { createSystem, defineConfig, defaultConfig } from "@chakra-ui/react";
 
 const config = defineConfig({
   cssVarsRoot: ":where(:root, :host)",
@@ -10,8 +10,12 @@ const config = defineConfig({
           dark: { value: "#f7f8f7" },
         },
         background: {
-          light: { value: "#fbfdfc" },
-          dark: { value: "#020303" },
+          light: { value: "#fbfdfc" },       // main light background
+          dark: { value: "#020303" },        // main dark background
+          lightShade: { value: "#f1f3f2" },  // slightly darker than main light
+          lightTint: { value: "#ffffff" },   // slightly lighter than main light
+          darkShade: { value: "#010101" },   // slightly darker than main dark
+          darkTint: { value: "#121212" },    // slightly lighter than main dark
         },
         primary: {
           light: { value: "#67ab8f" },
@@ -39,6 +43,30 @@ const config = defineConfig({
           value: {
             _light: "{colors.background.light}",
             _dark: "{colors.background.dark}",
+          },
+        },
+        bgLightShade: {
+          value: {
+            _light: "{colors.background.lightShade}",
+            _dark: "{colors.background.darkShade}",
+          },
+        },
+        bgLightTint: {
+          value: {
+            _light: "{colors.background.lightTint}",
+            _dark: "{colors.background.darkTint}",
+          },
+        },
+        bgDarkShade: {
+          value: {
+            _light: "{colors.background.lightShade}",
+            _dark: "{colors.background.darkShade}",
+          },
+        },
+        bgDarkTint: {
+          value: {
+            _light: "{colors.background.lightTint}",
+            _dark: "{colors.background.darkTint}",
           },
         },
         primary: {
@@ -79,8 +107,8 @@ const config = defineConfig({
       },
     },
   },
-})
+});
 
-const system = createSystem(defaultConfig, config)
+const system = createSystem(defaultConfig, config);
 
-export default system
+export default system;

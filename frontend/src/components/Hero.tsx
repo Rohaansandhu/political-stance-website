@@ -27,7 +27,7 @@ export function Hero() {
             mx="auto"
             color="primary"
           >
-            Track Political Stances with Precision
+            Track Political Stances With Precision
           </Heading>
 
           <Text
