@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Heading,
   Text,
   SimpleGrid,
@@ -13,6 +14,7 @@ import {
   Container,
 } from "@chakra-ui/react";
 import { Avatar } from "@chakra-ui/react/avatar";
+import { RiArrowRightLine } from "react-icons/ri";
 
 // ---------------- SAMPLE DATA ----------------
 
@@ -23,6 +25,8 @@ const senateLeadership = [
     party: "Democrat",
     state: "NY",
     initials: "CS",
+    liberalScore: 48,
+    conservativeScore: 52,
   },
   {
     title: "Senate Minority Leader",
@@ -30,6 +34,8 @@ const senateLeadership = [
     party: "Republican",
     state: "KY",
     initials: "MM",
+    liberalScore: 48,
+    conservativeScore: 52,
   },
 ];
 
@@ -40,6 +46,8 @@ const houseLeadership = [
     party: "Republican",
     state: "LA",
     initials: "MJ",
+    liberalScore: 48,
+    conservativeScore: 52,
   },
   {
     title: "House Minority Leader",
@@ -47,6 +55,8 @@ const houseLeadership = [
     party: "Democrat",
     state: "NY",
     initials: "HJ",
+    liberalScore: 48,
+    conservativeScore: 52,
   },
 ];
 
@@ -179,6 +189,12 @@ function LegislatorCard({ person: person }: { person: any }) {
                 />
               </Box>
             </Box>
+            <Box>
+                <Button size="sm" colorScheme="teal" width="full">
+                    View Profile <RiArrowRightLine />
+                </Button>
+
+            </Box>
           </VStack>
         )}
       </CardBody>
@@ -190,11 +206,11 @@ function LegislatorCard({ person: person }: { person: any }) {
 
 export function ImportantLegislatorsPreview() {
   return (
-    <Box py={20} bg="bgLightTint">
+    <Box py={20} bg="bgLight">
       <Container maxW="7xl">
         <VStack textAlign="center" gap={4} mb={12}>
           <Heading fontSize={{ base: "3xl", md: "4xl" }}>
-            Popular Legislators
+            Important Legislators
           </Heading>
           <Text color="gray.600" maxW="2xl" mx="auto">
             Explore top congressional figures, leadership roles, and popular members from both chambers.
