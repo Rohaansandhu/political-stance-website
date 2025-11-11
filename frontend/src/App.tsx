@@ -4,9 +4,12 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Landing from "./pages/Landing";
 import ExploreLegislators from "./pages/ExploreLegislators";
+import LegislatorProfile from "./pages/LegislatorProfile";
+
 import system from "./theme";
 import Navbar from "./components/Navbar";
 import { Footer } from "./components/Footer";
+
 
 function App() {
   return (
@@ -17,6 +20,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/explore-legislators" element={<ExploreLegislators />} />
+            <Route path="/legislators/:id" element={<LegislatorProfile />} />
           </Routes>
           <Footer />
         </Router>

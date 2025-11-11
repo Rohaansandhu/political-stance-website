@@ -10,6 +10,7 @@ interface CategoryInfo {
     score: number;
     rank: number;
     percentile_rank: number;
+    bill_count: number;
 }
 
 interface Categories {
@@ -28,6 +29,7 @@ export default function MainCategoryGrid({ categories }: { categories: Categorie
                         <Text>Score: {info.score}</Text>
                         <Text>Rank: {info.rank}</Text>
                         <Text>Percentile: {(info.percentile_rank * 100).toFixed(1)}%</Text>
+                        <Text>Bill Count: {info.bill_count}</Text>
                     </Box>
                 ))}
             </SimpleGrid>

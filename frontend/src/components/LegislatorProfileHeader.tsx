@@ -7,41 +7,47 @@ import {
     Avatar,
     VStack,
     HStack,
+    SimpleGrid,
+    Spacer,
 } from "@chakra-ui/react";
 
+interface Term {
+    type: string;
+    start: string;
+    end: string;
+    state: string;
+    district?: number;
+    class?: number;
+    party: string;
+}
+
 interface DataInfo {
-    name: { official_full: string};
+    name: { official_full: string };
     bio: { gender: string; birthday: string };
     id: {};
     state: string;
-    district: string;
+    district: number;
+    terms?: Term[];
 }
 
-
-export default function LegislatorProfileHeader({ data}: { data: DataInfo }) {
-    const { name, bio, id } = data;
+export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
+    const { name, bio, terms = [] } = data;
 
     return (
         <Flex
             bg="bgLightTint"
             p={8}
             rounded="xl"
-            gap={8}
-            align="center"
+            gap={10}
             direction={{ base: "column", md: "row" }}
             w="100%"
         >
             {/* Image placeholder */}
-            <Avatar.Root
-                size="2xl"
-                bg="primary"
-            >
+            <Avatar.Root size="2xl" bg="primary">
                 <Avatar.Fallback name={name.official_full} />
-                {/* TODO: Link to Legislators Profile Images */}
-                {/* <Avatar.Image src="https://bit.ly/sage-adebayo" /> */}
             </Avatar.Root>
 
-            <VStack align="flex-start" w="100%">
+            <VStack align="flex-start" w="100%" gap={4}>
                 <Heading size="2xl">{name.official_full}</Heading>
 
                 <HStack>
@@ -51,12 +57,58 @@ export default function LegislatorProfileHeader({ data}: { data: DataInfo }) {
                     )}
                 </HStack>
 
-                <Text color="text" fontSize="lg">
-                    Gender: {bio.gender}
-                </Text>
-                <Text color="text">
-                    Born: {bio.birthday}
-                </Text>
+                <Text color="text">Gender: {bio.gender}</Text>
+
+                <Text color="text">Born: {bio.birthday}</Text>
+
+                {/* Divider */}
+                <Spacer />
+
+                {/* Terms Section */}
+                <Box w="100%">
+                    <Heading size="md" mb={3}>Career Terms</Heading>
+
+                    {terms.length === 0 ? (
+                        <Text color="gray.500">No term history available.</Text>
+                    ) : (
+                        <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
+                            {terms.map((term, idx) => (
+                                <Box
+                                    key={idx}
+                                    bg="bgLightShade"
+                                    p={4}
+                                    rounded="lg"
+                                    borderWidth="1px"
+                                >
+                                    <HStack justify="space-between" mb={1}>
+                                        <Badge
+                                            colorScheme={term.party === "Republican" ? "red" : "blue"}
+                                        >
+                                            {term.party}
+                                        </Badge>
+
+                                        <Badge>
+                                            {term.type === "rep" ? "House" : "Senate"}
+                                        </Badge>
+                                    </HStack>
+
+                                    <Text fontWeight="semibold">
+                                        {term.state}
+                                        {term.district
+                                            ? ` — District ${term.district}`
+                                            : term.class
+                                            ? ` — Class ${term.class}`
+                                            : ""}
+                                    </Text>
+
+                                    <Text fontSize="sm" color="gray.600">
+                                        {term.start} → {term.end}
+                                    </Text>
+                                </Box>
+                            ))}
+                        </SimpleGrid>
+                    )}
+                </Box>
             </VStack>
         </Flex>
     );
