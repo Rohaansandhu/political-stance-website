@@ -3,7 +3,7 @@ import { getDB } from '../config/db.js';
 
 const router = express.Router();
 
-app.get("/", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const db = getDB();
     const collection = db.collection("legislator_profiles");
@@ -20,7 +20,7 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.get("/:spectrum", async (req, res) => {
+router.get("/:spectrum", async (req, res) => {
   try {
     const db = getDB();
     const { minScore, maxScore } = req.query;

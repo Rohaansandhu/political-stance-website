@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import {connectDB} from './config/db.js'
 import { getDB } from './config/db.js';
@@ -10,6 +11,11 @@ import spectrumRoutes from "./routes/spectrums.js";
 dotenv.config();
 
 const app = express();
+
+app.use(cors({
+  origin: process.env.frontend_url,
+  credentials: true, 
+}));
 
 app.get("/", (req, res) => {
     res.send("Server is ready");
