@@ -1,12 +1,15 @@
-import React from "react";
+import { Container } from "@chakra-ui/react";
+import { LegislatorsHero } from "../components/LegislatorsHero.tsx";
+import { ImportantLegislatorsPreview } from "../components/ImportantLegislatorsPreview.tsx";
 
-function ExploreLegislators() {
-  return (
-    <div>
-      <h1>Explore Legislators</h1>
-      <p>This is the page to explore legislators.</p>
-    </div>
-  );
+export default function ExploreLegislators() {
+    return (
+            <>
+                <Container maxW="7xl" py={8}>
+                    <LegislatorsHero />
+                    <ImportantLegislatorsPreview />
+                </Container>
+            </>
+        )
 }
 
-export default ExploreLegislators;

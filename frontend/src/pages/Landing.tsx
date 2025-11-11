@@ -1,7 +1,7 @@
 import { Container, } from '@chakra-ui/react'
-import { Hero } from './Hero.tsx'
-import { LegislatorPreview } from './LegislatorPreview.tsx'
-import { Features } from './Features.tsx'
+import { Hero } from '../components/Hero.tsx'
+import { LegislatorPreview } from '../components/LegislatorPreview.tsx'
+import { Features } from '../components/Features.tsx'
 
 export default function Landing() {
     return (
