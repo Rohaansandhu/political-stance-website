@@ -11,6 +11,10 @@ interface CategoryInfo {
     rank: number;
     percentile_rank: number;
     bill_count: number;
+    current_rank: number;
+    current_percentile_rank: number;
+    total_members?: number;
+    total_current_members?: number;
 }
 
 interface Categories {
@@ -30,6 +34,10 @@ export default function MainCategoryGrid({ categories }: { categories: Categorie
                         <Text>Rank: {info.rank}</Text>
                         <Text>Percentile: {(info.percentile_rank * 100).toFixed(1)}%</Text>
                         <Text>Bill Count: {info.bill_count}</Text>
+                        <Text>Current Rank: {info.current_rank === -1 ? "N/A" : info.current_rank}</Text>
+                        <Text>Current Percentile: {info.current_percentile_rank === -1 ? "N/A" : `${(info.current_percentile_rank * 100).toFixed(1)}%`}</Text>
+                        <Text>Total Members: {info.total_members ?? "N/A"}</Text>
+                        <Text>Total Current Members: {info.total_current_members ?? "N/A"}</Text>
                     </Box>
                 ))}
             </SimpleGrid>

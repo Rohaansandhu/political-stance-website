@@ -20,12 +20,16 @@ interface LegislatorData {
         bill_count: number;
         rank: number;
         percentile_rank: number;
+        current_rank: number;
+        current_percentile_rank: number;
     }>;
     main_categories: Record<string, {
         score: number;
         rank: number;
         percentile_rank: number;
         bill_count: number;
+        current_rank: number;
+        current_percentile_rank: number;
     }>;
 }
 
