@@ -9,6 +9,7 @@ import {
     HStack,
     SimpleGrid,
     Spacer,
+    Image,
 } from "@chakra-ui/react";
 
 interface Term {
@@ -24,14 +25,16 @@ interface Term {
 interface DataInfo {
     name: { official_full: string };
     bio: { gender: string; birthday: string };
-    id: {};
+    id: { bioguide?: string; lis?: string };
     state: string;
     district: number;
     terms?: Term[];
 }
 
 export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
-    const { name, bio, terms = [] } = data;
+    const { name, bio, terms = [], id } = data;
+
+    const imageUrl = `https://unitedstates.github.io/images/congress/450x550/${id.bioguide}.jpg`;
 
     return (
         <Flex
@@ -42,10 +45,22 @@ export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
             direction={{ base: "column", md: "row" }}
             w="100%"
         >
-            {/* Image placeholder */}
-            <Avatar.Root size="2xl" bg="primary">
-                <Avatar.Fallback name={name.official_full} />
-            </Avatar.Root>
+            <Box minW="225px" maxW="225px" alignSelf="center">
+                {imageUrl ? (
+                    <Image
+                        src={imageUrl}
+                        alt={`${name.official_full} headshot`}
+                        borderRadius="xl"
+                        borderWidth="1px"
+                        borderColor="gray.200"
+                        fit="cover"
+                    />
+                ) : (
+                    <Avatar.Root size="2xl" bg="primary">
+                        <Avatar.Fallback name={name.official_full} />
+                    </Avatar.Root>
+                )}
+            </Box>
 
             <VStack align="flex-start" w="100%" gap={4}>
                 <Heading size="2xl">{name.official_full}</Heading>
@@ -97,8 +112,8 @@ export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
                                         {term.district
                                             ? ` — District ${term.district}`
                                             : term.class
-                                            ? ` — Class ${term.class}`
-                                            : ""}
+                                                ? ` — Class ${term.class}`
+                                                : ""}
                                     </Text>
 
                                     <Text fontSize="sm" color="gray.600">

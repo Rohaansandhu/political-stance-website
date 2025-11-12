@@ -3,7 +3,6 @@ import {
     SimpleGrid,
     Heading,
     Text,
-    VStack,
 } from "@chakra-ui/react";
 
 interface CategoryInfo {
