@@ -8,23 +8,58 @@ router.get("/", async (req, res) => {
     const db = getDB();
     const collection = db.collection("legislators");
 
-    // populate legislators with data that are current
-    const query = {'has_data': true, 'current': true};
+    const { search, state, chamber, limit = 200, offset = 0 } = req.query;
 
-    // pagination defaults
-    const limit = parseInt(req.query.limit) || 200;
-    const offset = parseInt(req.query.offset) || 0;
+    // Base query - only current legislators with data
+    const query = { has_data: true, current: true };
+
+    // Add search filter (name search)
+    if (search && search.trim()) {
+      query.$or = [
+        { 'name.official_full': { $regex: search, $options: 'i' } },
+        { 'name.first': { $regex: search, $options: 'i' } },
+        { 'name.last': { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const termsConditions = {};
+    
+    if (state && state.trim()) {
+      termsConditions.state = state.toUpperCase();
+    }
+    
+    if (chamber && chamber.trim()) {
+      termsConditions.type = chamber.toLowerCase();
+    }
+
+    // Only add terms filter if we have conditions
+    if (Object.keys(termsConditions).length > 0) {
+      query['terms'] = { $elemMatch: termsConditions };
+    }
 
     const profiles = await collection.find(query, {
       projection: {
         _id: 0,
+        bioguide: 1,
+        lis: 1,
+        name: 1,
+        bio: 1,
+        terms: 1,
+        current: 1
       }
     })
-      .skip(offset)
-      .limit(limit)
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
       .toArray();
 
-    res.json({ results: profiles, count: profiles.length });
+    // Get total count for pagination
+    const totalCount = await collection.countDocuments(query);
+
+    res.json({
+      results: profiles,
+      count: profiles.length,
+      total: totalCount
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch legislators" });
@@ -46,10 +81,10 @@ router.get("/:member_id", async (req, res) => {
     const legislator_collection = db.collection("legislators");
     let legislator = null;
     if (req.params.member_id.startsWith("S")) {
-      legislator = await legislator_collection.findOne({lis: req.params.member_id});
+      legislator = await legislator_collection.findOne({ lis: req.params.member_id });
       profile = await profile_collection.findOne({ member_id: req.params.member_id, spec_hash: spec_hash_senate });
     } else {
-      legislator = await legislator_collection.findOne({bioguide: req.params.member_id});
+      legislator = await legislator_collection.findOne({ bioguide: req.params.member_id });
       profile = await profile_collection.findOne({ member_id: req.params.member_id, spec_hash: spec_hash_house });
     }
     if (!profile) return res.status(404).json({ error: "Legislator not found (legislator_profiles)" });
