@@ -2,11 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import {connectDB} from './config/db.js'
-import { getDB } from './config/db.js';
 
 import legislatorRoutes from "./routes/legislators.js";
-import categoryRoutes from "./routes/categories.js";
-import spectrumRoutes from "./routes/spectrums.js";
+import congressRoutes from "./routes/congress-data.js";
 
 dotenv.config();
 
@@ -27,17 +25,4 @@ app.listen(4000, async () =>  {
 });
 
 app.use("/legislators", legislatorRoutes);
-app.use("/congress-data/categories", categoryRoutes);
-app.use("/congress-data/spectrums", spectrumRoutes);
-
-app.get("/states", async (req, res) => {
-  try {
-    const db = getDB();
-    const collection = db.collection("legislator_profiles");
-
-    const states = await collection.distinct("state");
-    res.json(states.sort());
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch states" });
-  }
-});
+app.use("/congress-data", congressRoutes);
