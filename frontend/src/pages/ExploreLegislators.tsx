@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Container, SimpleGrid, Box, Heading, Text, Badge, Avatar, Flex, VStack, HStack, Spinner, Center, Select, createListCollection } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import { LegislatorsHero } from "../components/LegislatorsHero.tsx";
-import { ImportantLegislatorsPreview } from "../components/ImportantLegislatorsPreview.tsx";
+import LegislatorCarousel from "../components/LegislatorCarousel.tsx";
 
 interface Legislator {
     bioguide: string;
@@ -81,8 +81,6 @@ export default function ExploreLegislators() {
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                 />
-
-                {!hasSearched && <ImportantLegislatorsPreview />}
 
                 {hasSearched && (
                     <Box mt={8}>
@@ -214,7 +212,9 @@ export default function ExploreLegislators() {
                         )}
                     </Box>
                 )}
+                {<LegislatorCarousel />}
             </Container>
+
         </>
     )
 }

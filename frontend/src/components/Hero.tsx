@@ -11,6 +11,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { TrendingUp, Users, BarChart3 } from "lucide-react"
+import { Link } from "react-router-dom"
 
 export function Hero() {
   return (
@@ -50,15 +51,17 @@ export function Hero() {
             gap={4}
             mb={16}
           >
-            <Button
-              size="lg"
-              px={8}
-              bg="accent"
-              color="bg"
-              _hover={{ bg: "secondary" }}
-            >
-              Explore Legislators
-            </Button>
+            <Link to="/explore-legislators">
+              <Button
+                size="lg"
+                px={8}
+                bg="accent"
+                color="bg"
+                _hover={{ bg: "secondary" }}
+              >
+                Explore Legislators
+              </Button>
+            </Link>
             <Button
               size="lg"
               variant="outline"

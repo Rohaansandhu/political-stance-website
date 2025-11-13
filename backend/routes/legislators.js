@@ -80,7 +80,7 @@ router.get("/:member_id", async (req, res) => {
     let profile = null;
     const legislator_collection = db.collection("legislators");
     let legislator = null;
-    if (req.params.member_id.startsWith("S")) {
+    if (req.params.member_id.startsWith("S") && req.params.member_id.length <= 4) {
       legislator = await legislator_collection.findOne({ lis: req.params.member_id });
       profile = await profile_collection.findOne({ member_id: req.params.member_id, spec_hash: spec_hash_senate });
     } else {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Container, Spinner, Center, Text, VStack } from "@chakra-ui/react";
+import { Link, useParams } from "react-router-dom";
+import { Container, Spinner, Center, Text, VStack, Breadcrumb, Flex } from "@chakra-ui/react";
 
 import LegislatorProfileHeader from "../components/LegislatorProfileHeader";
 import LegislatorStatsOverview from "../components/LegislatorStatsOverview";
@@ -34,7 +34,7 @@ interface LegislatorData {
 }
 
 export default function LegislatorProfile() {
-    const { id } = useParams(); 
+    const { id } = useParams();
     const [data, setData] = useState<LegislatorData | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -73,6 +73,18 @@ export default function LegislatorProfile() {
 
     return (
         <Container maxW="7xl" py={8}>
+            <Flex justifyContent="flex-start">
+                <Breadcrumb.Root>
+                    <Breadcrumb.List>
+                        <Breadcrumb.Item>
+                            <Breadcrumb.Link asChild>
+                                <Link to="/explore-legislators">Explore Legislators</Link>
+                            </Breadcrumb.Link>
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Separator />
+                    </Breadcrumb.List>
+                </Breadcrumb.Root>
+            </Flex>
             <VStack gap={10}>
                 <LegislatorProfileHeader data={data} />
 
