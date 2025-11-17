@@ -14,6 +14,7 @@ function Navbar() {
     { label: "Home", to: "/" },
     { label: "Legislators", to: "/explore-legislators" },
     { label: "Congress Data", to: "/congress-data" },
+    { label: "Bill Analyses", to: "/bill-analyses"},
     { label: "About", to: "/about" },
   ];
 

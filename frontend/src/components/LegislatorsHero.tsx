@@ -44,7 +44,7 @@ export function LegislatorsHero({ onSearch, searchQuery, setSearchQuery }: Legis
                     direction={{ base: "column", md: "row" }}
                 >
                     <Input
-                        placeholder="Search by name, state, or party..."
+                        placeholder="Search by name or use any of the filters below..."
                         bg="bg"
                         borderColor="border"
                         _focusVisible={{

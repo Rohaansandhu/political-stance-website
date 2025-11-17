@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
     const db = getDB();
     const collection = db.collection("legislators");
 
-    const { search, state, chamber, limit = 200, offset = 0 } = req.query;
+    const { search, state, chamber, party, limit = 538, offset = 0 } = req.query;
 
     // Base query - only current legislators with data
     const query = { has_data: true, current: true };
@@ -30,6 +30,10 @@ router.get("/", async (req, res) => {
     
     if (chamber && chamber.trim()) {
       termsConditions.type = chamber.toLowerCase();
+    }
+
+    if (party && party.trim()) {
+      termsConditions.party = party;
     }
 
     // Only add terms filter if we have conditions
@@ -79,12 +83,11 @@ router.get("/:member_id", async (req, res) => {
     const profile_collection = db.collection("legislator_profiles");
     let profile = null;
     const legislator_collection = db.collection("legislators");
-    let legislator = null;
+    const legislator = await legislator_collection.findOne({ member_id: req.params.member_id });
+    // Need to determine if senator or house rep
     if (req.params.member_id.startsWith("S") && req.params.member_id.length <= 4) {
-      legislator = await legislator_collection.findOne({ lis: req.params.member_id });
       profile = await profile_collection.findOne({ member_id: req.params.member_id, spec_hash: spec_hash_senate });
     } else {
-      legislator = await legislator_collection.findOne({ bioguide: req.params.member_id });
       profile = await profile_collection.findOne({ member_id: req.params.member_id, spec_hash: spec_hash_house });
     }
     if (!profile) return res.status(404).json({ error: "Legislator not found (legislator_profiles)" });

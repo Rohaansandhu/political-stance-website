@@ -62,6 +62,7 @@ export function Hero() {
                 Explore Legislators
               </Button>
             </Link>
+            <Link to="/congress-data">
             <Button
               size="lg"
               variant="outline"
@@ -71,6 +72,7 @@ export function Hero() {
             >
               View Congress Data
             </Button>
+            </Link>
           </Flex>
 
           <Grid

@@ -9,6 +9,7 @@ import LegislatorProfile from "./pages/LegislatorProfile";
 import system from "./theme";
 import Navbar from "./components/Navbar";
 import { Footer } from "./components/Footer";
+import CongressDataPage from "./pages/CongressData";
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/explore-legislators" element={<ExploreLegislators />} />
             <Route path="/legislators/:id" element={<LegislatorProfile />} />
+            <Route path="/congress-data" element={<CongressDataPage />} />
           </Routes>
           <Footer />
         </Router>
