@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box,
     Container,
@@ -15,14 +15,25 @@ export default function CongressDataPage() {
     const [chamber, setChamber] = useState('senate');
     const [field, setField] = useState('main_categories');
     const [subject, setSubject] = useState('Education');
-    const [availableSubjects] = useState<string[]>([
-        'Education',
-        'Healthcare',
-        'Economy & Finance',
-        'Foreign Policy',
-        'Environment & Energy',
-        'Social Issues',
-    ]);
+    const [availableSubjects, setAvailableSubjects] = useState([]);
+
+    useEffect(() => { 
+        fetchCategories(); 
+    }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await fetch(`http://localhost:4000/categories`);
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch category data');
+            }
+            const subjects = await response.json();
+            setAvailableSubjects(subjects);
+        } catch (err) {
+            console.error('Error fetching histogram:', err);
+        }
+    };
 
     const specHash = `gpt-oss-120b_2_all_${chamber}_all`;
 
@@ -116,7 +127,7 @@ export default function CongressDataPage() {
                 </VStack>
 
                 {/* Histogram Component */}
-                <CongressHistogram 
+                <CongressHistogram
                     specHash={specHash}
                     field={field}
                     subject={subject}
