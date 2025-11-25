@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Container, Spinner, Center, Text, VStack, Breadcrumb, Flex } from "@chakra-ui/react";
+import { Container, Spinner, Center, Text, VStack, Breadcrumb, Flex, HStack, Select, createListCollection } from "@chakra-ui/react";
 
 import LegislatorProfileHeader from "../components/LegislatorProfileHeader";
 import LegislatorStatsOverview from "../components/LegislatorStatsOverview";
 import MainCategoryGrid from "../components/MainCategoriesGrid";
-import DetailedSpectrumList from "../components/DetailedSpectrumList";
 
 interface LegislatorData {
     member_id: string;
@@ -28,12 +27,13 @@ interface LegislatorData {
 export default function LegislatorProfile() {
     const { id } = useParams();
     const [data, setData] = useState<LegislatorData | null>(null);
+    const [model, setModel] = useState('gemini-2.5-flash-lite')
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function loadLegislator() {
             try {
-                const res = await fetch(`http://localhost:4000/legislators/${id}`);
+                const res = await fetch(`http://localhost:4000/legislators/${id}/${model}`);
                 const json = await res.json();
                 console.log("Backend response:", json);
                 setData(json);
@@ -45,7 +45,7 @@ export default function LegislatorProfile() {
         }
 
         loadLegislator();
-    }, [id]);
+    }, [id, model]);
 
     if (loading) {
         return (
@@ -78,7 +78,45 @@ export default function LegislatorProfile() {
                 </Breadcrumb.Root>
             </Flex>
             <VStack gap={10}>
+
                 <LegislatorProfileHeader data={data} />
+
+                {/* Model filter */}
+                <HStack gap={4} wrap="wrap" bg="bgLightShade" p={6} rounded="lg">
+                    <Select.Root
+                        collection={createListCollection({
+                            items: [
+                                { label: 'Gemini 2.5 Flash Lite', value: 'gemini-2.5-flash-lite' },
+                                { label: 'GPT-OSS (120b)', value: 'gpt-oss-120b' },
+                                { label: 'Llama 3.3 (70b)', value: 'llama3.3-70b'},
+                                { label: 'Qwen 3 (32b)', value: 'qwen-3-32b'}
+                            ]
+                        })}
+                        value={[model]}
+                        onValueChange={(details) => setModel(details.value[0])}
+                        width="300px"
+                        maxW="500px"
+                    >
+                        <Select.Label>Model</Select.Label>
+                        <Select.Trigger>
+                            <Select.ValueText placeholder="Select Model" />
+                        </Select.Trigger>
+                        <Select.Content>
+                            <Select.Item item="gemini-2.5-flash-lite">
+                                <Select.ItemText>Gemini 2.5 Flash Lite</Select.ItemText>
+                            </Select.Item>
+                            <Select.Item item="gpt-oss-120b">
+                                <Select.ItemText>GPT-OSS (120b)</Select.ItemText>
+                            </Select.Item>
+                            <Select.Item item="llama3.3-70b">
+                                <Select.ItemText>Llama 3.3 (70b)</Select.ItemText>
+                            </Select.Item>
+                            <Select.Item item="qwen-3-32b">
+                                <Select.ItemText>Qwen 3 (32b)</Select.ItemText>
+                            </Select.Item>
+                        </Select.Content>
+                    </Select.Root>
+                </HStack>
 
                 <LegislatorStatsOverview data={data} />
 
