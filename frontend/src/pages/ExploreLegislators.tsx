@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Container, SimpleGrid, Box, Heading, Text, Badge, Avatar, Flex, VStack, HStack, Spinner, Center, Select, createListCollection } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import { LegislatorsHero } from "../components/LegislatorsHero.tsx";

@@ -22,14 +22,20 @@ router.get("/", async (req, res) => {
       ];
     }
 
+    // Add chamber filter using lis field (is non-null for senators, null for reps)
+    if (chamber && chamber.trim()) {
+      if (chamber === "sen") {
+        query.lis = { $ne: null};
+      }
+      if (chamber === "rep") {
+        query.lis = null;
+      }
+    }
+
     const termsConditions = {};
     
     if (state && state.trim()) {
       termsConditions.state = state.toUpperCase();
-    }
-    
-    if (chamber && chamber.trim()) {
-      termsConditions.type = chamber.toLowerCase();
     }
 
     if (party && party.trim()) {
