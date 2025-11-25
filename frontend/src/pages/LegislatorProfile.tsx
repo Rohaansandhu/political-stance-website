@@ -15,15 +15,7 @@ interface LegislatorData {
     state: string;
     district: number;
     vote_count: number;
-    detailed_spectrums: Record<string, {
-        score: number;
-        bill_count: number;
-        rank: number;
-        percentile_rank: number;
-        current_rank: number;
-        current_percentile_rank: number;
-    }>;
-    main_categories: Record<string, {
+    primary_categories: Record<string, {
         score: number;
         rank: number;
         percentile_rank: number;
@@ -90,9 +82,7 @@ export default function LegislatorProfile() {
 
                 <LegislatorStatsOverview data={data} />
 
-                <MainCategoryGrid categories={data.main_categories} />
-
-                <DetailedSpectrumList spectrums={data.detailed_spectrums} />
+                <MainCategoryGrid categories={data.primary_categories} />
 
             </VStack>
         </Container>

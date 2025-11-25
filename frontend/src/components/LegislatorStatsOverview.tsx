@@ -4,13 +4,7 @@ import { SimpleGrid, Stat } from "@chakra-ui/react";
 interface DataInfo {
     member_id: string;
     vote_count: number;
-    detailed_spectrums: Record<string, {
-        score: number;
-        bill_count: number;
-        rank: number;
-        percentile_rank: number;
-    }>;
-    main_categories: Record<string, { score: number; rank: number; percentile_rank: number; bill_count: number }>;
+    primary_categories: Record<string, { score: number; rank: number; percentile_rank: number; bill_count: number }>;
 }
 
 export default function LegislatorStatsOverview({ data }: { data: DataInfo }) {
@@ -22,21 +16,14 @@ export default function LegislatorStatsOverview({ data }: { data: DataInfo }) {
             </Stat.Root>
 
             <Stat.Root bg="bgLightShade" p={6} rounded="lg">
-                <Stat.Label>Total Bills</Stat.Label>
-                <Stat.ValueText>
-                    {data.detailed_spectrums?.["Government Role"]?.bill_count ?? 0}
-                </Stat.ValueText>
-            </Stat.Root>
-
-            <Stat.Root bg="bgLightShade" p={6} rounded="lg">
                 <Stat.Label>Top Category</Stat.Label>
                 <Stat.ValueText fontSize="lg">
-                    {Object.entries(data.main_categories ?? {}).reduce(
+                    {Object.entries(data.primary_categories ?? {}).reduce(
                         (max, [category, info]) =>
-                            info.bill_count > (data.main_categories[max]?.bill_count ?? 0)
+                            info.bill_count > (data.primary_categories[max]?.bill_count ?? 0)
                                 ? category
                                 : max,
-                        Object.keys(data.detailed_spectrums ?? {})[0] || "N/A"
+                        Object.keys(data.primary_categories ?? {})[0] || "N/A"
                     )}
                 </Stat.ValueText>
             </Stat.Root>

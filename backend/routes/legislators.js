@@ -70,15 +70,17 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get legislator_profile by member_id and spec_hash
+// Get legislator_profile by member_id
 router.get("/:member_id", async (req, res) => {
   try {
     if (!req.params.member_id) {
       return res.status(400).json({ error: "member_id is required" });
     }
     // default model for now will be gpt-oss-120b, need a future way to specify model version
-    const spec_hash_house = "gpt-oss-120b_2_all_house_all";
-    const spec_hash_senate = "gpt-oss-120b_2_all_senate_all";
+    // const spec_hash_house = "gpt-oss-120b_2_all_house_all";
+    // const spec_hash_senate = "gpt-oss-120b_2_all_senate_all";
+    const spec_hash_house = "gemini-2.5-flash-lite_3_all_house_all";
+    const spec_hash_senate = "gemini-2.5-flash-lite_3_all_senate_all";
     const db = getDB();
     const profile_collection = db.collection("legislator_profiles");
     let profile = null;
@@ -92,6 +94,53 @@ router.get("/:member_id", async (req, res) => {
     }
     if (!profile) return res.status(404).json({ error: "Legislator not found (legislator_profiles)" });
     if (!legislator) return res.status(404).json({ error: "Legislator not found (legislators)" });
+    const combined_result = Object.assign({}, profile, legislator);
+    res.status(200).json(combined_result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch legislator profile" });
+  }
+});
+
+const model_to_latest_schema = {
+  "gpt-oss-120b": "2",
+  "gemini-2.5-flash-lite": "3",
+  "llama3.3-70b": "2",
+  "qwen-3-32b": "2",
+}
+
+// Get legislator_profile by member_id and mdoel
+router.get("/:member_id/:model", async (req, res) => {
+  try {
+    if (!req.params.member_id) {
+      return res.status(400).json({ error: "member_id is required" });
+    }
+    if (!req.params.model) {
+      return res.status(400).json({ error: "model is required"});
+    }
+    const spec_hash_house = `${req.params.model}_${model_to_latest_schema[req.params.model]}_all_house_all`;
+    const spec_hash_senate = `${req.params.model}_${model_to_latest_schema[req.params.model]}_all_senate_all`;
+    const db = getDB();
+    const profile_collection = db.collection("legislator_profiles");
+    let profile = null;
+    const legislator_collection = db.collection("legislators");
+    const legislator = await legislator_collection.findOne({ member_id: req.params.member_id });
+    // Need to determine if senator or house rep
+    if (req.params.member_id.startsWith("S") && req.params.member_id.length <= 4) {
+      profile = await profile_collection.findOne({ member_id: req.params.member_id, spec_hash: spec_hash_senate });
+    } else {
+      profile = await profile_collection.findOne({ member_id: req.params.member_id, spec_hash: spec_hash_house });
+    }
+    if (!profile) return res.status(404).json({ error: "Legislator not found (legislator_profiles)" });
+    if (!legislator) return res.status(404).json({ error: "Legislator not found (legislators)" });
+
+    // Backwards compatability with schema v2, REMOVE LATER
+    // Remove primary categories, change main_categories to be primary categories
+    if (model_to_latest_schema[req.params.model] === "2") {
+      profile["primary_categories"] = profile["main_categories"];
+    }
+
+
     const combined_result = Object.assign({}, profile, legislator);
     res.status(200).json(combined_result);
   } catch (err) {
