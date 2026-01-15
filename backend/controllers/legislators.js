@@ -194,3 +194,35 @@ export const getLegislatorProfileByMemberIdAndModel = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch legislator profile" });
   }
 };
+
+export const getLegislatorProfilesBySpecHash = async (req, res) => {
+  try {
+    if (!req.params.spec_hash) {
+      return res.status(400).json({ error: "spec_hash is required" });
+    }
+    const db = getDB();
+    const profile_collection = db.collection("legislator_profiles");
+
+    const profiles = await profile_collection
+      .find(
+        { spec_hash: req.params.spec_hash },
+        {
+          projection: {
+            _id: 0,
+            member_id: 1,
+            name: 1,
+            party: 1,
+            spec_hash: 1,
+            primary_categories: 1,
+            detailed_spectrums: 1,
+          },
+        }
+      )
+      .toArray();
+
+    res.status(200).json(profiles);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch legislator profiles" });
+  }
+};
