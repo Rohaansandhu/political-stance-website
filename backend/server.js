@@ -21,9 +21,11 @@ app.get("/", (req, res) => {
     res.send("Server is ready");
 });
 
-app.listen(process.env.PORT, async () =>  {
+const port = process.env.PORT || 5001;
+
+app.listen(port, async () =>  {
     await connectDB();
-    console.log("Server start at http://localhost:" + process.env.PORT);
+    console.log("Server start at http://localhost:" + port);
 });
 
 app.use("/legislators", legislatorRoutes);
