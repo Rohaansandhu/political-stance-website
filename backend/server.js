@@ -20,9 +20,9 @@ app.get("/", (req, res) => {
     res.send("Server is ready");
 });
 
-app.listen(4000, async () =>  {
+app.listen(process.env.PORT, async () =>  {
     await connectDB();
-    console.log("Server start at http://localhost:4000 ");
+    console.log("Server start at http://localhost:" + process.env.PORT);
 });
 
 app.use("/legislators", legislatorRoutes);

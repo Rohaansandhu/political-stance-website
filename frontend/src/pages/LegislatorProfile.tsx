@@ -33,7 +33,7 @@ export default function LegislatorProfile() {
     useEffect(() => {
         async function loadLegislator() {
             try {
-                const res = await fetch(`http://localhost:4000/legislators/${id}/${model}`);
+                const res = await fetch(`http://localhost:5001/legislators/${id}/${model}`);
                 const json = await res.json();
                 console.log("Backend response:", json);
                 setData(json);

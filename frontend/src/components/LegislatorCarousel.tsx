@@ -57,7 +57,7 @@ export default function LegislatorCarousel() {
             ];
 
             const leaderPromises = leaderIds.map(id =>
-                fetch(`http://localhost:4000/legislators/${id}`)
+                fetch(`http://localhost:5001/legislators/${id}`)
                     .then(res => res.json())
                     .catch(err => {
                         console.error(`Failed to fetch ${id}:`, err);
@@ -72,7 +72,7 @@ export default function LegislatorCarousel() {
             ];
 
             const popularPromises = popularIds.map(id =>
-                fetch(`http://localhost:4000/legislators/${id}`)
+                fetch(`http://localhost:5001/legislators/${id}`)
                     .then(res => res.json())
                     .catch(err => {
                         console.error(`Failed to fetch ${id}:`, err);

@@ -64,7 +64,7 @@ export default function CongressHistogram({ specHash, field, subject, current }:
     try {
       const encodedSubject = encodeURIComponent(subject);
       const response = await fetch(
-        `http://localhost:4000/congress-data/${specHash}/histogram/${field}/${encodedSubject}/${current}`
+        `http://localhost:5001/congress-data/${specHash}/histogram/${field}/${encodedSubject}/${current}`
       );
       
       if (!response.ok) {
