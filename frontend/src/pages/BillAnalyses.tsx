@@ -124,7 +124,7 @@ export default function BillAnalysesPage() {
   const fetchFeaturedBills = async () => {
     setFeaturedLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}bill-analyses/featured`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/bill-analyses/featured`);
       const data = await response.json();
       setFeaturedBills(data.featured_bills || []);
     } catch (err) {

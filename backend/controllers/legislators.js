@@ -1,4 +1,4 @@
-import { getDB } from '../config/db.js';
+import { getDB } from "../config/db.js";
 
 export const getLegislators = async (req, res) => {
   try {
@@ -214,7 +214,6 @@ export const getLegislatorProfilesBySpecHash = async (req, res) => {
             party: 1,
             spec_hash: 1,
             primary_categories: 1,
-            detailed_spectrums: 1,
           },
         }
       )

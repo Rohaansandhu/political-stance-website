@@ -14,10 +14,10 @@ import CongressRankings from "../components/CongressRankings";
 
 export default function CongressDataPage() {
   const [chamber, setChamber] = useState("house");
-  const [field, setField] = useState("primary_categories");
+  // const [field, setField] = useState("primary_categories");
   const [model, setModel] = useState("gemini-2.5-flash-lite");
   const [subject, setSubject] = useState("Education");
-  const [schema, setSchema] = useState("3");
+  // const [schema, setSchema] = useState("3");
   const [availableSubjects, setAvailableSubjects] = useState([]);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function CongressDataPage() {
     }
   };
 
-  const specHash = `${model}_${schema}_all_${chamber}_all`;
+  const specHash = `${model}_3_all_${chamber}_all`;
 
   return (
     <Box minH="100vh" bg="bg">
@@ -117,7 +117,7 @@ export default function CongressDataPage() {
               </Select.Content>
             </Select.Root>
 
-            <Select.Root
+            {/* <Select.Root
               collection={createListCollection({
                 items: [
                   { label: "Primary Categories", value: "primary_categories" },
@@ -144,7 +144,7 @@ export default function CongressDataPage() {
                   <Select.ItemText>Detailed Spectrums</Select.ItemText>
                 </Select.Item>
               </Select.Content>
-            </Select.Root>
+            </Select.Root> */}
 
             <Select.Root
               collection={createListCollection({
@@ -167,7 +167,7 @@ export default function CongressDataPage() {
               </Select.Content>
             </Select.Root>
 
-            <Select.Root
+            {/* <Select.Root
               collection={createListCollection({
                 items: [
                   { label: "v3", value: "3" },
@@ -190,14 +190,14 @@ export default function CongressDataPage() {
                   <Select.ItemText>v2</Select.ItemText>
                 </Select.Item>
               </Select.Content>
-            </Select.Root>
+            </Select.Root> */}
           </HStack>
         </VStack>
 
         {/* Histogram Component */}
         <CongressHistogram
           specHash={specHash}
-          field={field}
+          field={"primary_categories"}
           subject={subject}
           current={true}
         />
@@ -214,10 +214,7 @@ export default function CongressDataPage() {
         <CongressRankings
           specHash={specHash}
           field={
-            field as
-              | "primary_categories"
-              | "main_categories"
-              | "detailed_spectrums"
+            "primary_categories"
           }
           subject={subject}
         />
