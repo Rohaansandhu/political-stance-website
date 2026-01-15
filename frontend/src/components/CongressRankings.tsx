@@ -118,8 +118,8 @@ export default function CongressRankings({ specHash, field, subject }: CongressR
   };
 
   const getScoreColor = (score: number) => {
-    if (score < -0.33) return 'blue.500';
-    if (score > 0.33) return 'red.500';
+    if (score < -0.1) return 'blue.500';
+    if (score > 0.1) return 'red.500';
     return 'purple.500';
   };
 
