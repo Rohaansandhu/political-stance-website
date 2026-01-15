@@ -109,7 +109,7 @@ export default function BillAnalysesPage() {
       queryParams.append('page', page);
       queryParams.append('limit', '20');
 
-      const response = await fetch(`http://localhost:5001/bill-analyses?${queryParams}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/bill-analyses?${queryParams}`);
       const data = await response.json();
       
       setBills(data.bills);
@@ -124,7 +124,7 @@ export default function BillAnalysesPage() {
   const fetchFeaturedBills = async () => {
     setFeaturedLoading(true);
     try {
-      const response = await fetch('http://localhost:5001/bill-analyses/featured');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}bill-analyses/featured`);
       const data = await response.json();
       setFeaturedBills(data.featured_bills || []);
     } catch (err) {
@@ -136,7 +136,7 @@ export default function BillAnalysesPage() {
 
   const fetchFilterOptions = async () => {
     try {
-      const response = await fetch('http://localhost:5001/bill-analyses/filters');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/bill-analyses/filters`);
       const data = await response.json();
       setFilterOptions(data);
     } catch (err) {

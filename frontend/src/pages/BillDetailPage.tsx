@@ -83,7 +83,7 @@ export default function BillDetailPage() {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:5001/bill-analyses/${bill_id}/${model}`
+        `${import.meta.env.VITE_API_URL}/bill-analyses/${bill_id}/${model}`
       );
 
       if (!response.ok) {

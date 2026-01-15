@@ -48,7 +48,7 @@ export default function CongressRankings({ specHash, field, subject }: CongressR
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:5001/legislators/profiles/${specHash}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/legislators/profiles/${specHash}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch profiles');

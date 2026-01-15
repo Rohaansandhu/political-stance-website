@@ -44,7 +44,7 @@ export default function ExploreLegislators() {
             if (chamberFilter) params.append('chamber', chamberFilter);
             if (partyFilter) params.append('party', partyFilter);
 
-            const response = await fetch(`http://localhost:5001/legislators?${params}`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/legislators?${params}`);
             const data = await response.json();
             setLegislators(data.results);
         } catch (error) {

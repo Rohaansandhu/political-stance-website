@@ -63,8 +63,9 @@ export default function CongressHistogram({ specHash, field, subject, current }:
     setError(null);
     try {
       const encodedSubject = encodeURIComponent(subject);
+      console.log(import.meta.env.VITE_API_URL);
       const response = await fetch(
-        `http://localhost:5001/congress-data/${specHash}/histogram/${field}/${encodedSubject}/${current}`
+        `${import.meta.env.VITE_API_URL}/congress-data/${specHash}/histogram/${field}/${encodedSubject}/${current}`
       );
       
       if (!response.ok) {

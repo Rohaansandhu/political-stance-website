@@ -10,7 +10,7 @@ export function FeaturedBills() {
     const fetchFeatured = async () => {
       setLoading(true);
       try {
-        const res = await fetch('http://localhost:5001/bill-analyses/featured');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/bill-analyses/featured`);
         const data = await res.json();
         setFeaturedBills(data.featured_bills || []);
       } catch (err) {
