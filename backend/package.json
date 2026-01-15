@@ -2,7 +2,7 @@
   "name": "political-stance-website",
   "version": "1.0.0",
   "description": "Website to display the analysis of voting records to show where US Congress Members stand on major political issues.",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon backend/server.js"
