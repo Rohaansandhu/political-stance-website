@@ -141,35 +141,68 @@ export const getFeaturedBills = async (req, res) => {
     const db = getDB();
     const collection = db.collection("bill_analyses");
 
-    // Strategy: Get one recent bill from each major category
-    // This ensures diverse representation
-    const categories = [
-      "Environment & Energy",
-      "Healthcare",
-      "Education",
-      "Economy & Finance",
-      "Foreign Policy & National Security",
-      "Government & Institutional Reform",
-    ];
-
     const featuredBills = await collection
       .aggregate([
         { $match: { schema_version: 3 } },
-        { $unwind: "$political_categories.primary_categories" },
+
+        // Ensure avg_partisan_score exists
         {
-          $match: {
-            "political_categories.primary_categories.name": { $in: categories },
+          $addFields: {
+            effective_avg_score: {
+              $ifNull: [
+                "$avg_partisan_score",
+                {
+                  $avg: "$political_categories.primary_categories.partisan_score",
+                },
+              ],
+            },
           },
         },
-        { $sort: { congress: -1, _id: -1 } },
+
         {
-          $group: {
-            _id: "$political_categories.primary_categories.name",
-            bill: { $first: "$$ROOT" },
+          $facet: {
+            liberal: [
+              { $match: { effective_avg_score: { $lte: -0.4 } } },
+              { $sort: { congress: -1, _id: -1 } },
+              { $group: { _id: "$model", bill: { $first: "$$ROOT" } } },
+              { $limit: 2 },
+            ],
+
+            moderate: [
+              {
+                $match: {
+                  effective_avg_score: { $gte: -0.2, $lte: 0.2 },
+                },
+              },
+              { $sort: { congress: -1, _id: -1 } },
+              { $group: { _id: "$model", bill: { $first: "$$ROOT" } } },
+              { $limit: 2 },
+            ],
+
+            conservative: [
+              { $match: { effective_avg_score: { $gte: 0.4 } } },
+              { $sort: { congress: -1, _id: -1 } },
+              { $group: { _id: "$model", bill: { $first: "$$ROOT" } } },
+              { $limit: 2 },
+            ],
           },
         },
-        { $limit: 6 },
-        { $replaceRoot: { newRoot: "$bill" } },
+
+        {
+          $project: {
+            featured: {
+              $concatArrays: [
+                "$liberal.bill",
+                "$moderate.bill",
+                "$conservative.bill",
+              ],
+            },
+          },
+        },
+
+        { $unwind: "$featured" },
+        { $replaceRoot: { newRoot: "$featured" } },
+
         {
           $project: {
             bill_id: 1,
@@ -179,6 +212,7 @@ export const getFeaturedBills = async (req, res) => {
             congress: 1,
             "bill_summary.title": 1,
             "political_categories.primary_categories": 1,
+            avg_partisan_score: "$effective_avg_score",
           },
         },
       ])
