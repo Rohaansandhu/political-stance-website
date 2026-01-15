@@ -6,6 +6,7 @@ import {connectDB} from './config/db.js'
 import legislatorRoutes from "./routes/legislators.js";
 import congressRoutes from "./routes/congress-data.js";
 import categoryRoutes from "./routes/categories.js";
+import billAnalysisRoutes from "./routes/bill_analyses.js";
 
 dotenv.config();
 
@@ -28,3 +29,4 @@ app.listen(process.env.PORT, async () =>  {
 app.use("/legislators", legislatorRoutes);
 app.use("/congress-data", congressRoutes);
 app.use("/categories", categoryRoutes);
+app.use("/bill-analyses", billAnalysisRoutes);
