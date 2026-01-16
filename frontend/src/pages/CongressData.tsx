@@ -9,8 +9,8 @@ import {
   Select,
   createListCollection,
 } from "@chakra-ui/react";
-import CongressHistogram from "../components/CongressHistogram";
-import CongressRankings from "../components/CongressRankings";
+import CongressHistogram from "../components/CongressData/CongressHistogram";
+import CongressRankings from "../components/CongressData/CongressRankings";
 
 export default function CongressDataPage() {
   const [chamber, setChamber] = useState("house");

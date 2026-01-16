@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Container, Spinner, Center, Text, VStack, Breadcrumb, Flex, HStack, Select, createListCollection } from "@chakra-ui/react";
 
-import LegislatorProfileHeader from "../components/LegislatorProfileHeader";
-import LegislatorStatsOverview from "../components/LegislatorStatsOverview";
-import MainCategoryGrid from "../components/MainCategoriesGrid";
+import LegislatorProfileHeader from "../components/Legislators/LegislatorProfileHeader";
+import LegislatorStatsOverview from "../components/Legislators/LegislatorStatsOverview";
+import MainCategoryGrid from "../components/Legislators/MainCategoriesGrid";
 
 interface LegislatorData {
     member_id: string;

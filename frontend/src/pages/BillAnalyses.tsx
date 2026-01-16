@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Box, Container, Heading, Text, VStack } from "@chakra-ui/react";
 import { useSearchParams } from "react-router-dom";
-import BillSearchBar from "../components/BillSearchBar";
-import BillFilters from "../components/BillFilters";
-import BillGrid from "../components/BillGrid";
-import Pagination from "../components/Pagination";
+import BillSearchBar from "../components/Bills/BillSearchBar";
+import BillFilters from "../components/Bills/BillFilters";
+import BillGrid from "../components/Bills/BillGrid";
+import Pagination from "../components/Bills/Pagination";
 
 interface BillSummary {
   title: string;

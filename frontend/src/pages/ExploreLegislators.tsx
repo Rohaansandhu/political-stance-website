@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Container, SimpleGrid, Box, Heading, Text, Badge, Avatar, Flex, VStack, HStack, Spinner, Center, Select, createListCollection } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-import { LegislatorsHero } from "../components/LegislatorsHero.tsx";
-import LegislatorCarousel from "../components/LegislatorCarousel.tsx";
+import { LegislatorsHero } from "../components/Legislators/LegislatorsHero.tsx";
+import LegislatorCarousel from "../components/Legislators/LegislatorCarousel.tsx";
 
 interface Legislator {
     bioguide: string;
