@@ -1,16 +1,10 @@
-import { useState, useEffect } from 'react';
-import {
-  Box,
-  Container,
-  Heading,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
-import { useSearchParams } from 'react-router-dom';
-import BillSearchBar from '../components/BillSearchBar';
-import BillFilters from '../components/BillFilters';
-import BillGrid from '../components/BillGrid';
-import Pagination from '../components/Pagination';
+import { useState, useEffect } from "react";
+import { Box, Container, Heading, Text, VStack } from "@chakra-ui/react";
+import { useSearchParams } from "react-router-dom";
+import BillSearchBar from "../components/BillSearchBar";
+import BillFilters from "../components/BillFilters";
+import BillGrid from "../components/BillGrid";
+import Pagination from "../components/Pagination";
 
 interface BillSummary {
   title: string;
@@ -61,26 +55,29 @@ export default function BillAnalysesPage() {
   // State
   const [bills, setBills] = useState<BillAnalysis[]>([]);
   const [featuredBills, setFeaturedBills] = useState<BillAnalysis[]>([]);
-  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [featuredLoading, setFeaturedLoading] = useState(true);
-  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '');
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
     limit: 20,
-    pages: 0
+    pages: 0,
   });
 
-  // Filters from URL params
-  const [filters, setFilters] = useState<FilterState>({
-    model: searchParams.get('model') || '',
-    bill_type: searchParams.get('bill_type') || '',
-    chamber: searchParams.get('chamber') || '',
-    congress: searchParams.get('congress') || '',
-    category: searchParams.get('category') || '',
-    ideology: searchParams.get('ideology') || '',
-  });
+  // Derive all values from URL params (single source of truth)
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const searchValue = searchParams.get("search") || "";
+  const filters: FilterState = {
+    model: searchParams.get("model") || "",
+    bill_type: searchParams.get("bill_type") || "",
+    chamber: searchParams.get("chamber") || "",
+    congress: searchParams.get("congress") || "",
+    category: searchParams.get("category") || "",
+    ideology: searchParams.get("ideology") || "",
+  };
 
   useEffect(() => {
     fetchFilterOptions();
@@ -89,33 +86,33 @@ export default function BillAnalysesPage() {
 
   useEffect(() => {
     fetchBills();
-  }, [filters, searchValue, searchParams.get('page')]);
+  }, [searchParams]);
 
   const fetchBills = async () => {
     setLoading(true);
     try {
       const queryParams = new URLSearchParams();
-      
+
       // Add all filters
       Object.entries(filters).forEach(([key, value]) => {
         if (value) queryParams.append(key, value);
       });
-      
-      // Add search
-      if (searchValue) queryParams.append('search', searchValue);
-      
-      // Add pagination
-      const page = searchParams.get('page') || '1';
-      queryParams.append('page', page);
-      queryParams.append('limit', '20');
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/bill-analyses?${queryParams}`);
+      // Add search
+      if (searchValue) queryParams.append("search", searchValue);
+
+      queryParams.append("page", currentPage.toString());
+      queryParams.append("limit", "20");
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/bill-analyses?${queryParams}`
+      );
       const data = await response.json();
-      
+
       setBills(data.bills);
       setPagination(data.pagination);
     } catch (err) {
-      console.error('Error fetching bills:', err);
+      console.error("Error fetching bills:", err);
     } finally {
       setLoading(false);
     }
@@ -124,11 +121,13 @@ export default function BillAnalysesPage() {
   const fetchFeaturedBills = async () => {
     setFeaturedLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/bill-analyses/featured`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/bill-analyses/featured`
+      );
       const data = await response.json();
       setFeaturedBills(data.featured_bills || []);
     } catch (err) {
-      console.error('Error fetching featured bills:', err);
+      console.error("Error fetching featured bills:", err);
     } finally {
       setFeaturedLoading(false);
     }
@@ -136,64 +135,59 @@ export default function BillAnalysesPage() {
 
   const fetchFilterOptions = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/bill-analyses/filters`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/bill-analyses/filters`
+      );
       const data = await response.json();
       setFilterOptions(data);
     } catch (err) {
-      console.error('Error fetching filter options:', err);
+      console.error("Error fetching filter options:", err);
     }
   };
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    
-    // Reset to page 1 when filters change
-    const newParams = new URLSearchParams();
-    Object.entries(newFilters).forEach(([k, v]) => {
-      if (v) newParams.set(k, v);
-    });
-    if (searchValue) newParams.set('search', searchValue);
-    newParams.set('page', '1');
+    const currentValue = searchParams.get(key) || "";
+
+    if (value === currentValue) return;
+
+    const newParams = new URLSearchParams(searchParams);
+
+    if (value) {
+      newParams.set(key, value);
+    } else {
+      newParams.delete(key);
+    }
+
+    newParams.set("page", "1");
     setSearchParams(newParams);
   };
 
   const handleSearchChange = (value: string) => {
-    setSearchValue(value);
-    
-    // Update URL params
-    const newParams = new URLSearchParams();
-    Object.entries(filters).forEach(([k, v]) => {
-      if (v) newParams.set(k, v);
-    });
-    if (value) newParams.set('search', value);
-    newParams.set('page', '1');
+    const currentValue = searchParams.get("search") || "";
+
+    if (value === currentValue) return;
+
+    const newParams = new URLSearchParams(searchParams);
+
+    if (value) {
+      newParams.set("search", value);
+    } else {
+      newParams.delete("search");
+    }
+
+    newParams.set("page", "1");
     setSearchParams(newParams);
   };
 
   const clearFilters = () => {
-    const resetFilters: FilterState = {
-      model: '',
-      bill_type: '',
-      chamber: '',
-      congress: '',
-      category: '',
-      ideology: '',
-    };
-    setFilters(resetFilters);
-    setSearchValue('');
     setSearchParams(new URLSearchParams());
   };
 
   const handlePageChange = (newPage: number) => {
-    const newParams = new URLSearchParams();
-    Object.entries(filters).forEach(([k, v]) => {
-      if (v) newParams.set(k, v);
-    });
-    if (searchValue) newParams.set('search', searchValue);
-    newParams.set('page', newPage.toString());
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("page", newPage.toString());
     setSearchParams(newParams);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -209,7 +203,6 @@ export default function BillAnalysesPage() {
               Explore AI-powered political analyses of congressional bills
             </Text>
           </Box>
-
 
           {/* Featured Bills */}
           {!featuredLoading && featuredBills.length > 0 && (
@@ -227,10 +220,7 @@ export default function BillAnalysesPage() {
           )}
 
           {/* Search Bar */}
-          <BillSearchBar
-            value={searchValue}
-            onChange={handleSearchChange}
-          />
+          <BillSearchBar value={searchValue} onChange={handleSearchChange} />
 
           {/* Filters */}
           <BillFilters
@@ -257,7 +247,7 @@ export default function BillAnalysesPage() {
 
           {/* Pagination */}
           <Pagination
-            currentPage={pagination.page}
+            currentPage={currentPage}
             totalPages={pagination.pages}
             onPageChange={handlePageChange}
           />
