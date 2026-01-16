@@ -12,6 +12,7 @@ import system from "./theme";
 import Navbar from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import CongressDataPage from "./pages/CongressData";
+import { About } from "./pages/About";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
               path="/bill-analyses/:bill_id/:model"
               element={<BillDetailPage />}
             />
+            <Route path="/about" element={<About />} />
           </Routes>
           <Footer />
         </Router>
