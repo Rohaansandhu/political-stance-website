@@ -97,3 +97,5 @@ export function Footer() {
         </Box>
     );
 }
+
+// TODO: Add attribution for icon: <a href="https://www.flaticon.com/free-icons/capitol" title="capitol icons">Capitol icons created by justicon - Flaticon</a>
