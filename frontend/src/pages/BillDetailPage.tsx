@@ -109,8 +109,8 @@ export default function BillDetailPage() {
   };
 
   const getIdeologyColor = (score: number) => {
-    if (score < -0.3) return "blue.500";
-    if (score > 0.3) return "red.500";
+    if (score < -0.2) return "blue.500";
+    if (score > 0.2) return "red.500";
     return "purple.500";
   };
 
