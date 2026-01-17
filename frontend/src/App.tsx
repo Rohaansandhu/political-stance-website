@@ -1,6 +1,7 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { ColorModeProvider } from "./components/ui/color-mode";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Analytics } from '@vercel/analytics/react';
 
 import Landing from "./pages/Landing";
 import ExploreLegislators from "./pages/ExploreLegislators";
@@ -37,8 +38,10 @@ function App() {
           </Routes>
           <Footer />
         </Router>
+        <Analytics />
       </ChakraProvider>
     </ColorModeProvider>
+    
   );
 }
 
