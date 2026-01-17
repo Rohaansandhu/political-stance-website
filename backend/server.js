@@ -28,7 +28,7 @@ app.listen(port, async () =>  {
     console.log("Server start at http://localhost:" + port);
 });
 
-app.use("/legislators", legislatorRoutes);
-app.use("/congress-data", congressRoutes);
-app.use("/categories", categoryRoutes);
-app.use("/bill-analyses", billAnalysisRoutes);
+app.use("/api/legislators", legislatorRoutes);
+app.use("/api/congress-data", congressRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/bill-analyses", billAnalysisRoutes);

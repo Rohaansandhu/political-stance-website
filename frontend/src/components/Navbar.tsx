@@ -26,7 +26,7 @@ function Navbar() {
           <Flex align="center" gap={8}>
             {/* Logo */}
             <Heading size="md" color="teal.700">
-              PoliTrack
+              US PoliTrack
             </Heading>
 
             {/* Nav Links (desktop) */}

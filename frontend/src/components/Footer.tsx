@@ -21,7 +21,7 @@ export function Footer() {
     { label: "About", href: "/about" },
     { label: "Methodology", href: "/about" },
     // { label: "Blog", href: "#" }, 
-    { label: "FAQ", href: "/about" },
+    { label: "Glossary", href: "/about" },
   ];
 
   const legalLinks = [

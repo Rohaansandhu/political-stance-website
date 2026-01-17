@@ -11,7 +11,7 @@ export default function Landing() {
                 <Hero />
                 <LegislatorPreview />
                 <FeaturedBills />
-                <Features />
+                {/* <Features /> */}
             </Container>
         </>
     )

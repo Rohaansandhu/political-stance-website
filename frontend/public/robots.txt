@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Sitemap
+Sitemap:https://political-stance-website-frontend.vercel.app/sitemap.xml

@@ -33,7 +33,7 @@ export default function LegislatorProfile() {
     useEffect(() => {
         async function loadLegislator() {
             try {
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/legislators/${id}/${model}`);
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/legislators/${id}/${model}`);
                 const json = await res.json();
                 setData(json);
             } catch (err) {
