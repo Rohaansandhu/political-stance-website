@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 
 # Sitemap
-Sitemap:https://political-stance-website-frontend.vercel.app/sitemap.xml
+Sitemap:https://www.uspolitrack.org/sitemap.xml
