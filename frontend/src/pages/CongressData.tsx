@@ -202,14 +202,6 @@ export default function CongressDataPage() {
           current={true}
         />
 
-        {/* Info */}
-        <Box mt={8} p={4} bg="bgLightShade" rounded="lg">
-          <Text fontSize="sm" color="text" textAlign="center">
-            Score Range: -1.0 (Liberal) to 1.0 (Conservative) • Data based on
-            voting records
-          </Text>
-        </Box>
-
         {/* Rankings Component */}
         <CongressRankings
           specHash={specHash}

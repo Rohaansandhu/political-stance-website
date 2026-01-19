@@ -21,6 +21,11 @@ app.get("/", (req, res) => {
     res.send("Server is ready");
 });
 
+app.use("/api/legislators", legislatorRoutes);
+app.use("/api/congress-data", congressRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/bill-analyses", billAnalysisRoutes);
+
 const port = process.env.PORT || 5001;
 
 app.listen(port, async () =>  {
@@ -28,7 +33,4 @@ app.listen(port, async () =>  {
     console.log("Server start at http://localhost:" + port);
 });
 
-app.use("/api/legislators", legislatorRoutes);
-app.use("/api/congress-data", congressRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/bill-analyses", billAnalysisRoutes);
+

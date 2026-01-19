@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Box,
   Heading,
@@ -8,9 +8,18 @@ import {
   Spinner,
   Center,
   Badge,
-  Stat
-} from '@chakra-ui/react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
+  Stat,
+} from "@chakra-ui/react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 
 interface HistogramProps {
   specHash: string;
@@ -49,7 +58,12 @@ interface HistogramData {
   total_count: number;
 }
 
-export default function CongressHistogram({ specHash, field, subject, current }: HistogramProps) {
+export default function CongressHistogram({
+  specHash,
+  field,
+  subject,
+  current,
+}: HistogramProps) {
   const [data, setData] = useState<HistogramData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,18 +79,20 @@ export default function CongressHistogram({ specHash, field, subject, current }:
       const encodedSubject = encodeURIComponent(subject);
       console.log(import.meta.env.VITE_API_URL);
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/congress-data/${specHash}/histogram/${field}/${encodedSubject}/${current}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/congress-data/${specHash}/histogram/${field}/${encodedSubject}/${current}`
       );
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch histogram data');
+        throw new Error("Failed to fetch histogram data");
       }
-      
+
       const result = await response.json();
       setData(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      console.error('Error fetching histogram:', err);
+      setError(err instanceof Error ? err.message : "Unknown error");
+      console.error("Error fetching histogram:", err);
     } finally {
       setLoading(false);
     }
@@ -110,7 +126,7 @@ export default function CongressHistogram({ specHash, field, subject, current }:
     );
   }
 
-  const chamber = specHash.includes('senate') ? 'Senate' : 'House';
+  const chamber = specHash.includes("senate") ? "Senate" : "House";
 
   return (
     <Box w="100%" bg="bgLightShade" p={8} rounded="xl">
@@ -123,7 +139,7 @@ export default function CongressHistogram({ specHash, field, subject, current }:
             </Heading>
             <HStack gap={2}>
               <Badge colorScheme="blue">{chamber}</Badge>
-              <Badge colorScheme="purple">{field.replace('_', ' ')}</Badge>
+              <Badge colorScheme="purple">{field.replace("_", " ")}</Badge>
               <Text color="text" fontSize="sm">
                 {data.total_count} legislators
               </Text>
@@ -133,23 +149,38 @@ export default function CongressHistogram({ specHash, field, subject, current }:
 
         {/* Statistics Cards */}
         <HStack gap={4} wrap="wrap">
-          {(['D', 'R', 'I'] as const).map(party => {
+          {(["D", "R", "I"] as const).map((party) => {
             const partyStats = data.stats[party];
-            const partyName = party === 'D' ? 'Democrats' : party === 'R' ? 'Republicans' : 'Independents';
-            const colorScheme = party === 'D' ? 'blue' : party === 'R' ? 'red' : 'yellow';
-            
+            const partyName =
+              party === "D"
+                ? "Democrats"
+                : party === "R"
+                ? "Republicans"
+                : "Independents";
+            const colorScheme =
+              party === "D" ? "blue" : party === "R" ? "red" : "yellow";
+
             return (
-              <Stat.Root key={party} bg="bg" p={4} rounded="lg" flex="1" minW="200px">
+              <Stat.Root
+                key={party}
+                bg="bg"
+                p={4}
+                rounded="lg"
+                flex="1"
+                minW="200px"
+              >
                 <Stat.Label>
                   <Badge colorScheme={colorScheme} mb={2}>
                     {partyName}
                   </Badge>
                 </Stat.Label>
                 <Stat.ValueText fontSize="2xl" color="primary">
-                  {partyStats.mean !== null ? partyStats.mean.toFixed(3) : 'N/A'}
+                  {partyStats.mean !== null
+                    ? partyStats.mean.toFixed(3)
+                    : "N/A"}
                 </Stat.ValueText>
                 <Stat.HelpText>
-                  Mean Score • {partyStats.count} members
+                  Mean Ideology Score • {partyStats.count} members
                 </Stat.HelpText>
                 {partyStats.median !== null && (
                   <Text fontSize="sm" color="text" mt={1}>
@@ -166,22 +197,26 @@ export default function CongressHistogram({ specHash, field, subject, current }:
           <ResponsiveContainer width="100%" height={600}>
             <BarChart data={data.bins}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis 
-                dataKey="range" 
-                angle={-45} 
-                textAnchor="end" 
+              <XAxis
+                dataKey="range"
+                angle={-45}
+                textAnchor="end"
                 height={100}
-                tick={{ fill: '#4a5568', fontSize: 12 }}
+                tick={{ fill: "#4a5568", fontSize: 12 }}
               />
-              <YAxis 
-                label={{ value: 'Number of Legislators', angle: -90, position: "insideLeft"}}
-                tick={{ fill: '#4a5568' }}
+              <YAxis
+                label={{
+                  value: "Number of Legislators",
+                  angle: -90,
+                  position: "insideLeft",
+                }}
+                tick={{ fill: "#4a5568" }}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#ffffff', 
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px' 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "8px",
                 }}
               />
               <Legend />
@@ -194,9 +229,10 @@ export default function CongressHistogram({ specHash, field, subject, current }:
 
         {/* Additional Stats */}
         <HStack gap={4} fontSize="sm" color="text" justify="center">
-          <Text>Score Range: -1.0 to 1.0</Text>
-          <Text>•</Text>
-          <Text>Negative = Liberal, Positive = Conservative</Text>
+          <Text>
+            Ideology Score Range: -1.0 (Liberal) to 1.0 (Conservative) • Data based on
+            voting records
+          </Text>
         </HStack>
       </VStack>
     </Box>

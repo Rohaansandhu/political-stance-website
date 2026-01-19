@@ -182,20 +182,109 @@ function CategoryCard({
               </VStack>
               <VStack gap={1} align="flex-start">
                 <Text fontSize="xs" color="gray.500" fontWeight="600">
-                  SCORE
+                  IDEOLOGY SCORE
                 </Text>
-                <Text fontSize="2xl" fontWeight="bold" color="text">
+                <Text
+                  fontSize="2xl"
+                  fontWeight="bold"
+                  color={
+                    info.score > 0.2
+                      ? "#ef4444"
+                      : info.score < -0.2
+                      ? "#3b82f6"
+                      : "#8b5cf6"
+                  }
+                >
                   {info.score.toFixed(2)}
                 </Text>
               </VStack>
+              <VStack gap={1} align="flex-start">
+                <Text fontSize="xs" color="gray.500" fontWeight="600">
+                  PERCENTILE
+                </Text>
+                <Text
+                  fontSize="2xl"
+                  fontWeight="bold"
+                  color={
+                    info.current_percentile_rank > 0.6
+                      ? "#ef4444"
+                      : info.current_percentile_rank < 0.4
+                      ? "#3b82f6"
+                      : "#8b5cf6"
+                  }
+                >
+                  {(info.current_percentile_rank * 100).toFixed(1)}%
+                </Text>
+              </VStack>
             </HStack>
+
+            {/* Ideology Score Spectrum */}
+            <Box>
+              <HStack justify="space-between" mb={2}>
+                <Text fontSize="sm" color="gray.600" fontWeight="600">
+                  Ideology Score
+                </Text>
+                <Text
+                  fontSize="sm"
+                  fontWeight="bold"
+                  color={
+                    info.score < -0.2
+                      ? "#3b82f6"
+                      : info.score > 0.2
+                      ? "#ef4444"
+                      : "#8b5cf6"
+                  }
+                >
+                  {info.score.toFixed(2)}
+                </Text>
+              </HStack>
+
+              {/* Spectrum bar for Ideology score (-1 to 1) */}
+              <Box
+                position="relative"
+                h="12px"
+                bg="gray.200"
+                rounded="full"
+                mb={2}
+              >
+                <Box
+                  position="absolute"
+                  left={`${((info.score + 1) / 2) * 100}%`}
+                  top="50%"
+                  transform="translate(-50%, -50%)"
+                  w="16px"
+                  h="16px"
+                  bg={
+                    info.score < -0.2
+                      ? "#3b82f6"
+                      : info.score > 0.2
+                      ? "#ef4444"
+                      : "#8b5cf6"
+                  }
+                  rounded="full"
+                  border="3px solid white"
+                  boxShadow="md"
+                />
+              </Box>
+
+              <HStack justify="space-between">
+                <Text fontSize="xs" fontWeight="600" color="blue.500">
+                  Liberal (-1)
+                </Text>
+                <Text fontSize="xs" fontWeight="600" color="red.500">
+                  Conservative (+1)
+                </Text>
+              </HStack>
+            </Box>
 
             {/* Ideological Position */}
             <Box
               borderColor={
                 hasSufficientData ? `${currentIdeology.color}20` : "gray.300"
               }
-              borderLeftColor={hasSufficientData ? currentIdeology.color : "gray.400"}
+              borderLeftColor={
+                hasSufficientData ? currentIdeology.color : "gray.400"
+              }
               bg={hasSufficientData ? "bgLightShade" : "gray.50"}
               onClick={() => hasSufficientData && setExpanded(!expanded)}
               cursor={hasSufficientData ? "pointer" : "default"}
