@@ -14,6 +14,7 @@ import {
   GridItem,
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
+import BillVotes from "../components/Bills/BillVotes";
 
 interface BillSummary {
   title: string;
@@ -601,6 +602,10 @@ export default function BillDetailPage() {
               </Grid>
             </VStack>
           </Box>
+
+          {/* Roll Call Votes - New Section */}
+          <BillVotes bill_id={bill.bill_id} />
+          
           {/* Footer Info */}
           {bill.bill_truncated && (
             <Box
@@ -611,7 +616,7 @@ export default function BillDetailPage() {
               borderColor="yellow.500"
             >
               <Text fontSize="sm" color="yellow.800">
-                ⚠️ Note: This bill was truncated during analysis due to length
+                Note: This bill was truncated during analysis due to length
                 constraints.
               </Text>
             </Box>

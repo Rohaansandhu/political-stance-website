@@ -322,3 +322,63 @@ export const getIdeologyDistribution = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch ideology distribution" });
   }
 };
+
+export const getBillVotesByBillId = async (req, res) => {
+  try {
+    const db = getDB();
+    const votesCollection = db.collection("rollcall_votes");
+
+    const { bill_id } = req.params;
+
+    // Example bill_id: "hjres27-118"
+    const match = bill_id.match(/^([a-z]+)(\d+)-(\d+)$/i);
+
+    if (!match) {
+      return res.status(400).json({ error: "Invalid bill_id format" });
+    }
+
+    const [, bill_type, bill_number, congress] = match;
+
+    console.log('Searching for:', {
+      bill_type,
+      bill_number: parseInt(bill_number),
+      congress: parseInt(congress)
+    });
+
+    const votesDocs = await votesCollection
+      .find(
+        {
+          "bill.type": bill_type,
+          "bill.number": parseInt(bill_number),
+          congress: parseInt(congress),
+          category: {
+            $in: ["passage", "passage-suspension"],
+          },
+        },
+        {
+          projection: {
+            _id: 0,
+            votes: 1,
+            chamber: 1,
+            result: 1,
+            vote_date: 1,
+            question: 1,
+            vote_number: 1,
+          },
+        }
+      )
+      .toArray();
+
+    if (!votesDocs || votesDocs.length === 0) {
+      return res.status(404).json({ error: "Votes not found for bill" });
+    }
+
+    res.json({
+      bill_id,
+      vote_records: votesDocs,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch bill votes" });
+  }
+};
