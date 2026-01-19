@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Box,
   Heading,
@@ -11,18 +11,21 @@ import {
   Select,
   createListCollection,
   Grid,
-  GridItem
-} from '@chakra-ui/react';
+  GridItem,
+} from "@chakra-ui/react";
+import { Link } from "react-router-dom";
 
 interface CongressRankingsProps {
   specHash: string;
-  field: 'primary_categories' | 'main_categories' | 'detailed_spectrums';
+  field: "primary_categories" | "main_categories" | "detailed_spectrums";
   subject: string;
 }
 
 interface RankingData {
   member_id: string;
   name: string;
+  official_full_name: string;
+  state: string;
   party: string;
   score: number;
   rank: number;
@@ -34,11 +37,15 @@ interface RankingData {
   current_percentile_rank?: number;
 }
 
-export default function CongressRankings({ specHash, field, subject }: CongressRankingsProps) {
+export default function CongressRankings({
+  specHash,
+  field,
+  subject,
+}: CongressRankingsProps) {
   const [rankings, setRankings] = useState<RankingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     fetchRankings();
@@ -48,23 +55,27 @@ export default function CongressRankings({ specHash, field, subject }: CongressR
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/legislators/profiles/${specHash}`);
-      
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/legislators/profiles/${specHash}`
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch profiles');
+        throw new Error("Failed to fetch profiles");
       }
-      
+
       const profiles = await response.json();
-      
+
       // Extract rankings for the selected field and subject
       const extractedRankings: RankingData[] = profiles
         .map((profile: any) => {
           const categoryData = profile[field]?.[subject];
           if (!categoryData) return null;
-          
+
           return {
             member_id: profile.member_id,
             name: profile.name,
+            official_full_name: profile.official_full_name,
+            state: profile.state,
             party: profile.party,
             score: categoryData.score,
             rank: categoryData.rank,
@@ -73,22 +84,25 @@ export default function CongressRankings({ specHash, field, subject }: CongressR
             total_members: categoryData.total_members,
             total_current_members: categoryData.total_current_members,
             current_rank: categoryData.current_rank,
-            current_percentile_rank: categoryData.current_percentile_rank
+            current_percentile_rank: categoryData.current_percentile_rank,
           };
         })
         .filter((r: RankingData | null) => {
           // Filter out non-current legislators
           if (r === null) return false;
-          if (r.current_rank === undefined || r.current_rank === null) return false;
+          if (r.current_rank === undefined || r.current_rank === null)
+            return false;
           if (r.current_rank === -1) return false;
           return true;
         })
-        .sort((a: RankingData, b: RankingData) => a.current_rank! - b.current_rank!);
-      
+        .sort(
+          (a: RankingData, b: RankingData) => a.current_rank! - b.current_rank!
+        );
+
       setRankings(extractedRankings);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      console.error('Error fetching rankings:', err);
+      setError(err instanceof Error ? err.message : "Unknown error");
+      console.error("Error fetching rankings:", err);
     } finally {
       setLoading(false);
     }
@@ -96,19 +110,27 @@ export default function CongressRankings({ specHash, field, subject }: CongressR
 
   const getPartyColor = (party: string) => {
     switch (party) {
-      case 'D': return 'blue';
-      case 'R': return 'red';
-      case 'I': return 'yellow';
-      default: return 'gray';
+      case "D":
+        return "blue";
+      case "R":
+        return "red";
+      case "I":
+        return "yellow";
+      default:
+        return "gray";
     }
   };
 
   const getPartyName = (party: string) => {
     switch (party) {
-      case 'D': return 'Democrat';
-      case 'R': return 'Republican';
-      case 'I': return 'Independent';
-      default: return 'Unknown';
+      case "D":
+        return "Democrat";
+      case "R":
+        return "Republican";
+      case "I":
+        return "Independent";
+      default:
+        return "Unknown";
     }
   };
 
@@ -118,9 +140,9 @@ export default function CongressRankings({ specHash, field, subject }: CongressR
   };
 
   const getScoreColor = (score: number) => {
-    if (score < -0.1) return 'blue.500';
-    if (score > 0.1) return 'red.500';
-    return 'purple.500';
+    if (score < -0.1) return "blue.500";
+    if (score > 0.1) return "red.500";
+    return "purple.500";
   };
 
   if (loading) {
@@ -151,9 +173,8 @@ export default function CongressRankings({ specHash, field, subject }: CongressR
     );
   }
 
-  const displayedRankings = sortDirection === 'asc' 
-    ? rankings 
-    : [...rankings].reverse();
+  const displayedRankings =
+    sortDirection === "asc" ? rankings : [...rankings].reverse();
 
   return (
     <Box w="100%" bg="bgLightShade" p={8} rounded="xl" mt={8}>
@@ -168,16 +189,18 @@ export default function CongressRankings({ specHash, field, subject }: CongressR
               {rankings.length} legislators ranked
             </Text>
           </VStack>
-          
+
           <Select.Root
             collection={createListCollection({
               items: [
-                { label: 'Conservative → Liberal', value: 'asc' },
-                { label: 'Liberal → Conservative', value: 'desc' }
-              ]
+                { label: "Conservative → Liberal", value: "asc" },
+                { label: "Liberal → Conservative", value: "desc" },
+              ],
             })}
             value={[sortDirection]}
-            onValueChange={(details) => setSortDirection(details.value[0] as 'asc' | 'desc')}
+            onValueChange={(details) =>
+              setSortDirection(details.value[0] as "asc" | "desc")
+            }
             maxW="250px"
           >
             <Select.Label>Sort Order</Select.Label>
@@ -198,96 +221,124 @@ export default function CongressRankings({ specHash, field, subject }: CongressR
         {/* Rankings List */}
         <VStack align="stretch" gap={2}>
           {displayedRankings.map((ranking) => (
-            <Box
+            <Link
               key={ranking.member_id}
-              bg="bg"
-              p={4}
-              rounded="lg"
-              borderLeft="4px solid"
-              borderColor={`${getPartyColor(ranking.party)}.500`}
-              _hover={{ bg: 'bgLightShade', transform: 'translateX(4px)' }}
-              transition="all 0.2s"
+              to={`/legislators/${ranking.member_id}`}
             >
-              <Grid templateColumns="60px 1fr 120px 100px" gap={4} alignItems="center">
-                {/* Rank */}
-                <GridItem>
-                  <Text fontSize="2xl" fontWeight="bold" color="primary">
-                    #{ranking.current_rank}
-                  </Text>
-                </GridItem>
+              <Box
+                key={ranking.member_id}
+                bg="bg"
+                p={4}
+                rounded="lg"
+                borderLeft="4px solid"
+                borderColor={`${getPartyColor(ranking.party)}.500`}
+                _hover={{ bg: "bgLightShade", transform: "translateX(4px)" }}
+                transition="all 0.2s"
+              >
+                <Grid
+                  templateColumns="60px 1fr 120px 100px"
+                  gap={4}
+                  alignItems="center"
+                >
+                  {/* Rank */}
+                  <GridItem>
+                    <Text fontSize="2xl" fontWeight="bold" color="primary">
+                      #{ranking.current_rank}
+                    </Text>
+                  </GridItem>
 
-                {/* Name and Score Bar */}
-                <GridItem>
-                  <VStack align="stretch" gap={2}>
-                    <HStack justify="space-between">
-                      <Text fontSize="lg" fontWeight="semibold" color="text">
-                        {ranking.name}
-                      </Text>
-                      <Badge colorScheme={getPartyColor(ranking.party)}>
-                        {getPartyName(ranking.party)}
-                      </Badge>
-                    </HStack>
-                    
-                    {/* Score Bar */}
-                    <Box position="relative" h="8px" bg="gray.200" rounded="full">
-                      {/* Center line */}
+                  {/* Name and Score Bar */}
+                  <GridItem>
+                    <VStack align="stretch" gap={2}>
+                      <HStack justify="space-between">
+                        <Text fontSize="lg" fontWeight="semibold" color="text">
+                          {ranking.official_full_name} ({ranking.state})
+                        </Text>
+                        <Badge colorScheme={getPartyColor(ranking.party)}>
+                          {getPartyName(ranking.party)}
+                        </Badge>
+                      </HStack>
+
+                      {/* Score Bar */}
                       <Box
-                        position="absolute"
-                        left="50%"
-                        top="0"
-                        bottom="0"
-                        w="2px"
-                        bg="gray.400"
-                        transform="translateX(-50%)"
-                      />
-                      {/* Score indicator */}
-                      <Box
-                        position="absolute"
-                        left={`${getScoreBarWidth(ranking.score)}%`}
-                        top="50%"
-                        transform="translate(-50%, -50%)"
-                        w="16px"
-                        h="16px"
-                        bg={getScoreColor(ranking.score)}
+                        position="relative"
+                        h="8px"
+                        bg="gray.200"
                         rounded="full"
-                        border="2px solid white"
-                      />
-                    </Box>
-                  </VStack>
-                </GridItem>
+                      >
+                        {/* Center line */}
+                        <Box
+                          position="absolute"
+                          left="50%"
+                          top="0"
+                          bottom="0"
+                          w="2px"
+                          bg="gray.400"
+                          transform="translateX(-50%)"
+                        />
+                        {/* Score indicator */}
+                        <Box
+                          position="absolute"
+                          left={`${getScoreBarWidth(ranking.score)}%`}
+                          top="50%"
+                          transform="translate(-50%, -50%)"
+                          w="16px"
+                          h="16px"
+                          bg={getScoreColor(ranking.score)}
+                          rounded="full"
+                          border="2px solid white"
+                        />
+                      </Box>
+                    </VStack>
+                  </GridItem>
 
-                {/* Score */}
-                <GridItem textAlign="center">
-                  <VStack gap={0}>
-                    <Text fontSize="xl" fontWeight="bold" color={getScoreColor(ranking.score)}>
-                      {ranking.score.toFixed(3)}
-                    </Text>
-                    <Text fontSize="xs" color="text">
-                      {ranking.current_percentile_rank 
-                        ? `${(ranking.current_percentile_rank * 100).toFixed(1)}th percentile` 
-                        : ''}
-                    </Text>
-                  </VStack>
-                </GridItem>
+                  {/* Score */}
+                  <GridItem textAlign="center">
+                    <VStack gap={0}>
+                      <Text
+                        fontSize="xl"
+                        fontWeight="bold"
+                        color={getScoreColor(ranking.score)}
+                      >
+                        {ranking.score.toFixed(3)}
+                      </Text>
+                      <Text fontSize="xs" color="text">
+                        {ranking.current_percentile_rank
+                          ? `${(ranking.current_percentile_rank * 100).toFixed(
+                              1
+                            )}th percentile`
+                          : ""}
+                      </Text>
+                    </VStack>
+                  </GridItem>
 
-                {/* Bill Count */}
-                <GridItem textAlign="center">
-                  <VStack gap={0}>
-                    <Text fontSize="lg" fontWeight="semibold" color="text">
-                      {ranking.bill_count}
-                    </Text>
-                    <Text fontSize="xs" color="text">
-                      bills
-                    </Text>
-                  </VStack>
-                </GridItem>
-              </Grid>
-            </Box>
+                  {/* Bill Count */}
+                  <GridItem textAlign="center">
+                    <VStack gap={0}>
+                      <Text fontSize="lg" fontWeight="semibold" color="text">
+                        {ranking.bill_count}
+                      </Text>
+                      <Text fontSize="xs" color="text">
+                        bills
+                      </Text>
+                    </VStack>
+                  </GridItem>
+                </Grid>
+              </Box>
+            </Link>
           ))}
         </VStack>
 
         {/* Legend */}
-        <HStack gap={6} fontSize="sm" color="text" justify="center" pt={4} borderTop="1px solid" borderColor="gray.200">
+        <HStack
+          gap={6}
+          fontSize="sm"
+          color="text"
+          justify="center"
+          pt={4}
+          borderTop="1px solid"
+          borderColor="gray.200"
+        >
           <Text>Score Range: -1.0 (Liberal) to 1.0 (Conservative)</Text>
           <Text>•</Text>
           <Text>Rankings based on voting record analysis</Text>

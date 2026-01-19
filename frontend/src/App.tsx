@@ -1,7 +1,7 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { ColorModeProvider } from "./components/ui/color-mode";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from "@vercel/analytics/react";
 
 import Landing from "./pages/Landing";
 import ExploreLegislators from "./pages/ExploreLegislators";
@@ -14,12 +14,14 @@ import Navbar from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import CongressDataPage from "./pages/CongressData";
 import { About } from "./pages/About";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
     <ColorModeProvider>
       <ChakraProvider value={system}>
         <Router>
+          <ScrollToTop />
           <Navbar />
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -41,7 +43,6 @@ function App() {
         <Analytics />
       </ChakraProvider>
     </ColorModeProvider>
-    
   );
 }
 

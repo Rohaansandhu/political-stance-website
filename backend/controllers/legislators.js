@@ -203,20 +203,40 @@ export const getLegislatorProfilesBySpecHash = async (req, res) => {
     const db = getDB();
     const profile_collection = db.collection("legislator_profiles");
 
+    // Aggregation pipeline, match (find) with spec_hash, lookup with legislators collection to add the member_id
+    // unwind will join the array with individual documents, only project the official_full name field
     const profiles = await profile_collection
-      .find(
-        { spec_hash: req.params.spec_hash },
+      .aggregate([
         {
-          projection: {
+          $match: { spec_hash: req.params.spec_hash },
+        },
+        {
+          $lookup: {
+            from: "legislators",
+            localField: "member_id",
+            foreignField: "member_id",
+            as: "legislator_data",
+          },
+        },
+        {
+          $unwind: {
+            path: "$legislator_data",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
             _id: 0,
             member_id: 1,
             name: 1,
             party: 1,
+            state: 1,
             spec_hash: 1,
             primary_categories: 1,
+            official_full_name: "$legislator_data.name.official_full",
           },
-        }
-      )
+        },
+      ])
       .toArray();
 
     res.status(200).json(profiles);
