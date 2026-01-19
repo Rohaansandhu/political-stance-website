@@ -37,6 +37,12 @@ app.use("/api/congress-data", congressRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/bill-analyses", billAnalysisRoutes);
 
+// Attempt fix for google crawlers
+app.get("/robots.txt", (req, res) => {
+    res.type("text/plain");
+    res.send("User-agent: *\nAllow: /");
+});
+
 const port = process.env.PORT || 5001;
 
 app.listen(port, async () => {
