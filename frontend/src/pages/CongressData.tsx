@@ -8,16 +8,16 @@ import {
   HStack,
   Select,
   createListCollection,
+  Tabs,
 } from "@chakra-ui/react";
 import CongressHistogram from "../components/CongressData/CongressHistogram";
+import CongressScatter from "../components/CongressData/CongressScatter";
 import CongressRankings from "../components/CongressData/CongressRankings";
 
 export default function CongressDataPage() {
   const [chamber, setChamber] = useState("house");
-  // const [field, setField] = useState("primary_categories");
   const [model, setModel] = useState("gemini-2.5-flash-lite");
   const [subject, setSubject] = useState("Education");
-  // const [schema, setSchema] = useState("3");
   const [availableSubjects, setAvailableSubjects] = useState([]);
 
   useEffect(() => {
@@ -26,7 +26,9 @@ export default function CongressDataPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/categories`
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch category data");
@@ -34,7 +36,7 @@ export default function CongressDataPage() {
       const subjects = await response.json();
       setAvailableSubjects(subjects);
     } catch (err) {
-      console.error("Error fetching histogram:", err);
+      console.error("Error fetching categories:", err);
     }
   };
 
@@ -117,35 +119,6 @@ export default function CongressDataPage() {
               </Select.Content>
             </Select.Root>
 
-            {/* <Select.Root
-              collection={createListCollection({
-                items: [
-                  { label: "Primary Categories", value: "primary_categories" },
-                  { label: "Main Categories", value: "main_categories" },
-                  { label: "Detailed Spectrums", value: "detailed_spectrums" },
-                ],
-              })}
-              value={[field]}
-              onValueChange={(details) => setField(details.value[0])}
-              maxW="250px"
-            >
-              <Select.Label>Field Type</Select.Label>
-              <Select.Trigger>
-                <Select.ValueText placeholder="Select Field" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item item="primary_categories">
-                  <Select.ItemText>Primary Categories</Select.ItemText>
-                </Select.Item>
-                <Select.Item item="main_categories">
-                  <Select.ItemText>Main Categories</Select.ItemText>
-                </Select.Item>
-                <Select.Item item="detailed_spectrums">
-                  <Select.ItemText>Detailed Spectrums</Select.ItemText>
-                </Select.Item>
-              </Select.Content>
-            </Select.Root> */}
-
             <Select.Root
               collection={createListCollection({
                 items: availableSubjects.map((s) => ({ label: s, value: s })),
@@ -166,50 +139,49 @@ export default function CongressDataPage() {
                 ))}
               </Select.Content>
             </Select.Root>
-
-            {/* <Select.Root
-              collection={createListCollection({
-                items: [
-                  { label: "v3", value: "3" },
-                  { label: "v2", value: "2" },
-                ],
-              })}
-              value={[schema]}
-              onValueChange={(details) => setSchema(details.value[0])}
-              maxW="250px"
-            >
-              <Select.Label>Schema Version</Select.Label>
-              <Select.Trigger>
-                <Select.ValueText placeholder="Select Schema" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item item="3">
-                  <Select.ItemText>v3</Select.ItemText>
-                </Select.Item>
-                <Select.Item item="2">
-                  <Select.ItemText>v2</Select.ItemText>
-                </Select.Item>
-              </Select.Content>
-            </Select.Root> */}
           </HStack>
         </VStack>
 
-        {/* Histogram Component */}
-        <CongressHistogram
-          specHash={specHash}
-          field={"primary_categories"}
-          subject={subject}
-          current={true}
-        />
+        {/* Tabs for Different Visualizations */}
+        <Tabs.Root defaultValue="histogram" variant="enclosed">
+          <Tabs.List bg="bgLightShade" p={2} rounded="lg" mb={6}>
+            <Tabs.Trigger value="histogram" fontSize="lg" px={6} py={3}>
+              Histogram
+            </Tabs.Trigger>
+            <Tabs.Trigger value="scatter" fontSize="lg" px={6} py={3}>
+              Scatter Plot
+            </Tabs.Trigger>
+            <Tabs.Trigger value="rankings" fontSize="lg" px={6} py={3}>
+              Rankings
+            </Tabs.Trigger>
+          </Tabs.List>
 
-        {/* Rankings Component */}
-        <CongressRankings
-          specHash={specHash}
-          field={
-            "primary_categories"
-          }
-          subject={subject}
-        />
+          <Tabs.Content value="histogram">
+            <CongressHistogram
+              specHash={specHash}
+              field="primary_categories"
+              subject={subject}
+              current={true}
+            />
+          </Tabs.Content>
+
+          <Tabs.Content value="scatter">
+            <CongressScatter
+              specHash={specHash}
+              field="primary_categories"
+              subject={subject}
+              current={true}
+            />
+          </Tabs.Content>
+
+          <Tabs.Content value="rankings">
+            <CongressRankings
+              specHash={specHash}
+              field="primary_categories"
+              subject={subject}
+            />
+          </Tabs.Content>
+        </Tabs.Root>
       </Container>
     </Box>
   );
