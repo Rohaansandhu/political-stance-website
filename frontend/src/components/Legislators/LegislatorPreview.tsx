@@ -8,7 +8,7 @@ import LegislatorCarousel from "./LegislatorCarousel";
 
 export function LegislatorPreview() {
   return (
-    <Box id="legislators" py={20} bg="gray.50">
+    <Box id="legislators" py={20} bg="bgLightShade">
       <Box maxW="6xl" mx="auto" px={4}>
         <VStack spaceX={4} mb={12} textAlign="center">
           <Heading mb={4} fontSize={{ base: "3xl", md: "4xl" }}>
