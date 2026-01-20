@@ -174,14 +174,6 @@ function CategoryCard({
               </VStack>
               <VStack gap={1} align="flex-start">
                 <Text fontSize="xs" color="gray.500" fontWeight="600">
-                  RANK
-                </Text>
-                <Text fontSize="2xl" fontWeight="bold" color="text">
-                  #{info.current_rank === -1 ? info.rank : info.current_rank}
-                </Text>
-              </VStack>
-              <VStack gap={1} align="flex-start">
-                <Text fontSize="xs" color="gray.500" fontWeight="600">
                   IDEOLOGY SCORE
                 </Text>
                 <Text

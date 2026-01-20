@@ -77,7 +77,6 @@ export default function CongressHistogram({
     setError(null);
     try {
       const encodedSubject = encodeURIComponent(subject);
-      console.log(import.meta.env.VITE_API_URL);
       const response = await fetch(
         `${
           import.meta.env.VITE_API_URL
