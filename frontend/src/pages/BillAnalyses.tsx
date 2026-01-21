@@ -6,6 +6,7 @@ import BillFilters from "../components/Bills/BillFilters";
 import BillGrid from "../components/Bills/BillGrid";
 import Pagination from "../components/Bills/Pagination";
 import { BillAnalysisReminder } from "../components/Bills/BillAnalysisReminder";
+import { Helmet } from "react-helmet-async";
 
 interface BillSummary {
   title: string;
@@ -193,6 +194,13 @@ export default function BillAnalysesPage() {
 
   return (
     <Box minH="100vh" bg="bg">
+      <Helmet>
+        <title>{`Bill Analyses | US PoliTrack`}</title>
+        <meta
+          name="description"
+          content={`Bill Analyses page for US PoliTrack. Search for all LLM AI generated bill analyses. See partisan and impact scores for all bill political category classification. Also see voting info and analysis.`}
+        />
+      </Helmet>
       <Container maxW="7xl" py={8}>
         <VStack align="stretch" gap={8}>
           {/* Header */}

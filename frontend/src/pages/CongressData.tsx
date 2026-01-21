@@ -13,6 +13,7 @@ import {
 import CongressHistogram from "../components/CongressData/CongressHistogram";
 import CongressScatter from "../components/CongressData/CongressScatter";
 import CongressRankings from "../components/CongressData/CongressRankings";
+import { Helmet } from "react-helmet-async";
 
 export default function CongressDataPage() {
   const [chamber, setChamber] = useState("house");
@@ -44,6 +45,13 @@ export default function CongressDataPage() {
 
   return (
     <Box minH="100vh" bg="bg">
+      <Helmet>
+        <title>{`Congress Data | US PoliTrack`}</title>
+        <meta
+          name="description"
+          content={`Congress Data page for US PoliTrack. Contains histogram, scatterplot, and rankings of legislators based on ideological scores for many political categories and models. Filter by House of Representatives or Senate.`}
+        />
+      </Helmet>
       <Container maxW="7xl" py={8}>
         {/* Header */}
         <VStack align="stretch" gap={6} mb={8}>

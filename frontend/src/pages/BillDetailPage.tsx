@@ -15,6 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import BillVotes from "../components/Bills/BillVotes";
+import { Helmet } from "react-helmet-async";
 
 interface BillSummary {
   title: string;
@@ -159,6 +160,13 @@ export default function BillDetailPage() {
 
   return (
     <Box minH="100vh" bg="bg">
+      <Helmet>
+        <title>{`${bill.bill_id} using ${bill.model} | US PoliTrack`}</title>
+        <meta
+          name="description"
+          content={`Bill Analysis for ${bill.bill_id} using ${bill.model}. Bill title is ${bill.bill_summary.title}`}
+        />
+      </Helmet>
       <Container maxW="5xl" py={8}>
         <VStack align="stretch" gap={8}>
           {/* Back Button */}
@@ -602,10 +610,8 @@ export default function BillDetailPage() {
               </Grid>
             </VStack>
           </Box>
-
           {/* Roll Call Votes - New Section */}
           <BillVotes bill_id={bill.bill_id} />
-          
           {/* Footer Info */}
           {bill.bill_truncated && (
             <Box

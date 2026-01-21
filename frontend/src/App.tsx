@@ -2,6 +2,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { ColorModeProvider } from "./components/ui/color-mode";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
+import { HelmetProvider } from "react-helmet-async";
 
 import Landing from "./pages/Landing";
 import ExploreLegislators from "./pages/ExploreLegislators";
@@ -18,31 +19,33 @@ import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
-    <ColorModeProvider>
-      <ChakraProvider value={system}>
-        <Router>
-          <ScrollToTop />
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route
-              path="/explore-legislators"
-              element={<ExploreLegislators />}
-            />
-            <Route path="/legislators/:id" element={<LegislatorProfile />} />
-            <Route path="/congress-data" element={<CongressDataPage />} />
-            <Route path="/bill-analyses" element={<BillAnalysesPage />} />
-            <Route
-              path="/bill-analyses/:bill_id/:model"
-              element={<BillDetailPage />}
-            />
-            <Route path="/about" element={<About />} />
-          </Routes>
-          <Footer />
-        </Router>
-        <Analytics />
-      </ChakraProvider>
-    </ColorModeProvider>
+    <HelmetProvider>
+      <ColorModeProvider>
+        <ChakraProvider value={system}>
+          <Router>
+            <ScrollToTop />
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route
+                path="/explore-legislators"
+                element={<ExploreLegislators />}
+              />
+              <Route path="/legislators/:id" element={<LegislatorProfile />} />
+              <Route path="/congress-data" element={<CongressDataPage />} />
+              <Route path="/bill-analyses" element={<BillAnalysesPage />} />
+              <Route
+                path="/bill-analyses/:bill_id/:model"
+                element={<BillDetailPage />}
+              />
+              <Route path="/about" element={<About />} />
+            </Routes>
+            <Footer />
+          </Router>
+          <Analytics />
+        </ChakraProvider>
+      </ColorModeProvider>
+    </HelmetProvider>
   );
 }
 

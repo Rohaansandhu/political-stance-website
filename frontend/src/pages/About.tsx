@@ -8,12 +8,20 @@ import {
   Separator,
   Tabs,
 } from "@chakra-ui/react";
+import { Helmet } from "react-helmet-async";
 
 export function About() {
   const [activeTab, setActiveTab] = useState("0");
 
   return (
     <Box maxW="6xl" mx="auto" p={8}>
+      <Helmet>
+        <title>{`About | US PoliTrack`}</title>
+        <meta
+          name="description"
+          content={`About page for US PoliTrack - United States Political Stance Tracker. Explains key terms and methodology.`}
+        />
+      </Helmet>
       <Tabs.Root
         value={activeTab}
         onValueChange={(e) => setActiveTab(e.value)}
