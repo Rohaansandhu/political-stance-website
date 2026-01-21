@@ -10,19 +10,20 @@ import {
   Spinner,
   Center,
   Image,
+  useBreakpointValue,
+  IconButton, 
 } from "@chakra-ui/react";
 import { Carousel } from "@chakra-ui/react";
 
 // Hardcoded lists of important legislators
 const CONGRESSIONAL_LEADERS = {
-  senate: ["S303", "S270"], // Majority/Minority leaders
-  house: ["J000299", "S001176", "J000294"], // Speaker, Majority/Minority leaders
+  senate: ["S303", "S270"],
+  house: ["J000299", "S001176", "J000294"],
 };
 
-// Add popular senators and representatives here
 const POPULAR_LEGISLATORS = {
-  senate: ["S313", "S355", "S366"], // Bernie Sanders, Ted Cruz, Warren
-  house: ["C001120", "O000172"], // Crenshaw, Cortez
+  senate: ["S313", "S355", "S366"],
+  house: ["C001120", "O000172"],
 };
 
 interface Legislator {
@@ -44,13 +45,20 @@ export default function LegislatorCarousel() {
   const [popular, setPopular] = useState<Legislator[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const slidesPerPage =
+    useBreakpointValue({
+      base: 1,
+      md: 2,
+      lg: 3,
+      xl: 5,
+    }) || 1;
+
   useEffect(() => {
     fetchLegislators();
   }, []);
 
   const fetchLegislators = async () => {
     try {
-      // Fetch leaders
       const leaderIds = [
         ...CONGRESSIONAL_LEADERS.senate,
         ...CONGRESSIONAL_LEADERS.house,
@@ -65,7 +73,6 @@ export default function LegislatorCarousel() {
           })
       );
 
-      // Fetch popular legislators
       const popularIds = [
         ...POPULAR_LEGISLATORS.senate,
         ...POPULAR_LEGISLATORS.house,
@@ -230,6 +237,61 @@ export default function LegislatorCarousel() {
             );
           })}
         </Carousel.ItemGroup>
+
+        {/* 2. Added Carousel Controls */}
+        <Carousel.Control>
+          <HStack justify="center" width="100%" mt={6} gap={4}>
+            <Carousel.PrevTrigger asChild>
+              <IconButton
+                aria-label="Previous slide"
+                variant="outline"
+                size="md"
+                rounded="full"
+                borderColor="gray.300"
+                _hover={{ bg: "gray.100", borderColor: "primary" }}
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </IconButton>
+            </Carousel.PrevTrigger>
+
+            {/* Optional: Add indicators (dots) here if desired */}
+
+            <Carousel.NextTrigger asChild>
+              <IconButton
+                aria-label="Next slide"
+                variant="outline"
+                size="md"
+                rounded="full"
+                borderColor="gray.300"
+                _hover={{ bg: "gray.100", borderColor: "primary" }}
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </IconButton>
+            </Carousel.NextTrigger>
+          </HStack>
+        </Carousel.Control>
       </Carousel.Root>
     </Box>
   );
@@ -245,8 +307,9 @@ export default function LegislatorCarousel() {
   return (
     <Box>
       {leaders.length > 0 &&
-        renderCarousel(leaders, "Congressional Leaders", 5)}
-      {popular.length > 0 && renderCarousel(popular, "Popular Legislators", 5)}
+        renderCarousel(leaders, "Congressional Leaders", slidesPerPage)}
+      {popular.length > 0 &&
+        renderCarousel(popular, "Popular Legislators", slidesPerPage)}
     </Box>
   );
 }
