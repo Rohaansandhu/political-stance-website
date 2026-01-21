@@ -10,7 +10,6 @@ import {
   Icon,
   HStack,
   Badge,
-  Separator,
 } from "@chakra-ui/react";
 import { Brain, Tag, BarChart3 } from "lucide-react";
 
