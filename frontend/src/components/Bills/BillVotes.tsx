@@ -15,6 +15,7 @@ import {
   WrapItem,
   Separator,
 } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
 
 interface Vote {
   member_id: string;
@@ -26,7 +27,7 @@ interface Vote {
 
 interface VoteRecord {
   chamber: string;
-  votes: Vote[]; 
+  votes: Vote[];
   vote_date?: string;
   vote_number?: string;
   question?: string;
@@ -71,7 +72,7 @@ export default function BillVotes({ bill_id }: BillVotesProps) {
         Object.entries(rawVotes).forEach(([voteType, legislators]) => {
           if (Array.isArray(legislators)) {
             const mappedLegislators = legislators.map((leg: any) => ({
-              member_id: leg.id, 
+              member_id: leg.id,
               display_name: leg.display_name,
               party: leg.party,
               state: leg.state,
@@ -391,43 +392,49 @@ export default function BillVotes({ bill_id }: BillVotesProps) {
                             )
                           )
                           .map((vote) => (
-                            <WrapItem key={vote.member_id || Math.random()}>
-                              <Box
-                                title={`${vote.display_name} (${vote.party}-${vote.state})`}
-                              >
-                                <HStack
-                                  bg="bgLightShade"
-                                  px={3}
-                                  py={2}
-                                  rounded="md"
-                                  gap={2}
-                                  _hover={{ bg: "gray.100" }}
-                                  transition="background 0.2s"
-                                  cursor="default"
-                                  borderWidth="1px"
-                                  borderColor="gray.100"
+                            <Link to={`/legislators/${vote.member_id}`}>
+                              <WrapItem key={vote.member_id || Math.random()}>
+                                <Box
+                                  title={`${vote.display_name} (${vote.party}-${vote.state})`}
                                 >
-                                  <Avatar.Root
-                                    size="xs"
-                                    bg={`${getPartyColor(vote.party)}.500`}
+                                  <HStack
+                                    bg="bgLightShade"
+                                    px={3}
+                                    py={2}
+                                    rounded="md"
+                                    gap={2}
+                                    _hover={{ bg: "gray.100" }}
+                                    transition="background 0.2s"
+                                    cursor="default"
+                                    borderWidth="1px"
+                                    borderColor="gray.100"
                                   >
-                                    <Avatar.Fallback name={vote.display_name} />
-                                  </Avatar.Root>
-                                  <VStack align="flex-start" gap={0}>
-                                    <Text
-                                      fontSize="xs"
-                                      fontWeight="semibold"
-                                      color="text"
+                                    <Avatar.Root
+                                      size="xs"
+                                      bg={`${getPartyColor(vote.party)}.500`}
                                     >
-                                      {vote.display_name}
-                                    </Text>
-                                    <Text fontSize="2xs" color="gray.500">
-                                      {vote.party}-{vote.state}
-                                    </Text>
-                                  </VStack>
-                                </HStack>
-                              </Box>
-                            </WrapItem>
+                                      <Avatar.Fallback
+                                        name={vote.display_name
+                                          .charAt(0)
+                                          .toUpperCase()}
+                                      />
+                                    </Avatar.Root>
+                                    <VStack align="flex-start" gap={0}>
+                                      <Text
+                                        fontSize="xs"
+                                        fontWeight="semibold"
+                                        color="text"
+                                      >
+                                        {vote.display_name}
+                                      </Text>
+                                      <Text fontSize="2xs" color="gray.500">
+                                        {vote.party}-{vote.state}
+                                      </Text>
+                                    </VStack>
+                                  </HStack>
+                                </Box>
+                              </WrapItem>
+                            </Link>
                           ))}
                       </Wrap>
                     </VStack>
