@@ -5,6 +5,7 @@ import { Container, Spinner, Center, Text, VStack, Breadcrumb, Flex, HStack, Sel
 import LegislatorProfileHeader from "../components/Legislators/LegislatorProfileHeader";
 import LegislatorStatsOverview from "../components/Legislators/LegislatorStatsOverview";
 import MainCategoryGrid from "../components/Legislators/MainCategoriesGrid";
+import { IdeologyScoreReminder } from "../components/Legislators/IdeologyScoreReminder";
 
 interface LegislatorData {
     member_id: string;
@@ -79,6 +80,8 @@ export default function LegislatorProfile() {
             <VStack gap={10}>
 
                 <LegislatorProfileHeader data={data} />
+
+                <IdeologyScoreReminder />
 
                 {/* Model filter */}
                 <HStack gap={4} wrap="wrap" bg="bgLightShade" p={6} rounded="lg">

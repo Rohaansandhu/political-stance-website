@@ -40,7 +40,7 @@ export function Footer() {
         >
           <Box>
             <Heading as="h3" size="md" mb={4}>
-              PolicyTrack
+              US PoliTrack
             </Heading>
             <Text color="whiteAlpha.700">
               Empowering citizens with transparent political data and legislator

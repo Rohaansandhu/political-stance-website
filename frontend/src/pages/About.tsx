@@ -459,35 +459,6 @@ export function About() {
             <Separator />
 
             <Heading as="h2" size="lg">
-              Voting & Legislation Terms
-            </Heading>
-            <VStack align="start" gap={4}>
-              <Box>
-                <Text fontWeight="bold">Roll Call Vote</Text>
-                <Text>
-                  A recorded vote where each legislator's position (Yea, Nay,
-                  Present, Not Voting) is officially documented.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Bill</Text>
-                <Text>
-                  A proposed law presented to Congress for consideration and
-                  voting.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Congress Session</Text>
-                <Text>
-                  A two-year term of Congress, numbered sequentially (e.g.,
-                  113th Congress: 2013-2014).
-                </Text>
-              </Box>
-            </VStack>
-
-            <Separator />
-
-            <Heading as="h2" size="lg">
               Scoring Metrics
             </Heading>
             <VStack align="start" gap={4}>
@@ -496,23 +467,81 @@ export function About() {
                 <Text>
                   A numerical value representing a legislator's political
                   position on a specific issue category, calculated from their
-                  voting record.
+                  voting record. Every bill has different political categories
+                  of interest, each with their own partisan and impact scores.
                 </Text>
+
+                <Text>
+                  When a legislator votes on a bill, for every political
+                  category, their vote direction is calculated. A 'Yea' vote is
+                  1 and a 'Nay' vote is -1, while a 'Not Voting' status means
+                  that this bill is not included in their overall ideological
+                  score calculation.
+                </Text>
+                <Text>
+                  Finally, the legislator's vote direction x the partisan score
+                  x the impact score = legislator's ideological score for that
+                  one bill. This process is done for every bill and political
+                  category. The final ideological score for a legislator you see
+                  on every category is an average of these individual
+                  ideological scores.
+                </Text>
+                <Text>
+                  The range of an ideology score is from -1 (liberal) to +1
+                  (conservative).
+                </Text>
+                <Text>All scores vary by LLM.</Text>
               </Box>
               <Box>
                 <Text fontWeight="bold">Partisan Score</Text>
                 <Text>
-                  A measure indicating how closely a bill aligns with one party
-                  versus another, based on voting patterns.
+                  A measure indicating how closely a political category in a
+                  bill aligns with one party versus another, based on voting
+                  patterns.
                 </Text>
+                <Text>On a scale from -1 (liberal) to +1 (conservative).</Text>
+                <Text>All scores vary by LLM.</Text>
               </Box>
               <Box>
                 <Text fontWeight="bold">Impact Score</Text>
                 <Text>
-                  An AI-generated assessment of a bill's potential policy impact
-                  and significance.
+                  An AI-generated assessment of a political category in a bill's
+                  potential policy impact and significance.
                 </Text>
+                <Text>
+                  On a scale from 0 (least important) to 1 (most important).
+                </Text>
+                <Text>All scores vary by LLM.</Text>
               </Box>
+
+              <Separator />
+
+              <Heading as="h2" size="lg">
+                Voting & Legislation Terms
+              </Heading>
+              <VStack align="start" gap={4}>
+                <Box>
+                  <Text fontWeight="bold">Roll Call Vote</Text>
+                  <Text>
+                    A recorded vote where each legislator's position (Yea, Nay,
+                    Present, Not Voting) is officially documented.
+                  </Text>
+                </Box>
+                <Box>
+                  <Text fontWeight="bold">Bill</Text>
+                  <Text>
+                    A proposed law presented to Congress for consideration and
+                    voting.
+                  </Text>
+                </Box>
+                <Box>
+                  <Text fontWeight="bold">Congress Session</Text>
+                  <Text>
+                    A two-year term of Congress, numbered sequentially (e.g.,
+                    113th Congress: 2013-2014).
+                  </Text>
+                </Box>
+              </VStack>
             </VStack>
 
             <Separator />

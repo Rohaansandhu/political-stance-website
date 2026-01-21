@@ -5,6 +5,7 @@ import BillSearchBar from "../components/Bills/BillSearchBar";
 import BillFilters from "../components/Bills/BillFilters";
 import BillGrid from "../components/Bills/BillGrid";
 import Pagination from "../components/Bills/Pagination";
+import { BillAnalysisReminder } from "../components/Bills/BillAnalysisReminder";
 
 interface BillSummary {
   title: string;
@@ -203,6 +204,8 @@ export default function BillAnalysesPage() {
               Explore AI-powered political analyses of congressional bills
             </Text>
           </Box>
+
+          <BillAnalysisReminder />
 
           {/* Featured Bills */}
           {!featuredLoading && featuredBills.length > 0 && (

@@ -9,13 +9,13 @@ import {
   Icon,
   Text,
   VStack,
-} from "@chakra-ui/react"
-import { TrendingUp, Users, BarChart3 } from "lucide-react"
-import { Link } from "react-router-dom"
+} from "@chakra-ui/react";
+import { TrendingUp, Users, BarChart3 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Hero() {
   return (
-    <Box as="section" bg="bg" py={{ base: 16, md: 20 }}>
+    <Box as="section" bg="bg" py={{ base: 8, md: 12 }}>
       <Container maxW="6xl" px={4}>
         <Box maxW="4xl" mx="auto" textAlign="center">
           <Heading
@@ -28,7 +28,7 @@ export function Hero() {
             mx="auto"
             color="primary"
           >
-            Track Political Stances With Precision
+            Measure Political Stances Through Votes
           </Heading>
 
           <Text
@@ -39,18 +39,23 @@ export function Hero() {
             maxW="2xl"
             mx="auto"
           >
-            Analyze legislator voting patterns, policy positions, and political
-            spectrums across every session of Congress with comprehensive data
-            visualization.
+            Explore legislator voting patterns and ideological trends across
+            major political issues using congressional voting data and
+            AI-assisted analysis.
           </Text>
 
-          <Flex
-            wrap="wrap"
-            align="center"
-            justify="center"
-            gap={4}
-            mb={16}
+          <Text
+            fontSize="xl"
+            color="text"
+            opacity={0.8}
+            mb={8}
+            maxW="2xl"
+            mx="auto"
           >
+           Scroll down to see how bills are analyzed and how ideology scores are calculated.
+          </Text>
+
+          <Flex wrap="wrap" align="center" justify="center" gap={4} mb={16}>
             <Link to="/explore-legislators">
               <Button
                 size="lg"
@@ -63,15 +68,15 @@ export function Hero() {
               </Button>
             </Link>
             <Link to="/congress-data">
-            <Button
-              size="lg"
-              variant="outline"
-              borderColor="accent"
-              color="accent"
-              _hover={{ bg: "accent", color: "bg" }}
-            >
-              View Congress Data
-            </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                borderColor="accent"
+                color="accent"
+                _hover={{ bg: "accent", color: "bg" }}
+              >
+                View Congress Data
+              </Button>
             </Link>
           </Flex>
 
@@ -150,5 +155,5 @@ export function Hero() {
         </Box>
       </Container>
     </Box>
-  )
+  );
 }

@@ -11,7 +11,7 @@ export function LegislatorPreview() {
     <Box id="legislators" py={20} bg="bgLightShade">
       <Box maxW="6xl" mx="auto" px={4}>
         <VStack spaceX={4} mb={12} textAlign="center">
-          <Heading mb={4} fontSize={{ base: "3xl", md: "4xl" }}>
+          <Heading mb={4} fontSize={{ base: "3xl", md: "4xl" }} color={"primary"}>
             Legislator Profiles
           </Heading>
           <Text color="gray.600" maxW="2xl" mx="auto"
