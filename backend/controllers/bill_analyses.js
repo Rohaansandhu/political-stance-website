@@ -339,12 +339,6 @@ export const getBillVotesByBillId = async (req, res) => {
 
     const [, bill_type, bill_number, congress] = match;
 
-    console.log('Searching for:', {
-      bill_type,
-      bill_number: parseInt(bill_number),
-      congress: parseInt(congress)
-    });
-
     const votesDocs = await votesCollection
       .find(
         {
