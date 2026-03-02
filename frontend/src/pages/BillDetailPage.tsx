@@ -68,7 +68,7 @@ interface BillAnalysis {
 
 export default function BillDetailPage() {
   const { bill_id } = useParams<{ bill_id: string }>();
-  const { model = "gpt-oss-120b" } = useParams<{ model: string }>();
+  const { model = "gpt-5-mini" } = useParams<{ model: string }>();
   const navigate = useNavigate();
   const [bill, setBill] = useState<BillAnalysis | null>(null);
   const [loading, setLoading] = useState(true);

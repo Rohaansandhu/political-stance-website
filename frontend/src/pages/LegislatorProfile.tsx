@@ -43,7 +43,7 @@ interface LegislatorData {
 export default function LegislatorProfile() {
   const { id } = useParams();
   const [data, setData] = useState<LegislatorData | null>(null);
-  const [model, setModel] = useState("gemini-2.5-flash-lite");
+  const [model, setModel] = useState("gpt-5-mini");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -111,13 +111,14 @@ export default function LegislatorProfile() {
           <Select.Root
             collection={createListCollection({
               items: [
-                {
-                  label: "Gemini 2.5 Flash Lite",
-                  value: "gemini-2.5-flash-lite",
-                },
-                { label: "GPT-OSS (120b)", value: "gpt-oss-120b" },
-                { label: "Llama 3.3 (70b)", value: "llama3.3-70b" },
-                { label: "Qwen 3 (32b)", value: "qwen-3-32b" },
+                {label: "GPT-5 Mini", value: "gpt-5-mini"},
+                // {
+                //   label: "Gemini 2.5 Flash Lite",
+                //   value: "gemini-2.5-flash-lite",
+                // },
+                // { label: "GPT-OSS (120b)", value: "gpt-oss-120b" },
+                // { label: "Llama 3.3 (70b)", value: "llama3.3-70b" },
+                // { label: "Qwen 3 (32b)", value: "qwen-3-32b" },
               ],
             })}
             value={[model]}
@@ -130,7 +131,10 @@ export default function LegislatorProfile() {
               <Select.ValueText placeholder="Select Model" />
             </Select.Trigger>
             <Select.Content>
-              <Select.Item item="gemini-2.5-flash-lite">
+              <Select.Item item="gpt-5-mini">
+                <Select.ItemText>GPT-5 Mini</Select.ItemText>
+              </Select.Item>
+              {/* <Select.Item item="gemini-2.5-flash-lite">
                 <Select.ItemText>Gemini 2.5 Flash Lite</Select.ItemText>
               </Select.Item>
               <Select.Item item="gpt-oss-120b">
@@ -141,7 +145,7 @@ export default function LegislatorProfile() {
               </Select.Item>
               <Select.Item item="qwen-3-32b">
                 <Select.ItemText>Qwen 3 (32b)</Select.ItemText>
-              </Select.Item>
+              </Select.Item> */}
             </Select.Content>
           </Select.Root>
         </HStack>

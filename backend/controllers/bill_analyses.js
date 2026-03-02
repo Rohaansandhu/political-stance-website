@@ -20,7 +20,7 @@ export const getBillAnalyses = async (req, res) => {
     } = req.query;
 
     // Build query object
-    const query = { schema_version: 3 }; // Only get v3 schema
+    const query = { schema_version: 4 }; // Only get v4 schema
 
     if (model) query.model = model;
     if (bill_type) query.bill_type = bill_type;
@@ -143,7 +143,7 @@ export const getFeaturedBills = async (req, res) => {
 
     const featuredBills = await collection
       .aggregate([
-        { $match: { schema_version: 3 } },
+        { $match: { schema_version: 4 } },
 
         // Ensure avg_partisan_score exists
         {
@@ -231,10 +231,10 @@ export const getFilterOptions = async (req, res) => {
     const collection = db.collection("bill_analyses");
 
     const [models, billTypes, chambers, congresses] = await Promise.all([
-      collection.distinct("model", { schema_version: 3 }),
-      collection.distinct("bill_type", { schema_version: 3 }),
-      collection.distinct("chamber", { schema_version: 3 }),
-      collection.distinct("congress", { schema_version: 3 }),
+      collection.distinct("model", { schema_version: 4 }),
+      collection.distinct("bill_type", { schema_version: 4 }),
+      collection.distinct("chamber", { schema_version: 4 }),
+      collection.distinct("congress", { schema_version: 4 }),
     ]);
 
     // For categories, need to extract from nested array
@@ -267,7 +267,7 @@ export const getBillAnalysisByIdAndModel = async (req, res) => {
     const bill = await collection.findOne({
       bill_id,
       model,
-      schema_version: 3,
+      schema_version: 4,
     });
 
     if (!bill) {
@@ -288,7 +288,7 @@ export const getIdeologyDistribution = async (req, res) => {
 
     const distribution = await collection
       .aggregate([
-        { $match: { schema_version: 3 } },
+        { $match: { schema_version: 4 } },
         {
           $addFields: {
             avg_partisan_score: {

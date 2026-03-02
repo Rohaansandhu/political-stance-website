@@ -27,8 +27,8 @@ const POPULAR_LEGISLATORS = {
 };
 
 interface Legislator {
+  member_id: string;
   bioguide: string;
-  lis?: string;
   name: {
     official_full: string;
   };
@@ -109,22 +109,16 @@ export default function LegislatorCarousel() {
   };
 
   const getMemberId = (legislator: Legislator) => {
-    const currentTerm = getCurrentTerm(legislator);
-    if (!currentTerm) {
-      return legislator.bioguide;
-    }
-    return currentTerm.type === "sen" ? legislator.lis : legislator.bioguide;
+    return legislator.member_id;
   };
 
   const getRole = (legislator: Legislator) => {
-    const id = legislator.bioguide;
-    const lisId = legislator.lis;
+    const id = legislator.member_id;
 
     if (id === "J000299") return "Speaker of the House";
 
     if (
-      CONGRESSIONAL_LEADERS.senate.includes(id) ||
-      (lisId && CONGRESSIONAL_LEADERS.senate.includes(lisId))
+      CONGRESSIONAL_LEADERS.senate.includes(id)
     ) {
       return "Senate Leader";
     }

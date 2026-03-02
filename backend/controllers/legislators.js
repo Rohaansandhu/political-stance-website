@@ -86,43 +86,19 @@ export const getLegislatorProfileByMemberId = async (req, res) => {
     if (!req.params.member_id) {
       return res.status(400).json({ error: "member_id is required" });
     }
-    // default model for now will be gpt-oss-120b, need a future way to specify model version
-    // const spec_hash_house = "gpt-oss-120b_2_all_house_all";
-    // const spec_hash_senate = "gpt-oss-120b_2_all_senate_all";
-    const spec_hash_house = "gemini-2.5-flash-lite_3_all_house_all";
-    const spec_hash_senate = "gemini-2.5-flash-lite_3_all_senate_all";
+    
     const db = getDB();
-    const profile_collection = db.collection("legislator_profiles");
-    let profile = null;
     const legislator_collection = db.collection("legislators");
     const legislator = await legislator_collection.findOne({
       member_id: req.params.member_id,
     });
-    // Need to determine if senator or house rep
-    if (
-      req.params.member_id.startsWith("S") &&
-      req.params.member_id.length <= 4
-    ) {
-      profile = await profile_collection.findOne({
-        member_id: req.params.member_id,
-        spec_hash: spec_hash_senate,
-      });
-    } else {
-      profile = await profile_collection.findOne({
-        member_id: req.params.member_id,
-        spec_hash: spec_hash_house,
-      });
-    }
-    if (!profile)
-      return res
-        .status(404)
-        .json({ error: "Legislator not found (legislator_profiles)" });
+    
     if (!legislator)
       return res
         .status(404)
         .json({ error: "Legislator not found (legislators)" });
-    const combined_result = Object.assign({}, profile, legislator);
-    res.status(200).json(combined_result);
+
+    res.status(200).json(legislator);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch legislator profile" });
@@ -130,6 +106,7 @@ export const getLegislatorProfileByMemberId = async (req, res) => {
 };
 
 const model_to_latest_schema = {
+  "gpt-5-mini": "4",
   "gpt-oss-120b": "3",
   "gemini-2.5-flash-lite": "3",
   "llama3.3-70b": "3",
@@ -180,12 +157,6 @@ export const getLegislatorProfileByMemberIdAndModel = async (req, res) => {
       return res
         .status(404)
         .json({ error: "Legislator not found (legislators)" });
-
-    // Backwards compatability with schema v2, REMOVE LATER
-    // Remove primary categories, change main_categories to be primary categories
-    if (model_to_latest_schema[req.params.model] === "2") {
-      profile["primary_categories"] = profile["main_categories"];
-    }
 
     const combined_result = Object.assign({}, profile, legislator);
     res.status(200).json(combined_result);

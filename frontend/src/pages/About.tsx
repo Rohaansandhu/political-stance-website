@@ -280,10 +280,12 @@ export function About() {
                 that there may be gaps in reasoning between the open source and
                 flagship commercial models. Therefore, the plan is to use as
                 many models as possible to explore and eliminate all possible
-                sources of bias. Currently, I am using gpt-oss-120b,
+                sources of bias. In the past, I used gpt-oss-120b,
                 gemini-2.5-flash-lite, llama3.3-70b, and qwen3-32b. These models
-                were solely chosen because they were free to use. As the project
-                advances, I plan to use more powerful, expensive models.
+                were chosen because of they were free to use. However, now you
+                will only find results from gpt-5-mini which was run on the
+                latest poltical category defintions. As the project advances, I
+                plan to use more powerful, expensive models.
               </Text>
             </VStack>
 
