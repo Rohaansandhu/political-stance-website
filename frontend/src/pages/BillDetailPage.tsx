@@ -85,7 +85,7 @@ export default function BillDetailPage() {
     setError(null);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/bill-analyses/${bill_id}/${model}`
+        `${import.meta.env.VITE_API_URL}/api/bill-analyses/${bill_id}/${model}`,
       );
 
       if (!response.ok) {
@@ -105,7 +105,7 @@ export default function BillDetailPage() {
   const calculateAvgScore = () => {
     if (!bill) return 0;
     const scores = bill.political_categories.primary_categories.map(
-      (c) => c.partisan_score
+      (c) => c.partisan_score,
     );
     return scores.reduce((a, b) => a + b, 0) / scores.length;
   };
@@ -325,7 +325,7 @@ export default function BillDetailPage() {
                                 fontSize="sm"
                                 fontWeight="bold"
                                 color={getIdeologyColor(
-                                  category.partisan_score
+                                  category.partisan_score,
                                 )}
                               >
                                 {category.partisan_score.toFixed(2)}
@@ -349,7 +349,7 @@ export default function BillDetailPage() {
                                 w={`${getScoreBarWidth(
                                   category.partisan_score,
                                   -1,
-                                  1
+                                  1,
                                 )}%`}
                                 h="100%"
                                 bg={getIdeologyColor(category.partisan_score)}
@@ -399,7 +399,7 @@ export default function BillDetailPage() {
                           </Box>
                         </VStack>
                       </Box>
-                    )
+                    ),
                   )}
                 </VStack>
               </Box>
@@ -438,7 +438,7 @@ export default function BillDetailPage() {
                               </HStack>
                             </VStack>
                           </Box>
-                        )
+                        ),
                       )}
                     </VStack>
                   </Box>
@@ -467,11 +467,21 @@ export default function BillDetailPage() {
                     borderColor="green.500"
                   >
                     <VStack align="stretch" gap={4}>
-                      <HStack justify="space-between">
-                        <Heading size="md" color="green.600">
+                      <HStack
+                        justify="space-between"
+                        align="flex-start"
+                        gap={4}
+                      >
+                        <Heading size="md" color="green.600" flexShrink={0}>
                           YES Vote
                         </Heading>
-                        <Badge colorScheme="green" fontSize="sm">
+                        <Badge
+                          colorScheme="green"
+                          fontSize="sm"
+                          whiteSpace="normal"
+                          textAlign="right"
+                          p={1}
+                        >
                           {bill.voting_analysis.yes_vote.political_position}
                         </Badge>
                       </HStack>
@@ -510,7 +520,7 @@ export default function BillDetailPage() {
                                   {stakeholder}
                                 </Text>
                               </HStack>
-                            )
+                            ),
                           )}
                         </VStack>
                       </Box>
@@ -543,11 +553,21 @@ export default function BillDetailPage() {
                     borderColor="red.500"
                   >
                     <VStack align="stretch" gap={4}>
-                      <HStack justify="space-between">
-                        <Heading size="md" color="red.600">
+                      <HStack
+                        justify="space-between"
+                        align="flex-start"
+                        gap={4}
+                      >
+                        <Heading size="md" color="red.600" flexShrink={0}>
                           NO Vote
                         </Heading>
-                        <Badge colorScheme="red" fontSize="sm">
+                        <Badge
+                          colorScheme="red"
+                          fontSize="sm"
+                          whiteSpace="normal"
+                          textAlign="right"
+                          p={1}
+                        >
                           {bill.voting_analysis.no_vote.political_position}
                         </Badge>
                       </HStack>
@@ -586,7 +606,7 @@ export default function BillDetailPage() {
                                   {stakeholder}
                                 </Text>
                               </HStack>
-                            )
+                            ),
                           )}
                         </VStack>
                       </Box>
