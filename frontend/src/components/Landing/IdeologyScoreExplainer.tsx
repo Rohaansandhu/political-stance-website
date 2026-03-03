@@ -13,7 +13,7 @@ import { TrendingUp, Scale, Vote } from "lucide-react";
 
 export function IdeologyScoreExplainer() {
   return (
-    <Box as="section" bg="bg" py={{ base: 12, md: 16 }}>
+    <Box as="section" bg="bgAltGreen" py={{ base: 12, md: 16 }}>
       <Container maxW="6xl" px={4}>
         <Box maxW="4xl" mx="auto">
           <VStack spaceY={6} mb={12} textAlign="center">

@@ -26,29 +26,49 @@ function Navbar() {
   return (
     <Box
       as="header"
+      // Sticky navbar to stay at top during scroll
+      pos="sticky"
+      top={0}
+      zIndex="sticky"
+      bg="bg/80"
+      // glass effect
+      backdropFilter="blur(10px)"
       borderBottomWidth="1px"
-      borderColor="gray.200"
-      bg="bgLightTint"
+      borderColor="bgLightShade"
+      transition="all 0.2s ease-in-out"
     >
-      <Container maxW="6xl" px={4} py={4}>
+      <Container maxW="7xl" px={4} py={4}>
         <Flex align="center" justify="space-between">
           {/* Logo */}
-          <Heading size="md" color="teal.700">
-            US PoliTrack
-          </Heading>
+          <RouterLink to="/">
+            <Heading
+              size="xl"
+              color="primary"
+              fontWeight="bold"
+              letterSpacing="tight"
+            >
+              US PoliTrack
+            </Heading>
+          </RouterLink>
 
           {/* Desktop Nav Links */}
-          <HStack
-            as="nav"
-            display={{ base: "none", md: "flex" }}
-            gap={6}
-            fontWeight="medium"
-          >
+          <HStack as="nav" display={{ base: "none", md: "flex" }} gap={8}>
             {navItems.map((item) => (
               <Link
                 key={item.label}
                 asChild
-                _hover={{ textDecoration: "none", color: "teal.500" }}
+                fontSize="sm"
+                fontWeight="semibold"
+                color="text"
+                opacity={0.7}
+                _focus={{ boxShadow: "none", outline: "none" }}
+                _focusVisible={{ boxShadow: "outline" }}
+                _hover={{
+                  textDecoration: "none",
+                  opacity: 1,
+                  color: "primary",
+                }}
+                transition="all 0.2s"
               >
                 <RouterLink to={item.to}>{item.label}</RouterLink>
               </Link>
@@ -59,7 +79,7 @@ function Navbar() {
           <IconButton
             aria-label="Toggle menu"
             variant="ghost"
-            color="teal.700"
+            color="primary"
             display={{ base: "flex", md: "none" }}
             onClick={() => setIsOpen(!isOpen)}
           >
@@ -71,22 +91,22 @@ function Navbar() {
         {isOpen && (
           <Box
             display={{ base: "block", md: "none" }}
-            mt={4}
+            mt={2}
             pb={4}
-            borderTopWidth="1px"
-            borderColor="gray.200"
+            // Ensure mobile menu also has blur if needed
           >
-            <VStack align="stretch" gap={3}>
+            <VStack align="stretch" gap={1}>
               {navItems.map((item) => (
                 <Link
                   key={item.label}
                   asChild
-                  py={2}
-                  px={3}
-                  rounded="md"
+                  py={3}
+                  px={4}
+                  rounded="lg"
+                  color="text"
                   _hover={{
-                    bg: "teal.50",
-                    color: "teal.500",
+                    bg: "bgLightShade",
+                    color: "primary",
                     textDecoration: "none",
                   }}
                   onClick={() => setIsOpen(false)}

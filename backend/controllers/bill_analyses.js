@@ -202,6 +202,7 @@ export const getFeaturedBills = async (req, res) => {
 
         { $unwind: "$featured" },
         { $replaceRoot: { newRoot: "$featured" } },
+        { $limit: 6 },
 
         {
           $project: {
@@ -359,7 +360,7 @@ export const getBillVotesByBillId = async (req, res) => {
             question: 1,
             vote_number: 1,
           },
-        }
+        },
       )
       .toArray();
 

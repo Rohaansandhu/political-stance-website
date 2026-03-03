@@ -10,12 +10,16 @@ const config = defineConfig({
           dark: { value: "#f7f8f7" },
         },
         background: {
-          light: { value: "#fbfdfc" },       // main light background
-          dark: { value: "#020303" },        // main dark background
-          lightShade: { value: "#f1f3f2" },  // slightly darker than main light
-          lightTint: { value: "#ffffff" },   // slightly lighter than main light
-          darkShade: { value: "#010101" },   // slightly darker than main dark
-          darkTint: { value: "#121212" },    // slightly lighter than main dark
+          light: { value: "#fbfdfc" }, // main light background
+          dark: { value: "#020303" }, // main dark background
+          lightShade: { value: "#f1f3f2" }, // slightly darker than main light
+          lightTint: { value: "#ffffff" }, // slightly lighter than main light
+          darkShade: { value: "#010101" }, // slightly darker than main dark
+          darkTint: { value: "#121212" }, // slightly lighter than main dark
+          greenSubtle: {
+            light: { value: "#eaf2ee" },
+            dark: { value: "#0b1410" },
+          },
         },
         primary: {
           light: { value: "#67ab8f" },
@@ -85,6 +89,18 @@ const config = defineConfig({
           value: {
             _light: "{colors.accent.light}",
             _dark: "{colors.accent.dark}",
+          },
+        },
+        bgAltGray: {
+          value: {
+            _light: "{colors.background.lightShade}", // #f1f3f2
+            _dark: "{colors.background.darkTint}", // #121212 (elevated dark gray)
+          },
+        },
+        bgAltGreen: {
+          value: {
+            _light: "{colors.background.greenSubtle.light}", // #eaf2ee
+            _dark: "{colors.background.greenSubtle.dark}", // #0b1410
           },
         },
       },
