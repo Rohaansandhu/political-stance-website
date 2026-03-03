@@ -10,6 +10,417 @@ import {
 } from "@chakra-ui/react";
 import { Helmet } from "react-helmet-async";
 
+const politicalCategoriesData = [
+  {
+    name: "Economy & Finance",
+    description: "Policies affecting taxation, business regulation, financial markets, and corporate governance.",
+    conservative_view: "Free market capitalism with minimal government interference, lower taxes, reduced regulation, fiscal responsibility, and competition-driven growth.",
+    liberal_view: "Government regulation to ensure fairness, progressive taxation, consumer protections, and active measures to address income inequality.",
+    subcategories: [
+      {
+        name: "Taxes",
+        description: "Income, corporate, and wealth tax policy.",
+        conservative_view: "Lower taxes stimulate economic growth, reduce government size, and allow individuals to keep more of their earnings.",
+        liberal_view: "Progressive taxation funds public services, reduces inequality, and ensures the wealthy pay their fair share."
+      },
+      {
+        name: "Business Regulation",
+        description: "Antitrust, corporate rules, and market concentration.",
+        conservative_view: "Minimal regulation allows innovation and competition to drive efficiency naturally; aggressive antitrust harms consumer benefits from scale.",
+        liberal_view: "Strong regulation prevents monopoly abuse, protects consumers, ensures fair competition, and breaks up concentrated corporate power."
+      },
+      {
+        name: "Financial Markets & Monetary Policy",
+        description: "Securities regulation, central bank policy, crypto, inflation control.",
+        conservative_view: "Light-touch regulation promotes capital formation; sound money and price stability protect savers.",
+        liberal_view: "Strong Wall Street oversight prevents systemic risk and fraud; monetary policy should support full employment."
+      }
+    ]
+  },
+  {
+    name: "Budget & Appropriations",
+    description: "Overall fiscal planning, debt, and major government spending bills.",
+    conservative_view: "Fiscal responsibility, balanced budgets, debt reduction, limited government spending, and prioritizing essential functions only.",
+    liberal_view: "Strategic government investment for economic growth, social programs, and infrastructure, with less concern for short-term deficits.",
+    subcategories: [
+      {
+        name: "Debt & Deficit",
+        description: "Debt ceiling, deficit reduction measures.",
+        conservative_view: "Fiscal discipline requires debt reduction, spending cuts, and living within government means to avoid burdening future generations.",
+        liberal_view: "Government debt is acceptable for productive investments; focus on economic growth and revenue enhancement over austerity."
+      },
+      {
+        name: "Appropriations",
+        description: "Omnibus spending bills, continuing resolutions.",
+        conservative_view: "Streamlined government funding focused on core functions; strict oversight to eliminate waste and unnecessary programs.",
+        liberal_view: "Adequate funding for government services, social programs, and public investments even if requiring larger appropriations."
+      }
+    ]
+  },
+  {
+    name: "Labor & Employment",
+    description: "Worker protections, union rights, wages, and workplace conditions.",
+    conservative_view: "Market forces should determine wages; right-to-work laws protect individual freedom; excessive labor regulation hurts job creation.",
+    liberal_view: "Strong union protections, living wage laws, and robust workplace safety nets are essential for worker dignity and economic fairness.",
+    subcategories: [
+      {
+        name: "Unions & Collective Bargaining",
+        description: "Organized labor rights, strike protections, right-to-work laws.",
+        conservative_view: "Workers should not be forced to join unions or pay dues; right-to-work laws promote economic competitiveness.",
+        liberal_view: "Strong unions are essential to balance corporate power, negotiate fair wages, and protect worker rights."
+      },
+      {
+        name: "Wages & Benefits",
+        description: "Minimum wage, paid leave, overtime rules.",
+        conservative_view: "Mandated wage floors and benefit requirements price low-skilled workers out of the market and burden small businesses.",
+        liberal_view: "Federal minimum wage increases and mandated paid family leave are necessary baseline protections for all workers."
+      },
+      {
+        name: "Workplace Safety & Standards",
+        description: "OSHA regulations, discrimination in employment, worker classification.",
+        conservative_view: "Flexible labor arrangements (like gig work) benefit workers; avoid overly burdensome safety compliance that stifles business.",
+        liberal_view: "Strict enforcement of workplace safety, protections against discrimination, and preventing the misclassification of employees."
+      }
+    ]
+  },
+  {
+    name: "Healthcare",
+    description: "Healthcare coverage, costs, public health, and regulation.",
+    conservative_view: "Market-based solutions, personal responsibility, choice in coverage, and competition to drive down costs and improve quality.",
+    liberal_view: "Healthcare as a human right requiring universal access, government role in ensuring affordability, and public health prioritization.",
+    subcategories: [
+      {
+        name: "Coverage Models",
+        description: "Universal healthcare vs private insurance systems.",
+        conservative_view: "Private insurance and market competition provide better quality, choice, and efficiency than government-run systems.",
+        liberal_view: "Universal healthcare ensures everyone gets care regardless of ability to pay, reducing costs through collective bargaining."
+      },
+      {
+        name: "Costs & Access",
+        description: "Drug pricing, insurance affordability, billing transparency.",
+        conservative_view: "Market competition and price transparency will naturally reduce costs; government price controls stifle medical innovation.",
+        liberal_view: "Government intervention, like Medicare negotiating drug prices, is needed to control excessive pricing and ensure affordability."
+      },
+      {
+        name: "Public & Mental Health",
+        description: "Pandemic response, vaccinations, suicide prevention, parity laws.",
+        conservative_view: "Individual choice in health decisions; private sector innovation and community support address mental health best.",
+        liberal_view: "Government coordination is necessary to protect public health; state funding ensures mental health treatment is accessible."
+      },
+      {
+        name: "Reproductive Health",
+        description: "Abortion policy, contraception access, maternal care.",
+        conservative_view: "Protection of unborn life, religious freedom for providers, and traditional family values guide reproductive policy.",
+        liberal_view: "Women's bodily autonomy, reproductive choice, and universal access to family planning services."
+      }
+    ]
+  },
+  {
+    name: "Education",
+    description: "Policies governing schools, universities, and student support.",
+    conservative_view: "School choice, parental rights, local control, merit-based advancement, and traditional educational values.",
+    liberal_view: "Equitable public education funding, inclusive curriculum, teacher support, and addressing systemic educational inequalities.",
+    subcategories: [
+      {
+        name: "K-12 Education",
+        description: "Funding, curriculum standards, teacher pay.",
+        conservative_view: "Local control, parental oversight of curriculum, merit pay for teachers, and emphasis on core academic subjects.",
+        liberal_view: "Adequate federal/state funding, professional teacher compensation, inclusive curriculum, and addressing achievement gaps."
+      },
+      {
+        name: "Higher Education",
+        description: "Student loans, tuition, public university funding.",
+        conservative_view: "Personal responsibility for education costs; reduced government subsidies that inflate tuition prices.",
+        liberal_view: "Accessible higher education through public funding, loan forgiveness, and treating education as a public investment."
+      },
+      {
+        name: "School Choice",
+        description: "Charter schools, vouchers, homeschooling policy.",
+        conservative_view: "Competition improves education quality; parents should have the funding to choose schools that align with their values.",
+        liberal_view: "Public schools need support, not diversion of funds to private entities; school choice can increase segregation."
+      }
+    ]
+  },
+  {
+    name: "Infrastructure & Transportation",
+    description: "Development of physical and digital infrastructure.",
+    conservative_view: "Private sector efficiency, user fees for infrastructure, limited government role, focus on core infrastructure needs like roads.",
+    liberal_view: "Major public investment in infrastructure as an economic stimulus, job creator, and means to ensure equitable access.",
+    subcategories: [
+      {
+        name: "Transportation",
+        description: "Roads, transit systems, aviation, maritime.",
+        conservative_view: "User fees and private sector involvement; focus on maintaining roads and highways over heavily subsidized mass transit.",
+        liberal_view: "Public investment in mass transit, high-speed rail, and sustainable transportation options to reduce emissions."
+      },
+      {
+        name: "Digital Infrastructure",
+        description: "Broadband expansion, rural connectivity.",
+        conservative_view: "Private sector-led broadband expansion; market competition should drive access and reduce costs.",
+        liberal_view: "Government investment needed to ensure universal broadband access as a utility, especially in rural and urban areas."
+      },
+      {
+        name: "Public Works & Utilities",
+        description: "Water systems, electricity grid, waste management.",
+        conservative_view: "Private utility management where possible, user fees for services, efficient delivery through market mechanisms.",
+        liberal_view: "Public utilities ensure universal access and affordability; government must invest in modern, resilient infrastructure."
+      }
+    ]
+  },
+  {
+    name: "Environment & Energy",
+    description: "Natural resource policy, energy production, climate change response, and disaster management.",
+    conservative_view: "Balanced approach prioritizing economic growth, energy independence, private property rights, and market-based solutions.",
+    liberal_view: "Aggressive climate action, renewable energy transition, and environmental protection over short-term economic interests.",
+    subcategories: [
+      {
+        name: "Climate Policy",
+        description: "Emissions limits, carbon pricing, green incentives.",
+        conservative_view: "Market-based technological innovation; avoiding economic disruption or job losses while addressing environmental concerns.",
+        liberal_view: "Urgent government action on climate change through strict regulation, carbon pricing, and rapid transition mandates."
+      },
+      {
+        name: "Energy Production",
+        description: "Fossil fuels, nuclear power, renewable energy.",
+        conservative_view: "All-of-the-above strategy including domestic fossil fuels and nuclear to ensure energy independence and low costs.",
+        liberal_view: "Rapid transition to renewable energy sources, phasing out fossil fuel subsidies, and heavy government investment in clean tech."
+      },
+      {
+        name: "Conservation & Water",
+        description: "Public lands, wildlife, water rights, pollution control.",
+        conservative_view: "Balanced use of natural resources for economic benefit; respect for private property and existing water rights.",
+        liberal_view: "Strong environmental protection, expansion of protected federal lands, and prioritizing conservation over resource extraction."
+      },
+      {
+        name: "Disaster Management",
+        description: "FEMA programs, hurricane/wildfire response.",
+        conservative_view: "State and local primary responsibility with efficient federal support; personal responsibility for preparedness.",
+        liberal_view: "Strong federal disaster response, climate change adaptation funding, and ensuring equitable recovery assistance."
+      }
+    ]
+  },
+  {
+    name: "Science & Technology",
+    description: "Regulation of digital platforms, scientific research, space exploration, and emerging tech.",
+    conservative_view: "Light regulation to promote innovation, free speech online, private sector space leadership, and American technological dominance.",
+    liberal_view: "Strong regulation to protect data privacy, prevent algorithmic bias, fund public research, and ensure tech serves the public good.",
+    subcategories: [
+      {
+        name: "Data Privacy & Cybersecurity",
+        description: "User data protection, infrastructure defense.",
+        conservative_view: "Market-based privacy solutions; public-private partnerships for cyber defense without heavy compliance burdens.",
+        liberal_view: "Strong federal data protection laws, user rights over personal information, and strict cybersecurity mandates for infrastructure."
+      },
+      {
+        name: "Tech Regulation & Speech",
+        description: "Online content moderation, platform liability.",
+        conservative_view: "Protect free speech online; skeptical of content moderation by Big Tech that may silence conservative viewpoints.",
+        liberal_view: "Platform responsibility to combat misinformation and hate speech while protecting legitimate expression."
+      },
+      {
+        name: "Emerging Tech & AI",
+        description: "Artificial intelligence, biotech, intellectual property.",
+        conservative_view: "Light regulatory touch to maintain American innovation leadership against foreign adversaries.",
+        liberal_view: "Proactive regulation to ensure AI safety, prevent algorithmic discrimination, and manage workforce displacement."
+      },
+      {
+        name: "Space & Scientific Research",
+        description: "NASA programs, federal R&D funding.",
+        conservative_view: "Commercialization of space; government R&D should focus primarily on national security and basic research.",
+        liberal_view: "Robust public funding for scientific institutions; space exploration as a peaceful public good."
+      }
+    ]
+  },
+  {
+    name: "Agriculture & Rural Issues",
+    description: "Policies affecting farmers, food safety, and rural economies.",
+    conservative_view: "Support for farming autonomy, minimal environmental regulation, market-based solutions, and preserving rural property rights.",
+    liberal_view: "Sustainable agriculture, farm worker protections, strict environmental standards, and support for small farmers over agribusiness.",
+    subcategories: [
+      {
+        name: "Farm Policy",
+        description: "Subsidies, crop insurance, agribusiness regulation.",
+        conservative_view: "Support for agricultural producers through crop insurance while reducing the EPA regulatory burden on family farms.",
+        liberal_view: "Farm subsidies should be restructured to support sustainable practices, conservation, and small local farms rather than corporate agribusiness."
+      },
+      {
+        name: "Food Safety",
+        description: "Labeling, inspection, GMO policy.",
+        conservative_view: "Science-based safety regulations without alarmism; support for agricultural innovation including GMOs; minimal labeling burdens.",
+        liberal_view: "Strong FDA/USDA oversight, aggressive consumer right-to-know through labeling, and a precautionary approach to new food technologies."
+      },
+      {
+        name: "Rural Development",
+        description: "Infrastructure and healthcare access for rural areas.",
+        conservative_view: "Market-based rural development; empowering local communities to manage their own economic growth without federal mandates.",
+        liberal_view: "Targeted federal investment to prevent rural hospital closures and ensure equitable access to economic opportunities."
+      }
+    ]
+  },
+  {
+    name: "Criminal Justice",
+    description: "Approach to crime, punishment, policing, and the justice system.",
+    conservative_view: "Tough on crime, strong support for law enforcement, serious consequences for criminals, and prioritizing victims' rights.",
+    liberal_view: "Reform the system, address root causes of crime, emphasize rehabilitation, and reduce mass incarceration.",
+    subcategories: [
+      {
+        name: "Sentencing & Punishment",
+        description: "Prison terms, mandatory minimums, death penalty.",
+        conservative_view: "Serious crimes deserve serious punishment; strong sentences deter crime and incapacitate dangerous repeat offenders.",
+        liberal_view: "Mass incarceration is ineffective and unjust; reduce sentences, eliminate mandatory minimums, and abolish the death penalty."
+      },
+      {
+        name: "Policing & Law Enforcement",
+        description: "Police funding, tactics, accountability.",
+        conservative_view: "Support and fully fund police; officers need qualified immunity and discretion to safely handle dangerous situations.",
+        liberal_view: "Reform policing through strict accountability, demilitarization, independent oversight, and addressing systemic bias."
+      },
+      {
+        name: "Rehabilitation & Drug Policy",
+        description: "Prison programs, decriminalization, treatment.",
+        conservative_view: "Punishment is the primary goal; maintain strong drug enforcement while offering voluntary treatment options.",
+        liberal_view: "Decriminalize minor drug offenses; treat addiction as a health issue; invest heavily in reentry and rehabilitation programs."
+      }
+    ]
+  },
+  {
+    name: "Civil Rights & Social Issues",
+    description: "Civil liberties, discrimination, family policy, and cultural values.",
+    conservative_view: "Traditional values, religious freedom, colorblind legal equality without special preferences, and preservation of established social norms.",
+    liberal_view: "Active social justice, protection of marginalized groups, LGBTQ+ rights, and addressing systemic historical inequities.",
+    subcategories: [
+      {
+        name: "Civil Rights & Equity",
+        description: "Anti-discrimination laws, affirmative action.",
+        conservative_view: "Equal opportunity and treatment under the law; opposition to identity politics and race-conscious policies.",
+        liberal_view: "Active measures, including affirmative action and diversity initiatives, are needed to combat systemic discrimination."
+      },
+      {
+        name: "Family, Culture & Religion",
+        description: "Marriage policy, gender identity, religious liberties.",
+        conservative_view: "Protection of traditional family structures, biological reality in gender policy, and robust religious exemptions in public life.",
+        liberal_view: "Marriage equality, comprehensive LGBTQ+ rights, gender identity recognition, and secular governance."
+      },
+      {
+        name: "Privacy & Civil Liberties",
+        description: "Surveillance limits, individual constitutional rights.",
+        conservative_view: "Balance civil liberties with the need for law enforcement to maintain order and protect national security.",
+        liberal_view: "Robust privacy protections, strict limits on government surveillance, and absolute defense of individual civil liberties."
+      },
+      {
+        name: "Tribal & Indigenous Affairs",
+        description: "Native American sovereignty, treaty rights, cultural preservation.",
+        conservative_view: "Respect for tribal sovereignty balanced with federal/state authority; focus on indigenous economic self-reliance.",
+        liberal_view: "Strict honoring of historical treaty obligations, strong support for tribal self-determination, and restorative justice for historical harms."
+      }
+    ]
+  },
+  {
+    name: "Immigration",
+    description: "Comprehensive approach to border security, legal immigration, and asylum.",
+    conservative_view: "Strict border enforcement, merit-based legal immigration, deterrence of illegal entry, and prioritizing American workers.",
+    liberal_view: "A humane system with pathways to citizenship for undocumented residents, family reunification, and robust refugee protection.",
+    subcategories: [
+      {
+        name: "Border Security & Enforcement",
+        description: "Physical barriers, ICE operations, deportation.",
+        conservative_view: "Secure the border with physical barriers and increased personnel; strictly enforce deportation laws to deter illegal crossings.",
+        liberal_view: "Focus on smart border technology; limit interior ICE raids; treat unauthorized border crossings as civil rather than criminal offenses."
+      },
+      {
+        name: "Legal Immigration & Pathways",
+        description: "Visas, green cards, DACA, amnesty.",
+        conservative_view: "Transition to a skills-based system; oppose blanket amnesty which rewards lawbreaking.",
+        liberal_view: "Provide a permanent pathway to citizenship for Dreamers and undocumented populations; expand legal visa caps."
+      },
+      {
+        name: "Asylum & Refugees",
+        description: "Humanitarian protection, asylum claims.",
+        conservative_view: "Tighten asylum rules to prevent systemic abuse; limit overall refugee admissions to ensure thorough security vetting.",
+        liberal_view: "Restore and expand asylum processes; generous refugee admissions reflect American humanitarian values."
+      }
+    ]
+  },
+  {
+    name: "Defense & National Security",
+    description: "Funding and deployment of the armed forces, military strategy, and veterans affairs.",
+    conservative_view: "Peace through strength; robust military funding, modernization of the nuclear triad, and decisive lethal capability.",
+    liberal_view: "Measured military spending, focus on asymmetric threats like cyber warfare, and reliance on diplomacy before force.",
+    subcategories: [
+      {
+        name: "Military Readiness & Budget",
+        description: "Pentagon funding, weapons procurement.",
+        conservative_view: "Consistent increases in defense spending are required to maintain global supremacy and deter near-peer adversaries.",
+        liberal_view: "The defense budget is bloated and should be audited; funds should be reallocated to domestic priorities and diplomacy."
+      },
+      {
+        name: "Veterans Affairs",
+        description: "VA hospitals, military benefits.",
+        conservative_view: "Expand private healthcare choices for veterans to bypass VA wait times; ensure strong transition assistance to civilian life.",
+        liberal_view: "Fully fund and staff the VA system as a public healthcare model; expand benefits for toxic exposure and mental health."
+      },
+      {
+        name: "Intelligence & Counterterrorism",
+        description: "CIA, NSA, homeland security operations.",
+        conservative_view: "Provide intelligence agencies with the broad authorities and surveillance tools necessary to prevent terrorist attacks.",
+        liberal_view: "Ensure strict congressional oversight of intelligence agencies to prevent abuses of power and constitutional violations."
+      }
+    ]
+  },
+  {
+    name: "Foreign Policy",
+    description: "International diplomacy, global trade, foreign aid, and geopolitical alliances.",
+    conservative_view: "America First approach; bilateral agreements over multilateral constraints; skepticism of international organizations.",
+    liberal_view: "Multilateral cooperation; strengthening international institutions; prioritizing human rights and global stability.",
+    subcategories: [
+      {
+        name: "International Alliances & Treaties",
+        description: "NATO, UN, international climate accords.",
+        conservative_view: "Alliances must serve US interests and partners must pay their fair share; avoid treaties that surrender US sovereignty.",
+        liberal_view: "Strong alliances multiply American influence; active participation in the UN and global accords is essential for solving global crises."
+      },
+      {
+        name: "Global Trade & Tariffs",
+        description: "Free trade deals, protectionism, sanctions.",
+        conservative_view: "Use tariffs aggressively to protect domestic manufacturing and punish unfair foreign trade practices; favor bilateral trade deals.",
+        liberal_view: "Free trade generally benefits the global economy, but agreements must include strict labor and environmental standards."
+      },
+      {
+        name: "Foreign Aid & Diplomacy",
+        description: "Humanitarian relief, State Department funding.",
+        conservative_view: "Foreign aid should be highly restricted and explicitly tied to US strategic objectives, not open-ended nation building.",
+        liberal_view: "Robust funding for the State Department and foreign aid promotes global stability, addresses poverty, and prevents conflicts."
+      }
+    ]
+  },
+  {
+    name: "Government Operations & Reform",
+    description: "Rules and systems shaping elections, the balance of power, and institutional integrity.",
+    conservative_view: "Limited federal power, strong states' rights, constitutional originalism, and strict election security measures.",
+    liberal_view: "Expansion of voting access, federal protection of civil rights, campaign finance reform, and modernization of democratic institutions.",
+    subcategories: [
+      {
+        name: "Electoral Law & Voting",
+        description: "Voter ID, ballot access, gerrymandering.",
+        conservative_view: "Election integrity requires strict voter ID, accurate rolls, and state control over election procedures.",
+        liberal_view: "Expand voting access through federal standards, automatic registration, and independent redistricting commissions."
+      },
+      {
+        name: "Campaign Finance & Ethics",
+        description: "PACs, political donations, lobbying rules.",
+        conservative_view: "Political spending is a form of protected free speech; arbitrary limits on campaign contributions are unconstitutional.",
+        liberal_view: "Aggressive campaign finance reform is needed to limit corporate influence, including support for public campaign financing."
+      },
+      {
+        name: "Federalism & Executive Power",
+        description: "States' rights, bureaucracy, executive orders.",
+        conservative_view: "Decentralize power to the states; rein in the unelected administrative state; the executive must strictly follow the Constitution.",
+        liberal_view: "Strong federal authority is needed to ensure equal protection nationwide; expert administrative agencies are vital for complex governance."
+      }
+    ]
+  }
+];
+
 export function About() {
   const [activeTab, setActiveTab] = useState("0");
 
@@ -245,23 +656,11 @@ export function About() {
                 worse outputs due to the limitations on input length and context
                 in modern-day LLMs.
               </Text>
-              {/**analyze_bill(summary_text, legislative_subjects, top_subject, MODEL) */}
               <Text>
                 • <strong>Bill Data Provided:</strong> LLMs are fed the bill
                 summary text, legislative subjects, and the top subject area to
                 provide context for analysis.
               </Text>
-              {/**Please provide:
-                        1. Classify the bill into any relevant political categories and subcategories. 
-                           Only use the categories/spectrums provided above. Do NOT create new ones.
-                           Determine the impact on each relevant category using a scale from 0.0 to 1.0, where 1.0 is the most impactful.
-                           Rate the bill on how conservative/progressive it is within each category. Use a scale of -1 to 1, where:
-                            - -1 = fully aligned with the liberal_view
-                            - 0 = neutral or mixed
-                            - 1 = fully aligned with the conservative_view
-                        3. If a category is **not relevant**, omit it from the output.
-                        4. Analysis of what a YES vote represents politically
-                        5. Analysis of what a NO vote represents politically  */}
               <Text>
                 • <strong>Prompt:</strong> LLMs are asked to do the following:
                 classify the bill into relevant political categories (and
@@ -562,426 +961,45 @@ export function About() {
             <Text fontSize="md" mb={2}>
               Bills are analyzed and classified into these major political
               categories. Each category represents a distinct policy area with
-              conservative and liberal viewpoints. There are a total of 25
-              defined categories.
+              conservative and liberal viewpoints, along with specific subcategories.
             </Text>
-            <VStack align="start" gap={4}>
-              <Box>
-                <Text fontWeight="bold">Economy & Finance</Text>
-                <Text>
-                  Policies affecting taxation, government spending, trade,
-                  business regulation, and employment.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Free market capitalism
-                  with minimal government interference, lower taxes, reduced
-                  regulation, fiscal responsibility, and competition-driven
-                  growth.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Government regulation to ensure
-                  fairness, progressive taxation, social safety nets, worker
-                  protections, and addressing income inequality.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Healthcare</Text>
-                <Text>
-                  Healthcare coverage, costs, public health, and regulation.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Market-based solutions,
-                  personal responsibility, choice in coverage, and competition
-                  to drive down costs and improve quality.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Healthcare as a human right
-                  requiring universal access, government role in ensuring
-                  affordability, and public health prioritization.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Education</Text>
-                <Text>
-                  Policies governing schools, universities, and student support.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> School choice, parental
-                  rights, local control, merit-based advancement, and
-                  traditional educational values and curriculum.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Equitable public education
-                  funding, inclusive curriculum, teacher support, and addressing
-                  systemic educational inequalities.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Social Issues</Text>
-                <Text>
-                  Civil rights, immigration, criminal justice, and family
-                  policy.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Traditional values, law
-                  and order, national sovereignty, individual responsibility,
-                  and preservation of established social institutions.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Social justice, equality,
-                  inclusive society, criminal justice reform, and protection of
-                  marginalized groups' rights.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Environment & Energy</Text>
-                <Text>
-                  Natural resource policy, energy production, climate change
-                  response.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Balanced approach
-                  prioritizing economic growth, energy independence, private
-                  property rights, and market-based environmental solutions.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Aggressive climate action,
-                  renewable energy transition, environmental protection over
-                  short-term economic interests.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Technology & Innovation</Text>
-                <Text>
-                  Regulation of digital platforms, privacy, and emerging tech.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Light regulation to
-                  promote innovation, market competition, free speech
-                  protection, and American technological leadership.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Strong regulation to protect
-                  privacy, prevent monopolization, ensure platform
-                  accountability, and address digital inequities.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Infrastructure & Transportation</Text>
-                <Text>Development of physical and digital infrastructure.</Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Private sector efficiency,
-                  user fees for infrastructure, limited government role, focus
-                  on core infrastructure needs.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Major public investment in
-                  infrastructure as economic stimulus, job creation, and
-                  ensuring equitable access.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Government & Institutional Reform</Text>
-                <Text>Rules and systems shaping governance and elections.</Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Limited government,
-                  constitutional originalism, federalism, election integrity,
-                  and maintaining traditional institutional structures.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Democratic reforms, voting
-                  rights expansion, government accountability, and institutional
-                  changes to ensure fair representation.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Agriculture & Rural Issues</Text>
-                <Text>
-                  Policies affecting farmers, food safety, and rural economies.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Support for family
-                  farming, minimal regulation, market-based solutions, and
-                  preserving rural way of life and property rights.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Sustainable agriculture, worker
-                  protections, environmental standards, and support for small
-                  farmers over agribusiness.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Budget & Appropriations</Text>
-                <Text>
-                  Overall fiscal planning, debt, and major spending bills.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Fiscal responsibility,
-                  balanced budgets, debt reduction, limited government spending,
-                  and prioritizing essential functions only.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Strategic government investment
-                  for economic growth, social programs, infrastructure, with
-                  less concern for short-term deficits.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Science & Space</Text>
-                <Text>
-                  Policies advancing research, exploration, and innovation.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Private sector innovation,
-                  market-driven research, space commercialization, and
-                  maintaining American technological leadership.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Public investment in research
-                  and development, space exploration as public good, scientific
-                  research for societal benefit.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Disaster & Emergency Management</Text>
-                <Text>
-                  Preparedness, response, and recovery from disasters.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Local and state
-                  responsibility for disaster response, private sector
-                  efficiency, individual preparedness and responsibility.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Federal coordination and
-                  resources necessary for effective disaster response, climate
-                  adaptation, and protecting vulnerable populations.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Tribal & Indigenous Affairs</Text>
-                <Text>
-                  Policy related to Native American tribes and sovereignty.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Respect for tribal
-                  sovereignty within constitutional framework, economic
-                  development opportunities, and gradual integration approaches.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Honor treaty obligations,
-                  support tribal self-determination, address historical
-                  injustices, and protect indigenous rights and culture.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Government Role & Regulation</Text>
-                <Text>
-                  The extent and nature of government involvement in society,
-                  economy, and individual lives.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Limited government with
-                  minimal regulation allows free markets, individual liberty,
-                  and competition to produce optimal outcomes naturally.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Active government intervention
-                  through regulation and programs protects vulnerable
-                  populations, ensures fairness, and addresses market failures.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">
-                  Foreign Policy & National Security
-                </Text>
-                <Text>
-                  International relations, military engagement, and America's
-                  role in the world.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Strong national defense
-                  with selective engagement prioritizing American interests;
-                  skepticism of international institutions limiting sovereignty.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Multilateral cooperation
-                  through alliances and international institutions; diplomacy
-                  and humanitarian concerns alongside national interests.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Federalism & Governance</Text>
-                <Text>
-                  Balance of power between federal, state, and local
-                  governments.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Power should be
-                  decentralized to states and localities; federal government
-                  limited to enumerated constitutional powers.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Strong federal authority
-                  ensures nationwide standards, protects rights uniformly, and
-                  addresses problems beyond state capacity.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Civil Liberties vs Security</Text>
-                <Text>
-                  Balance between individual privacy rights and collective
-                  security needs.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Security and public safety
-                  require strong law enforcement with tools to prevent crime and
-                  terrorism, even if limiting some liberties.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Civil liberties and privacy are
-                  fundamental rights that must be protected even when security
-                  concerns exist.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Populism vs Institutionalism</Text>
-                <Text>
-                  Trust in established institutions and expertise vs populist
-                  skepticism.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Elite institutions often
-                  disconnected from ordinary Americans; common sense and popular
-                  will should prevail over technocratic expertise.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Democratic institutions,
-                  expertise, and established norms provide stability and
-                  informed policymaking essential for functioning society.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Trade & Globalization</Text>
-                <Text>
-                  International trade policy, tariffs, and economic integration
-                  with global economy.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Protect American workers
-                  and industries from unfair competition; prioritize national
-                  economic interests over global integration.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Free trade creates prosperity
-                  through efficiency and cooperation; protectionism raises costs
-                  and invites retaliation.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Corporate Power & Business</Text>
-                <Text>
-                  Regulation of corporations, antitrust policy, and relationship
-                  between business and government.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Business freedom and light
-                  regulation foster innovation, job creation, and economic
-                  growth; corporations drive prosperity.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Large corporations require
-                  strong regulation to prevent abuse, ensure fair competition,
-                  and protect workers and consumers.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Tradition vs Progress</Text>
-                <Text>
-                  Relationship between historical norms, religious values, and
-                  evolving social understanding.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Traditional wisdom,
-                  religious values, and established norms provide moral
-                  foundation and social stability.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Society should evolve based on
-                  reason, science, and expanding moral understanding; tradition
-                  shouldn't limit progress.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">
-                  Individual vs Collective Responsibility
-                </Text>
-                <Text>
-                  Balance between personal responsibility and
-                  community/government solutions.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Personal responsibility
-                  and voluntary cooperation produce better outcomes than
-                  government programs; individual liberty paramount.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Collective action through
-                  government addresses systemic problems individual effort
-                  cannot solve; shared responsibility for common good.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Democratic Governance</Text>
-                <Text>
-                  Structure of democratic institutions, executive power, and
-                  government transparency.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Strong executive
-                  leadership and decisive governance; respect for law and order;
-                  majoritarian rule within constitutional limits.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Checks and balances,
-                  transparency, broad participation, free press; protect
-                  minority rights and democratic norms.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Criminal Justice</Text>
-                <Text>
-                  Approach to crime, punishment, policing, and the justice
-                  system.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Tough on crime with strong
-                  law enforcement, serious consequences for criminals,
-                  prioritize public safety and victims' rights.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Reform unjust system, address
-                  root causes of crime, emphasize rehabilitation, reduce mass
-                  incarceration.
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold">Immigration Policy</Text>
-                <Text>
-                  Comprehensive approach to immigration, asylum, and
-                  citizenship.
-                </Text>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  <strong>Conservative view:</strong> Strict border enforcement,
-                  limited immigration levels, merit-based system, prioritize
-                  American workers and national security.
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Liberal view:</strong> Humane immigration system with
-                  pathways to citizenship, family reunification, refugee
-                  protection, and addressing root causes.
-                </Text>
-              </Box>
+
+            <VStack align="start" gap={8} w="full">
+              {politicalCategoriesData.map((category, idx) => (
+                <Box key={idx} w="full">
+                  <Text fontWeight="bold" fontSize="lg">{category.name}</Text>
+                  <Text mb={2}>{category.description}</Text>
+                  <Text fontSize="sm" color="gray.600" mt={1}>
+                    <strong>Conservative view:</strong> {category.conservative_view}
+                  </Text>
+                  <Text fontSize="sm" color="gray.600" mb={3}>
+                    <strong>Liberal view:</strong> {category.liberal_view}
+                  </Text>
+
+                  {/* Subcategories Rendering */}
+                  {category.subcategories && category.subcategories.length > 0 && (
+                    <Box pl={4} borderLeft="2px solid" borderColor="gray.200" mt={4}>
+                      <Text fontWeight="semibold" fontSize="sm" mb={3} color="gray.500" textTransform="uppercase" letterSpacing="wide">
+                        Subcategories
+                      </Text>
+                      <VStack align="start" gap={4}>
+                        {category.subcategories.map((sub, sIdx) => (
+                          <Box key={sIdx}>
+                            <Text fontWeight="bold" fontSize="sm">{sub.name}</Text>
+                            <Text fontSize="sm" mb={1}>{sub.description}</Text>
+                            <Text fontSize="xs" color="gray.600" mt={1}>
+                              <strong>Conservative:</strong> {sub.conservative_view}
+                            </Text>
+                            <Text fontSize="xs" color="gray.600">
+                              <strong>Liberal:</strong> {sub.liberal_view}
+                            </Text>
+                          </Box>
+                        ))}
+                      </VStack>
+                    </Box>
+                  )}
+                </Box>
+              ))}
             </VStack>
           </VStack>
         </Tabs.Content>
