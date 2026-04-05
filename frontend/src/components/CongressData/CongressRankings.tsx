@@ -57,7 +57,7 @@ export default function CongressRankings({
     setError(null);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/legislators/profiles/${specHash}`
+        `${import.meta.env.VITE_API_URL}/api/legislators/profiles/${specHash}`,
       );
 
       if (!response.ok) {
@@ -97,7 +97,7 @@ export default function CongressRankings({
           return true;
         })
         .sort(
-          (a: RankingData, b: RankingData) => a.current_rank! - b.current_rank!
+          (a: RankingData, b: RankingData) => a.current_rank! - b.current_rank!,
         );
 
       setRankings(extractedRankings);
@@ -178,175 +178,173 @@ export default function CongressRankings({
     sortDirection === "asc" ? rankings : [...rankings].reverse();
 
   return (
-    <Box w="100%" bg="bgLightShade" p={8} rounded="xl" mt={8}>
-      <VStack align="stretch" gap={6}>
-        {/* Header */}
-        <HStack justify="space-between" align="center">
-          <VStack align="flex-start" gap={1}>
-            <Heading size="xl" color="primary">
-              Rankings: {subject}
-            </Heading>
-            <Text color="text" fontSize="sm">
-              {rankings.length} legislators ranked
-            </Text>
-          </VStack>
-
-          <Select.Root
-            collection={createListCollection({
-              items: [
-                { label: "Conservative → Liberal", value: "asc" },
-                { label: "Liberal → Conservative", value: "desc" },
-              ],
-            })}
-            value={[sortDirection]}
-            onValueChange={(details) =>
-              setSortDirection(details.value[0] as "asc" | "desc")
-            }
-            maxW="250px"
-          >
-            <Select.Label>Sort Order</Select.Label>
-            <Select.Trigger>
-              <Select.ValueText />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item item="asc">
-                <Select.ItemText>Conservative → Liberal</Select.ItemText>
-              </Select.Item>
-              <Select.Item item="desc">
-                <Select.ItemText>Liberal → Conservative</Select.ItemText>
-              </Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </HStack>
-
-        <IdeologyViewsBar subject={subject} />
-
-        {/* Rankings List */}
-        <VStack align="stretch" gap={2}>
-          {displayedRankings.map((ranking) => (
-            <Link
-              key={ranking.member_id}
-              to={`/legislators/${ranking.member_id}`}
-            >
-              <Box
-                key={ranking.member_id}
-                bg="bg"
-                p={4}
-                rounded="lg"
-                borderLeft="4px solid"
-                borderColor={`${getPartyColor(ranking.party)}.500`}
-                _hover={{ bg: "bgLightShade", transform: "translateX(4px)" }}
-                transition="all 0.2s"
-              >
-                <Grid
-                  templateColumns="60px 1fr 120px 100px"
-                  gap={4}
-                  alignItems="center"
-                >
-                  {/* Rank */}
-                  <GridItem>
-                    <Text fontSize="2xl" fontWeight="bold" color="primary">
-                      #{ranking.current_rank}
-                    </Text>
-                  </GridItem>
-
-                  {/* Name and Score Bar */}
-                  <GridItem>
-                    <VStack align="stretch" gap={2}>
-                      <HStack justify="space-between">
-                        <Text fontSize="lg" fontWeight="semibold" color="text">
-                          {ranking.official_full_name} ({ranking.state})
-                        </Text>
-                        <Badge colorScheme={getPartyColor(ranking.party)}>
-                          {getPartyName(ranking.party)}
-                        </Badge>
-                      </HStack>
-
-                      {/* Score Bar */}
-                      <Box
-                        position="relative"
-                        h="8px"
-                        bg="gray.200"
-                        rounded="full"
-                      >
-                        {/* Center line */}
-                        <Box
-                          position="absolute"
-                          left="50%"
-                          top="0"
-                          bottom="0"
-                          w="2px"
-                          bg="gray.400"
-                          transform="translateX(-50%)"
-                        />
-                        {/* Score indicator */}
-                        <Box
-                          position="absolute"
-                          left={`${getScoreBarWidth(ranking.score)}%`}
-                          top="50%"
-                          transform="translate(-50%, -50%)"
-                          w="16px"
-                          h="16px"
-                          bg={getScoreColor(ranking.score)}
-                          rounded="full"
-                          border="2px solid white"
-                        />
-                      </Box>
-                    </VStack>
-                  </GridItem>
-
-                  {/* Score */}
-                  <GridItem textAlign="center">
-                    <VStack gap={0}>
-                      <Text
-                        fontSize="xl"
-                        fontWeight="bold"
-                        color={getScoreColor(ranking.score)}
-                      >
-                        {ranking.score.toFixed(3)}
-                      </Text>
-                      <Text fontSize="xs" color="text">
-                        {ranking.current_percentile_rank
-                          ? `${(ranking.current_percentile_rank * 100).toFixed(
-                              1
-                            )}th percentile`
-                          : ""}
-                      </Text>
-                    </VStack>
-                  </GridItem>
-
-                  {/* Bill Count */}
-                  <GridItem textAlign="center">
-                    <VStack gap={0}>
-                      <Text fontSize="lg" fontWeight="semibold" color="text">
-                        {ranking.bill_count}
-                      </Text>
-                      <Text fontSize="xs" color="text">
-                        bills
-                      </Text>
-                    </VStack>
-                  </GridItem>
-                </Grid>
-              </Box>
-            </Link>
-          ))}
+    <VStack align="stretch" gap={6}>
+      {/* Header */}
+      <HStack justify="space-between" align="center">
+        <VStack align="flex-start" gap={1}>
+          <Heading size="xl" color="primary">
+            {subject}
+          </Heading>
+          <Text color="text" fontSize="sm">
+            {rankings.length} legislators ranked
+          </Text>
         </VStack>
 
-        {/* Legend */}
-        <HStack
-          gap={6}
-          fontSize="sm"
-          color="text"
-          justify="center"
-          pt={4}
-          borderTop="1px solid"
-          borderColor="gray.200"
+        <Select.Root
+          collection={createListCollection({
+            items: [
+              { label: "Conservative → Liberal", value: "asc" },
+              { label: "Liberal → Conservative", value: "desc" },
+            ],
+          })}
+          value={[sortDirection]}
+          onValueChange={(details) =>
+            setSortDirection(details.value[0] as "asc" | "desc")
+          }
+          maxW="250px"
         >
-          <Text>Score Range: -1.0 (Liberal) to 1.0 (Conservative)</Text>
-          <Text>•</Text>
-          <Text>Rankings based on voting record analysis</Text>
-        </HStack>
+          <Select.Label>Sort Order</Select.Label>
+          <Select.Trigger>
+            <Select.ValueText />
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item item="asc">
+              <Select.ItemText>Conservative → Liberal</Select.ItemText>
+            </Select.Item>
+            <Select.Item item="desc">
+              <Select.ItemText>Liberal → Conservative</Select.ItemText>
+            </Select.Item>
+          </Select.Content>
+        </Select.Root>
+      </HStack>
+
+      <IdeologyViewsBar subject={subject} />
+
+      {/* Rankings List */}
+      <VStack align="stretch" gap={2}>
+        {displayedRankings.map((ranking) => (
+          <Link
+            key={ranking.member_id}
+            to={`/legislators/${ranking.member_id}`}
+          >
+            <Box
+              key={ranking.member_id}
+              bg="bg"
+              p={4}
+              rounded="lg"
+              borderLeft="4px solid"
+              borderColor={`${getPartyColor(ranking.party)}.500`}
+              _hover={{ bg: "bgLightShade", transform: "translateX(4px)" }}
+              transition="all 0.2s"
+            >
+              <Grid
+                templateColumns="60px 1fr 120px 100px"
+                gap={4}
+                alignItems="center"
+              >
+                {/* Rank */}
+                <GridItem>
+                  <Text fontSize="2xl" fontWeight="bold" color="primary">
+                    #{ranking.current_rank}
+                  </Text>
+                </GridItem>
+
+                {/* Name and Score Bar */}
+                <GridItem>
+                  <VStack align="stretch" gap={2}>
+                    <HStack justify="space-between">
+                      <Text fontSize="lg" fontWeight="semibold" color="text">
+                        {ranking.official_full_name} ({ranking.state})
+                      </Text>
+                      <Badge colorScheme={getPartyColor(ranking.party)}>
+                        {getPartyName(ranking.party)}
+                      </Badge>
+                    </HStack>
+
+                    {/* Score Bar */}
+                    <Box
+                      position="relative"
+                      h="8px"
+                      bg="gray.200"
+                      rounded="full"
+                    >
+                      {/* Center line */}
+                      <Box
+                        position="absolute"
+                        left="50%"
+                        top="0"
+                        bottom="0"
+                        w="2px"
+                        bg="gray.400"
+                        transform="translateX(-50%)"
+                      />
+                      {/* Score indicator */}
+                      <Box
+                        position="absolute"
+                        left={`${getScoreBarWidth(ranking.score)}%`}
+                        top="50%"
+                        transform="translate(-50%, -50%)"
+                        w="16px"
+                        h="16px"
+                        bg={getScoreColor(ranking.score)}
+                        rounded="full"
+                        border="2px solid white"
+                      />
+                    </Box>
+                  </VStack>
+                </GridItem>
+
+                {/* Score */}
+                <GridItem textAlign="center">
+                  <VStack gap={0}>
+                    <Text
+                      fontSize="xl"
+                      fontWeight="bold"
+                      color={getScoreColor(ranking.score)}
+                    >
+                      {ranking.score.toFixed(3)}
+                    </Text>
+                    <Text fontSize="xs" color="text">
+                      {ranking.current_percentile_rank
+                        ? `${(ranking.current_percentile_rank * 100).toFixed(
+                            1,
+                          )}th percentile`
+                        : ""}
+                    </Text>
+                  </VStack>
+                </GridItem>
+
+                {/* Bill Count */}
+                <GridItem textAlign="center">
+                  <VStack gap={0}>
+                    <Text fontSize="lg" fontWeight="semibold" color="text">
+                      {ranking.bill_count}
+                    </Text>
+                    <Text fontSize="xs" color="text">
+                      bills
+                    </Text>
+                  </VStack>
+                </GridItem>
+              </Grid>
+            </Box>
+          </Link>
+        ))}
       </VStack>
-    </Box>
+
+      {/* Legend */}
+      <HStack
+        gap={6}
+        fontSize="sm"
+        color="text"
+        justify="center"
+        pt={4}
+        borderTop="1px solid"
+        borderColor="gray.200"
+      >
+        <Text>Score Range: -1.0 (Liberal) to 1.0 (Conservative)</Text>
+        <Text>•</Text>
+        <Text>Rankings based on voting record analysis</Text>
+      </HStack>
+    </VStack>
   );
 }

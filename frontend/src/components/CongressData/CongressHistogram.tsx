@@ -81,7 +81,7 @@ export default function CongressHistogram({
       const response = await fetch(
         `${
           import.meta.env.VITE_API_URL
-        }/api/congress-data/${specHash}/histogram/${field}/${encodedSubject}/${current}`
+        }/api/congress-data/${specHash}/histogram/${field}/${encodedSubject}/${current}`,
       );
 
       if (!response.ok) {
@@ -129,114 +129,112 @@ export default function CongressHistogram({
   const chamber = specHash.includes("senate") ? "Senate" : "House";
 
   return (
-    <Box w="100%" bg="bgLightShade" p={8} rounded="xl">
-      <VStack align="stretch" gap={6}>
-        {/* Header */}
-        <HStack justify="space-between" align="center">
-          <VStack align="flex-start" gap={1}>
-            <Heading size="xl" color="primary">
-              {subject}
-            </Heading>
-            <HStack gap={2}>
-              <Badge colorScheme="blue">{chamber}</Badge>
-              <Badge colorScheme="purple">{field.replace("_", " ")}</Badge>
-              <Text color="text" fontSize="sm">
-                {data.total_count} legislators
-              </Text>
-            </HStack>
-          </VStack>
-        </HStack>
+    <VStack align="stretch" gap={6}>
+      {/* Header */}
+      <HStack justify="space-between" align="center">
+        <VStack align="flex-start" gap={1}>
+          <Heading size="xl" color="primary">
+            {subject}
+          </Heading>
+          <HStack gap={2}>
+            <Badge colorScheme="blue">{chamber}</Badge>
+            <Badge colorScheme="purple">{field.replace("_", " ")}</Badge>
+            <Text color="text" fontSize="sm">
+              {data.total_count} legislators
+            </Text>
+          </HStack>
+        </VStack>
+      </HStack>
 
-        {/* Statistics Cards */}
-        <HStack gap={4} wrap="wrap">
-          {(["D", "R", "I"] as const).map((party) => {
-            const partyStats = data.stats[party];
-            const partyName =
-              party === "D"
-                ? "Democrats"
-                : party === "R"
+      {/* Statistics Cards */}
+      <HStack gap={4} wrap="wrap">
+        {(["D", "R", "I"] as const).map((party) => {
+          const partyStats = data.stats[party];
+          const partyName =
+            party === "D"
+              ? "Democrats"
+              : party === "R"
                 ? "Republicans"
                 : "Independents";
-            const colorScheme =
-              party === "D" ? "blue" : party === "R" ? "red" : "yellow";
+          const colorScheme =
+            party === "D" ? "blue" : party === "R" ? "red" : "yellow";
 
-            return (
-              <Stat.Root
-                key={party}
-                bg="bg"
-                p={4}
-                rounded="lg"
-                flex="1"
-                minW="200px"
-              >
-                <Stat.Label>
-                  <Badge colorScheme={colorScheme} mb={2}>
-                    {partyName}
-                  </Badge>
-                </Stat.Label>
-                <Stat.ValueText fontSize="2xl" color="primary">
-                  {partyStats.mean !== null
-                    ? partyStats.mean.toFixed(3)
-                    : "N/A"}
-                </Stat.ValueText>
-                <Stat.HelpText>
-                  Mean Ideology Score • {partyStats.count} members
-                </Stat.HelpText>
-                {partyStats.median !== null && (
-                  <Text fontSize="sm" color="text" mt={1}>
-                    Median: {partyStats.median.toFixed(3)}
-                  </Text>
-                )}
-              </Stat.Root>
-            );
-          })}
-        </HStack>
+          return (
+            <Stat.Root
+              key={party}
+              bg="bg"
+              p={4}
+              rounded="lg"
+              flex="1"
+              minW="200px"
+            >
+              <Stat.Label>
+                <Badge colorScheme={colorScheme} mb={2}>
+                  {partyName}
+                </Badge>
+              </Stat.Label>
+              <Stat.ValueText fontSize="2xl" color="primary">
+                {partyStats.mean !== null ? partyStats.mean.toFixed(3) : "N/A"}
+              </Stat.ValueText>
+              <Stat.HelpText>
+                Mean Ideology Score • {partyStats.count} members
+              </Stat.HelpText>
+              {partyStats.median !== null && (
+                <Text fontSize="sm" color="text" mt={1}>
+                  Median: {partyStats.median.toFixed(3)}
+                </Text>
+              )}
+            </Stat.Root>
+          );
+        })}
+      </HStack>
 
-        <IdeologyViewsBar subject={subject} />
+      <IdeologyViewsBar subject={subject} />
 
-        {/* Histogram Chart */}
-        <Box bg="bg" p={6} rounded="lg">
-          <ResponsiveContainer width="100%" height={600}>
-            <BarChart data={data.bins}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis
-                dataKey="range"
-                angle={-45}
-                textAnchor="end"
-                height={100}
-                tick={{ fill: "#4a5568", fontSize: 12 }}
-              />
-              <YAxis
-                label={{
-                  value: "Number of Legislators",
-                  angle: -90,
-                  position: "insideLeft",
-                }}
-                tick={{ fill: "#4a5568" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#ffffff",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "8px",
-                }}
-              />
-              <Legend />
-              <Bar dataKey="D" name="Democrats" fill="#3182ce" stackId="a" />
-              <Bar dataKey="R" name="Republicans" fill="#e53e3e" stackId="a" />
-              <Bar dataKey="I" name="Independents" fill="#d69e2e" stackId="a" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
+      {/* Histogram Chart */}
+      <Box bg="bg" p={6} rounded="lg">
+        <ResponsiveContainer width="100%" height={350}>
+          <BarChart data={data.bins} margin={{ left: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <XAxis
+              dataKey="range"
+              angle={-45}
+              textAnchor="end"
+              height={100}
+              tick={{ fill: "#4a5568", fontSize: 12 }}
+            />
+            <YAxis
+              width={60}
+              label={{
+                value: "# Legislators",
+                angle: -90,
+                position: "insideLeft",
+                offset: 10,
+                style: { textAnchor: "middle" },
+              }}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
+                borderRadius: "8px",
+              }}
+            />
+            <Legend />
+            <Bar dataKey="D" name="Democrats" fill="#3182ce" stackId="a" />
+            <Bar dataKey="R" name="Republicans" fill="#e53e3e" stackId="a" />
+            <Bar dataKey="I" name="Independents" fill="#d69e2e" stackId="a" />
+          </BarChart>
+        </ResponsiveContainer>
+      </Box>
 
-        {/* Additional Stats */}
-        <HStack gap={4} fontSize="sm" color="text" justify="center">
-          <Text>
-            Ideology Score Range: -1.0 (Liberal) to 1.0 (Conservative) • Data based on
-            voting records
-          </Text>
-        </HStack>
-      </VStack>
-    </Box>
+      {/* Additional Stats */}
+      <HStack gap={4} fontSize="sm" color="text" justify="center">
+        <Text>
+          Ideology Score Range: -1.0 (Liberal) to 1.0 (Conservative) • Data
+          based on voting records
+        </Text>
+      </HStack>
+    </VStack>
   );
 }
