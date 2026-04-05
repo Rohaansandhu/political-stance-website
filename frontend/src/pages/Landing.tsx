@@ -1,7 +1,6 @@
 import { Box } from "@chakra-ui/react";
 import { Hero } from "../components/Landing/Hero.tsx";
 import { LegislatorPreview } from "../components/Legislators/LegislatorPreview.tsx";
-import { FeaturedBills } from "../components/Bills/FeaturedBills.tsx";
 import { IdeologyScoreExplainer } from "../components/Landing/IdeologyScoreExplainer.tsx";
 import { BillAnalysisExplainer } from "../components/Landing/BillAnalysisExplainer.tsx";
 import { Helmet } from "react-helmet-async";
@@ -23,7 +22,7 @@ export default function Landing() {
         <BillAnalysisExplainer />
         <IdeologyScoreExplainer />
         <LegislatorPreview />
-        <FeaturedBills />
+        {/* <FeaturedBills /> */}
       </Box>
     </>
   );
