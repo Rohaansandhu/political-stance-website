@@ -20,6 +20,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import IdeologyViewsBar from "./IdeologyViewBar";
 
 interface HistogramProps {
   specHash: string;
@@ -190,6 +191,8 @@ export default function CongressHistogram({
             );
           })}
         </HStack>
+
+        <IdeologyViewsBar subject={subject} />
 
         {/* Histogram Chart */}
         <Box bg="bg" p={6} rounded="lg">

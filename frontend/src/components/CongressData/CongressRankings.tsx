@@ -14,6 +14,7 @@ import {
   GridItem,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
+import IdeologyViewsBar from "./IdeologyViewBar";
 
 interface CongressRankingsProps {
   specHash: string;
@@ -217,6 +218,8 @@ export default function CongressRankings({
             </Select.Content>
           </Select.Root>
         </HStack>
+
+        <IdeologyViewsBar subject={subject} />
 
         {/* Rankings List */}
         <VStack align="stretch" gap={2}>

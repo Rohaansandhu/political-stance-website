@@ -20,6 +20,7 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts";
+import IdeologyViewsBar from "./IdeologyViewBar";
 
 interface ScatterProps {
   specHash: string;
@@ -261,6 +262,8 @@ export default function CongressScatter({
             );
           })}
         </HStack>
+
+        <IdeologyViewsBar subject={subject} />
 
         {/* Scatter Plot */}
         <Box bg="bg" p={6} rounded="lg">
