@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
+  Box,
   Container,
   Spinner,
   Center,
   Text,
   VStack,
+  HStack,
   Breadcrumb,
   Flex,
-  HStack,
   Select,
   createListCollection,
 } from "@chakra-ui/react";
@@ -50,7 +51,7 @@ export default function LegislatorProfile() {
     async function loadLegislator() {
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/legislators/${id}/${model}`
+          `${import.meta.env.VITE_API_URL}/api/legislators/${id}/${model}`,
         );
         const json = await res.json();
         setData(json);
@@ -89,7 +90,9 @@ export default function LegislatorProfile() {
           content={`Legislator Profile with ideology scores and spectrum analysis for ${data.name.official_full} from ${data.state}.`}
         />
       </Helmet>
-      <Flex justifyContent="flex-start">
+
+      {/* Breadcrumb */}
+      <Flex justifyContent="flex-start" mb={4}>
         <Breadcrumb.Root>
           <Breadcrumb.List>
             <Breadcrumb.Item>
@@ -101,59 +104,53 @@ export default function LegislatorProfile() {
           </Breadcrumb.List>
         </Breadcrumb.Root>
       </Flex>
-      <VStack gap={10}>
+
+      {/* Compact header — full width */}
+      <Box mb={4}>
         <LegislatorProfileHeader data={data} />
+      </Box>
 
+      {/* Ideology score reminder */}
+      <Box mb={4}>
         <IdeologyScoreReminder />
+      </Box>
 
-        {/* Model filter */}
-        <HStack gap={4} wrap="wrap" bg="bgLightShade" p={6} rounded="lg">
-          <Select.Root
-            collection={createListCollection({
-              items: [
-                {label: "GPT-5 Mini", value: "gpt-5-mini"},
-                // {
-                //   label: "Gemini 2.5 Flash Lite",
-                //   value: "gemini-2.5-flash-lite",
-                // },
-                // { label: "GPT-OSS (120b)", value: "gpt-oss-120b" },
-                // { label: "Llama 3.3 (70b)", value: "llama3.3-70b" },
-                // { label: "Qwen 3 (32b)", value: "qwen-3-32b" },
-              ],
-            })}
-            value={[model]}
-            onValueChange={(details) => setModel(details.value[0])}
-            width="300px"
-            maxW="500px"
-          >
-            <Select.Label>Model</Select.Label>
-            <Select.Trigger>
-              <Select.ValueText placeholder="Select Model" />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item item="gpt-5-mini">
-                <Select.ItemText>GPT-5 Mini</Select.ItemText>
-              </Select.Item>
-              {/* <Select.Item item="gemini-2.5-flash-lite">
-                <Select.ItemText>Gemini 2.5 Flash Lite</Select.ItemText>
-              </Select.Item>
-              <Select.Item item="gpt-oss-120b">
-                <Select.ItemText>GPT-OSS (120b)</Select.ItemText>
-              </Select.Item>
-              <Select.Item item="llama3.3-70b">
-                <Select.ItemText>Llama 3.3 (70b)</Select.ItemText>
-              </Select.Item>
-              <Select.Item item="qwen-3-32b">
-                <Select.ItemText>Qwen 3 (32b)</Select.ItemText>
-              </Select.Item> */}
-            </Select.Content>
-          </Select.Root>
+      {/* Sidebar + main content */}
+      <Box bg="bgLightShade" p={4} rounded="xl">
+        <HStack align="flex-start" gap={4}>
+          {/* Left sidebar */}
+          <VStack align="stretch" gap={4} flexShrink={0} w="180px">
+            {/* Model selector */}
+            <Select.Root
+              collection={createListCollection({
+                items: [{ label: "GPT-5 Mini", value: "gpt-5-mini" }],
+              })}
+              value={[model]}
+              onValueChange={(details) => setModel(details.value[0])}
+            >
+              <Select.Label fontSize="sm" fontWeight="600">
+                Model
+              </Select.Label>
+              <Select.Trigger>
+                <Select.ValueText placeholder="Select Model" />
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item item="gpt-5-mini">
+                  <Select.ItemText>GPT-5 Mini</Select.ItemText>
+                </Select.Item>
+              </Select.Content>
+            </Select.Root>
+
+            {/* Stats overview in sidebar */}
+            <LegislatorStatsOverview data={data} />
+          </VStack>
+
+          {/* Main content — category grid */}
+          <Box flex={1} minW={0}>
+            <MainCategoryGrid categories={data.primary_categories} />
+          </Box>
         </HStack>
-
-        <LegislatorStatsOverview data={data} />
-
-        <MainCategoryGrid categories={data.primary_categories} />
-      </VStack>
+      </Box>
     </Container>
   );
 }
