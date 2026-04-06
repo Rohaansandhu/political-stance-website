@@ -39,6 +39,22 @@ interface LegislatorData {
       current_percentile_rank: number;
     }
   >;
+  recent_votes?: {
+    conservative: {
+      bill_id: string;
+      vote: string;
+      date: string;
+      score_impact: number;
+      category: string;
+    }[];
+    liberal: {
+      bill_id: string;
+      vote: string;
+      date: string;
+      score_impact: number;
+      category: string;
+    }[];
+  };
 }
 
 export default function LegislatorProfile() {
@@ -147,7 +163,10 @@ export default function LegislatorProfile() {
 
           {/* Main content — category grid */}
           <Box flex={1} minW={0}>
-            <MainCategoryGrid categories={data.primary_categories} />
+            <MainCategoryGrid
+              categories={data.primary_categories}
+              recentVotes={data.recent_votes}
+            />
           </Box>
         </HStack>
       </Box>
