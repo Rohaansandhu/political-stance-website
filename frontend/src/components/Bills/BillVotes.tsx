@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Heading,
@@ -8,13 +8,13 @@ import {
   Spinner,
   Center,
   Badge,
-  Grid,
-  GridItem,
-  Avatar,
-  Wrap,
-  WrapItem,
-  Separator,
+  Flex,
+  Input,
+  SimpleGrid,
+  Collapsible,
+  InputGroup,
 } from "@chakra-ui/react";
+import { ChevronDown, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface Vote {
@@ -36,6 +36,249 @@ interface VoteRecord {
 
 interface BillVotesProps {
   bill_id: string;
+}
+
+const getPartyToken = (party: string) => {
+  switch ((party || "").toUpperCase()) {
+    case "R":
+    case "REPUBLICAN":
+      return "partyRep";
+    case "D":
+    case "DEMOCRAT":
+      return "partyDem";
+    case "I":
+    case "INDEPENDENT":
+      return "partyInd";
+    default:
+      return "voteOther";
+  }
+};
+
+const getVoteToken = (vote: string) => {
+  const v = vote.toUpperCase();
+  if (v.includes("YEA") || v.includes("YES") || v.includes("AYE"))
+    return "voteYea";
+  if (v.includes("NAY") || (v.includes("NO") && !v.includes("NOT")))
+    return "voteNay";
+  return "voteOther";
+};
+
+const isYea = (v: string) => getVoteToken(v) === "voteYea";
+const isNay = (v: string) => getVoteToken(v) === "voteNay";
+
+const getChamberInfo = (chamber: string) => {
+  const c = chamber.toLowerCase();
+  if (c === "h" || c === "house") return { label: "House" };
+  if (c === "s" || c === "senate") return { label: "Senate" };
+  return { label: chamber.toUpperCase() };
+};
+
+function ResultBar({ votes }: { votes: Vote[] }) {
+  const yea = votes.filter((v) => isYea(v.vote_cast)).length;
+  const nay = votes.filter((v) => isNay(v.vote_cast)).length;
+  const other = votes.length - yea - nay;
+  const total = votes.length || 1;
+
+  return (
+    <VStack align="stretch" gap={2}>
+      <Flex justify="space-between" align="baseline">
+        <HStack gap={2} align="baseline">
+          <Text fontSize="2xl" fontWeight="bold" color="voteYea">
+            {yea}
+          </Text>
+          <Text fontSize="sm" fontWeight="semibold" color="voteYea">
+            YEA
+          </Text>
+        </HStack>
+        {other > 0 && (
+          <Text fontSize="xs" color="textMuted">
+            {other} other
+          </Text>
+        )}
+        <HStack gap={2} align="baseline">
+          <Text fontSize="sm" fontWeight="semibold" color="voteNay">
+            NAY
+          </Text>
+          <Text fontSize="2xl" fontWeight="bold" color="voteNay">
+            {nay}
+          </Text>
+        </HStack>
+      </Flex>
+      <Flex h="10px" rounded="full" overflow="hidden" bg="bgLightShade">
+        <Box bg="voteYea" width={`${(yea / total) * 100}%`} />
+        <Box bg="voteOther" width={`${(other / total) * 100}%`} />
+        <Box bg="voteNay" width={`${(nay / total) * 100}%`} />
+      </Flex>
+    </VStack>
+  );
+}
+
+function PartyBreakdownRow({
+  votes,
+  voteType,
+}: {
+  votes: Vote[];
+  voteType: string;
+}) {
+  const breakdown: Record<string, number> = {};
+  votes
+    .filter((v) => v.vote_cast === voteType)
+    .forEach((v) => {
+      breakdown[v.party] = (breakdown[v.party] || 0) + 1;
+    });
+
+  return (
+    <HStack gap={2} flexWrap="wrap">
+      {Object.entries(breakdown)
+        .sort((a, b) => b[1] - a[1])
+        .map(([party, count]) => (
+          <HStack
+            key={party}
+            gap={1.5}
+            px={2}
+            py={0.5}
+            rounded="full"
+            bg="bgLightShade"
+          >
+            <Box boxSize="8px" rounded="full" bg={getPartyToken(party)} />
+            <Text fontSize="xs" fontWeight="medium" color="text">
+              {party} {count}
+            </Text>
+          </HStack>
+        ))}
+    </HStack>
+  );
+}
+
+function MemberList({ voteType, votes }: { voteType: string; votes: Vote[] }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const sorted = [...votes].sort((a, b) =>
+      (a.display_name || "").localeCompare(b.display_name || "")
+    );
+    if (!query.trim()) return sorted;
+    const q = query.toLowerCase();
+    return sorted.filter(
+      (v) =>
+        v.display_name?.toLowerCase().includes(q) ||
+        v.state?.toLowerCase().includes(q) ||
+        v.party?.toLowerCase().includes(q)
+    );
+  }, [votes, query]);
+
+  const voteToken = getVoteToken(voteType);
+
+  return (
+    <Box
+      bg="surface"
+      rounded="card"
+      borderWidth="1px"
+      borderColor="border"
+      overflow="hidden"
+    >
+      <Collapsible.Root open={open} onOpenChange={(e) => setOpen(e.open)}>
+        <Collapsible.Trigger asChild>
+          <Flex
+            as="button"
+            w="full"
+            px={5}
+            py={4}
+            align="center"
+            justify="space-between"
+            cursor="pointer"
+            _hover={{ bg: "bgLightShade" }}
+            transition="background 0.15s ease"
+          >
+            <HStack gap={3}>
+              <Box boxSize="10px" rounded="full" bg={voteToken} />
+              <Text fontWeight="semibold" color="text">
+                {voteType}
+              </Text>
+              <Badge
+                variant="subtle"
+                rounded="full"
+                px={2.5}
+                bg="bgLightShade"
+                color="textMuted"
+              >
+                {votes.length}
+              </Badge>
+            </HStack>
+            <Box
+              as="span"
+              color="textMuted"
+              transition="transform 0.2s ease"
+              transform={open ? "rotate(180deg)" : undefined}
+            >
+              <ChevronDown size={18} />
+            </Box>
+          </Flex>
+        </Collapsible.Trigger>
+        <Collapsible.Content>
+          <Box px={5} pb={5} pt={1}>
+            <InputGroup
+              startElement={<Search size={14} />}
+              mb={3}
+              maxW="320px"
+            >
+              <Input
+                size="sm"
+                rounded="lg"
+                placeholder="Filter by name, state, or party"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                bg="bg"
+                borderColor="border"
+              />
+            </InputGroup>
+            {filtered.length === 0 ? (
+              <Text fontSize="sm" color="textMuted" py={2}>
+                No members match "{query}"
+              </Text>
+            ) : (
+              <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={1.5}>
+                {filtered.map((vote) => (
+                  <Link
+                    key={vote.member_id}
+                    to={`/legislators/${vote.member_id}`}
+                  >
+                    <HStack
+                      px={2.5}
+                      py={1.5}
+                      rounded="lg"
+                      gap={2.5}
+                      _hover={{ bg: "bgLightShade" }}
+                      transition="background 0.15s ease"
+                    >
+                      <Box
+                        boxSize="8px"
+                        rounded="full"
+                        flexShrink={0}
+                        bg={getPartyToken(vote.party)}
+                      />
+                      <Text
+                        fontSize="sm"
+                        color="text"
+                        fontWeight="medium"
+                        lineClamp={1}
+                      >
+                        {vote.display_name}
+                      </Text>
+                      <Text fontSize="xs" color="textMuted" flexShrink={0}>
+                        {vote.party}-{vote.state}
+                      </Text>
+                    </HStack>
+                  </Link>
+                ))}
+              </SimpleGrid>
+            )}
+          </Box>
+        </Collapsible.Content>
+      </Collapsible.Root>
+    </Box>
+  );
 }
 
 export default function BillVotes({ bill_id }: BillVotesProps) {
@@ -63,22 +306,21 @@ export default function BillVotes({ bill_id }: BillVotesProps) {
 
       const data = await response.json();
 
-      // Transform the nested API data into the flat structure the UI expects
       const processedRecords = (data.vote_records || []).map((record: any) => {
         const rawVotes = record.votes || {};
         const flattenedVotes: Vote[] = [];
 
-        // Iterate over keys (Yea, Nay, Not Voting, etc.)
         Object.entries(rawVotes).forEach(([voteType, legislators]) => {
           if (Array.isArray(legislators)) {
-            const mappedLegislators = legislators.map((leg: any) => ({
-              member_id: leg.id,
-              display_name: leg.display_name,
-              party: leg.party,
-              state: leg.state,
-              vote_cast: voteType,
-            }));
-            flattenedVotes.push(...mappedLegislators);
+            flattenedVotes.push(
+              ...legislators.map((leg: any) => ({
+                member_id: leg.id,
+                display_name: leg.display_name,
+                party: leg.party,
+                state: leg.state,
+                vote_cast: voteType,
+              }))
+            );
           }
         });
 
@@ -97,105 +339,27 @@ export default function BillVotes({ bill_id }: BillVotesProps) {
     }
   };
 
-  const getPartyColor = (party: string) => {
-    if (!party) return "gray";
-    switch (party.toUpperCase()) {
-      case "R":
-      case "REPUBLICAN":
-        return "red";
-      case "D":
-      case "DEMOCRAT":
-        return "blue";
-      case "I":
-      case "INDEPENDENT":
-        return "purple";
-      default:
-        return "gray";
-    }
-  };
-
-  const getVoteColor = (vote: string) => {
-    const voteUpper = vote.toUpperCase();
-    if (
-      voteUpper.includes("YEA") ||
-      voteUpper.includes("YES") ||
-      voteUpper.includes("AYE")
-    )
-      return "green";
-    if (voteUpper.includes("NAY") || voteUpper.includes("NO")) return "red";
-    return "gray";
-  };
-
-  // Helper to interpret "h"/"s" and return display properties
-  const getChamberInfo = (chamber: string) => {
-    const c = chamber.toLowerCase();
-    if (c === "h" || c === "house") return { label: "HOUSE", color: "blue" };
-    if (c === "s" || c === "senate")
-      return { label: "SENATE", color: "purple" }; // Changed Senate to purple to distinguish from vote colors
-    return { label: chamber.toUpperCase(), color: "gray" };
-  };
-
-  const groupVotesByCategory = (votes: Vote[]) => {
-    const grouped: Record<string, Vote[]> = {};
-    votes.forEach((vote) => {
-      const category = vote.vote_cast;
-      if (!grouped[category]) {
-        grouped[category] = [];
-      }
-      grouped[category].push(vote);
-    });
-    return grouped;
-  };
-
-  const getVoteStats = (votes: Vote[]) => {
-    const stats: Record<string, number> = {};
-    votes.forEach((vote) => {
-      stats[vote.vote_cast] = (stats[vote.vote_cast] || 0) + 1;
-    });
-    return stats;
-  };
-
-  const getPartyBreakdown = (votes: Vote[], voteType: string) => {
-    const breakdown: Record<string, number> = {};
-    votes
-      .filter((v) => v.vote_cast === voteType)
-      .forEach((vote) => {
-        breakdown[vote.party] = (breakdown[vote.party] || 0) + 1;
-      });
-    return breakdown;
-  };
-
   if (loading) {
     return (
-      <Box bg="bgLightShade" p={8} rounded="xl">
+      <Box bg="surface" p={8} rounded="card" borderWidth="1px" borderColor="border">
         <Center>
           <VStack gap={4}>
             <Spinner size="lg" color="primary" />
-            <Text color="text">Loading votes...</Text>
+            <Text color="textMuted">Loading votes...</Text>
           </VStack>
         </Center>
       </Box>
     );
   }
 
-  if (error) {
+  if (error || voteRecords.length === 0) {
     return (
-      <Box bg="bgLightShade" p={8} rounded="xl">
+      <Box bg="surface" p={8} rounded="card" borderWidth="1px" borderColor="border">
         <Center>
-          <Text color="gray.500" fontSize="md">
-            No voting data available for this bill
-          </Text>
-        </Center>
-      </Box>
-    );
-  }
-
-  if (voteRecords.length === 0) {
-    return (
-      <Box bg="bgLightShade" p={8} rounded="xl">
-        <Center>
-          <Text color="gray.500" fontSize="md">
-            No passage votes recorded yet
+          <Text color="textMuted" fontSize="md">
+            {error
+              ? "No voting data available for this bill"
+              : "No passage votes recorded yet"}
           </Text>
         </Center>
       </Box>
@@ -203,248 +367,126 @@ export default function BillVotes({ bill_id }: BillVotesProps) {
   }
 
   return (
-    <Box bg="bgLightShade" p={8} rounded="xl">
-      <VStack align="stretch" gap={8}>
-        <Heading size="lg" color="primary">
-          Passage Vote Records
-        </Heading>
+    <VStack align="stretch" gap={6}>
+      <Heading size="lg" color="text" letterSpacing="tight">
+        Passage Vote Records
+      </Heading>
 
-        {voteRecords.map((record, recordIndex) => {
-          const voteStats = getVoteStats(record.votes);
-          const groupedVotes = groupVotesByCategory(record.votes);
-          // Sort keys so Yea/Nay usually appear first/consistently
-          const voteCategories = Object.keys(groupedVotes).sort((a, b) => {
-            // Optional: Custom sort to put Yea/Nay at top, Not Voting at bottom
-            if (a.includes("Yea") || a.includes("Aye")) return -1;
-            if (b.includes("Yea") || b.includes("Aye")) return 1;
-            return a.localeCompare(b);
-          });
+      {voteRecords.map((record, recordIndex) => {
+        const grouped: Record<string, Vote[]> = {};
+        record.votes.forEach((v) => {
+          (grouped[v.vote_cast] ||= []).push(v);
+        });
+        const voteCategories = Object.keys(grouped).sort((a, b) => {
+          const rank = (t: string) =>
+            isYea(t) ? 0 : isNay(t) ? 1 : t.toLowerCase().includes("not") ? 3 : 2;
+          return rank(a) - rank(b) || a.localeCompare(b);
+        });
 
-          const chamberInfo = getChamberInfo(record.chamber);
+        const chamberInfo = getChamberInfo(record.chamber);
+        const passed =
+          record.result &&
+          (record.result.toLowerCase().includes("pass") ||
+            record.result.toLowerCase().includes("agreed"));
 
-          return (
-            <Box key={recordIndex}>
-              {recordIndex > 0 && <Separator my={6} />}
-
-              <VStack align="stretch" gap={6}>
-                {/* Chamber Header */}
-                <HStack justify="space-between" flexWrap="wrap">
-                  <HStack gap={3}>
-                    <Badge
-                      colorScheme={chamberInfo.color}
-                      fontSize="lg"
-                      px={4}
-                      py={2}
-                      rounded="md"
-                    >
-                      {chamberInfo.label}
-                    </Badge>
-                    {record.result && (
-                      <Badge
-                        colorScheme={
-                          record.result.toLowerCase().includes("pass") ||
-                          record.result.toLowerCase().includes("agreed")
-                            ? "green"
-                            : "red"
-                        }
-                        fontSize="md"
-                        px={3}
-                        py={1}
-                      >
-                        {record.result}
-                      </Badge>
-                    )}
-                  </HStack>
-                  {record.vote_date && (
-                    <Text fontSize="sm" color="text">
-                      {new Date(record.vote_date).toLocaleDateString(
-                        undefined,
-                        {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }
-                      )}
-                    </Text>
-                  )}
-                </HStack>
-
-                {record.question && (
-                  <Text fontSize="sm" color="text" fontStyle="italic">
-                    {record.question}
-                  </Text>
-                )}
-
-                {/* Vote Summary */}
-                <Box
-                  bg="bg"
-                  p={6}
-                  rounded="lg"
-                  borderWidth="1px"
-                  borderColor="gray.200"
-                >
-                  <VStack align="stretch" gap={4}>
-                    <Text fontSize="md" fontWeight="bold" color="text">
-                      Vote Summary
-                    </Text>
-                    <Wrap gap={4}>
-                      {Object.entries(voteStats).map(([voteType, count]) => (
-                        <WrapItem key={voteType}>
-                          <Badge
-                            colorScheme={getVoteColor(voteType)}
-                            fontSize="md"
-                            px={3}
-                            py={1}
-                            rounded="md"
-                            variant="subtle"
-                          >
-                            {voteType}: {count}
-                          </Badge>
-                        </WrapItem>
-                      ))}
-                    </Wrap>
-
-                    {/* Party Breakdown */}
-                    <Box pt={4}>
-                      <Text fontSize="sm" fontWeight="bold" color="text" mb={3}>
-                        Party Breakdown by Vote
-                      </Text>
-                      <Grid
-                        templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-                        gap={4}
-                      >
-                        {voteCategories.map((voteType) => {
-                          const breakdown = getPartyBreakdown(
-                            record.votes,
-                            voteType
-                          );
-                          return (
-                            <GridItem key={voteType}>
-                              <Box
-                                bg="bgLightShade"
-                                p={3}
-                                rounded="md"
-                                borderWidth="1px"
-                                borderColor="gray.100"
-                              >
-                                <Text
-                                  fontSize="sm"
-                                  fontWeight="semibold"
-                                  color="text"
-                                  mb={2}
-                                >
-                                  {voteType}
-                                </Text>
-                                <HStack gap={3} flexWrap="wrap">
-                                  {Object.entries(breakdown).map(
-                                    ([party, count]) => (
-                                      <Badge
-                                        key={party}
-                                        colorScheme={getPartyColor(party)}
-                                        fontSize="xs"
-                                        variant="solid"
-                                      >
-                                        {party}: {count}
-                                      </Badge>
-                                    )
-                                  )}
-                                </HStack>
-                              </Box>
-                            </GridItem>
-                          );
-                        })}
-                      </Grid>
-                    </Box>
-                  </VStack>
-                </Box>
-
-                {/* Detailed Vote Breakdown */}
-                {voteCategories.map((voteCategory) => (
-                  <Box
-                    key={voteCategory}
-                    bg="bg"
-                    p={6}
-                    rounded="lg"
-                    borderWidth="1px"
-                    borderColor="gray.200"
+        return (
+          <Box
+            key={recordIndex}
+            bg="surface"
+            rounded="card"
+            borderWidth="1px"
+            borderColor="border"
+            boxShadow="card"
+            overflow="hidden"
+          >
+            {/* Header */}
+            <Flex
+              px={{ base: 5, md: 7 }}
+              py={5}
+              borderBottomWidth="1px"
+              borderColor="borderSubtle"
+              align="center"
+              justify="space-between"
+              flexWrap="wrap"
+              gap={3}
+            >
+              <HStack gap={3}>
+                <Heading size="md" color="text" letterSpacing="tight">
+                  {chamberInfo.label}
+                </Heading>
+                {record.result && (
+                  <Badge
+                    colorPalette={passed ? "green" : "red"}
+                    variant="subtle"
+                    rounded="full"
+                    px={3}
+                    py={0.5}
+                    fontSize="xs"
+                    textTransform="uppercase"
+                    letterSpacing="wide"
                   >
-                    <VStack align="stretch" gap={4}>
-                      <HStack justify="space-between">
-                        <Heading size="md" color="text">
-                          {voteCategory}
-                        </Heading>
-                        <Badge
-                          colorScheme={getVoteColor(voteCategory)}
-                          fontSize="md"
-                          px={3}
-                          py={1}
-                        >
-                          {groupedVotes[voteCategory].length} votes
-                        </Badge>
-                      </HStack>
+                    {record.result}
+                  </Badge>
+                )}
+              </HStack>
+              {record.vote_date && (
+                <Text fontSize="sm" color="textMuted">
+                  {new Date(record.vote_date).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </Text>
+              )}
+            </Flex>
 
-                      <Wrap gap={2}>
-                        {groupedVotes[voteCategory]
-                          .sort((a, b) =>
-                            (a.display_name || "").localeCompare(
-                              b.display_name || ""
-                            )
-                          )
-                          .map((vote) => (
-                            <Link to={`/legislators/${vote.member_id}`}>
-                              <WrapItem key={vote.member_id || Math.random()}>
-                                <Box
-                                  title={`${vote.display_name} (${vote.party}-${vote.state})`}
-                                >
-                                  <HStack
-                                    bg="bgLightShade"
-                                    px={3}
-                                    py={2}
-                                    rounded="md"
-                                    gap={2}
-                                    _hover={{ bg: "gray.100" }}
-                                    transition="background 0.2s"
-                                    cursor="default"
-                                    borderWidth="1px"
-                                    borderColor="gray.100"
-                                  >
-                                    <Avatar.Root
-                                      size="xs"
-                                      bg={`${getPartyColor(vote.party)}.500`}
-                                    >
-                                      <Avatar.Fallback
-                                        name={vote.display_name
-                                          .charAt(0)
-                                          .toUpperCase()}
-                                      />
-                                    </Avatar.Root>
-                                    <VStack align="flex-start" gap={0}>
-                                      <Text
-                                        fontSize="xs"
-                                        fontWeight="semibold"
-                                        color="text"
-                                      >
-                                        {vote.display_name}
-                                      </Text>
-                                      <Text fontSize="2xs" color="gray.500">
-                                        {vote.party}-{vote.state}
-                                      </Text>
-                                    </VStack>
-                                  </HStack>
-                                </Box>
-                              </WrapItem>
-                            </Link>
-                          ))}
-                      </Wrap>
-                    </VStack>
-                  </Box>
+            <VStack align="stretch" gap={6} px={{ base: 5, md: 7 }} py={6}>
+              {record.question && (
+                <Text fontSize="sm" color="textMuted">
+                  {record.question}
+                </Text>
+              )}
+
+              <ResultBar votes={record.votes} />
+
+              {/* Party breakdown */}
+              <SimpleGrid columns={{ base: 1, md: 2 }} gap={3}>
+                {voteCategories
+                  .filter((t) => isYea(t) || isNay(t))
+                  .map((voteType) => (
+                    <HStack key={voteType} gap={3} align="center">
+                      <Text
+                        fontSize="xs"
+                        fontWeight="semibold"
+                        color={getVoteToken(voteType)}
+                        textTransform="uppercase"
+                        letterSpacing="wide"
+                        minW="10"
+                      >
+                        {voteType}
+                      </Text>
+                      <PartyBreakdownRow
+                        votes={record.votes}
+                        voteType={voteType}
+                      />
+                    </HStack>
+                  ))}
+              </SimpleGrid>
+
+              {/* Member lists */}
+              <VStack align="stretch" gap={3}>
+                {voteCategories.map((voteType) => (
+                  <MemberList
+                    key={voteType}
+                    voteType={voteType}
+                    votes={grouped[voteType]}
+                  />
                 ))}
               </VStack>
-            </Box>
-          );
-        })}
-      </VStack>
-    </Box>
+            </VStack>
+          </Box>
+        );
+      })}
+    </VStack>
   );
 }

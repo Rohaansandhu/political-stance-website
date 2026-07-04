@@ -59,14 +59,14 @@ const features = [
 
 export function Features() {
     return (
-        <Box as="section" id="about" bg="gray.50" py={20} w="full">
+        <Box as="section" id="about" bg="bgLightShade" py={20} w="full">
             <Container maxW="7xl">
                 <Box textAlign="center" mb={12}>
                     <Heading mb={4} fontSize={{ base: "3xl", md: "4xl" }}>
                         Comprehensive Political Intelligence
                     </Heading>
                     <Text
-                        color="gray.600"
+                        color="textMuted"
                         maxW="2xl"
                         mx="auto"
                         fontSize={{ base: "md", md: "lg" }}
@@ -76,15 +76,19 @@ export function Features() {
                     </Text>
                 </Box>
 
-                <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }}>
+                <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={5}>
                     {features.map((feature, index) => (
                         <Card.Root
                             key={index}
                             variant="outline"
+                            bg="surface"
+                            borderColor="border"
+                            rounded="card"
+                            transition="all 0.2s ease-in-out"
                             _hover={{
-                                shadow: "lg",
-                                borderColor: "blue.400",
-                                transition: "all 0.2s ease-in-out",
+                                shadow: "cardHover",
+                                borderColor: "primary",
+                                transform: "translateY(-2px)",
                             }}
                         >
                             <CardBody p={6}>
@@ -92,17 +96,17 @@ export function Features() {
                                     w={12}
                                     h={12}
                                     borderRadius="lg"
-                                    bg="blue.50"
+                                    bg="bgAltGreen"
                                     align="center"
                                     justify="center"
                                     mb={4}
                                 >
-                                    <Icon as={feature.icon} boxSize={6} color="blue.500" />
+                                    <Icon as={feature.icon} boxSize={6} color="primary" />
                                 </Flex>
                                 <Heading as="h3" size="md" mb={2}>
                                     {feature.title}
                                 </Heading>
-                                <Text color="gray.600" fontSize="sm">
+                                <Text color="textMuted" fontSize="sm">
                                     {feature.description}
                                 </Text>
                             </CardBody>

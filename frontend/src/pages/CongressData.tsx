@@ -52,16 +52,16 @@ export default function CongressDataPage() {
       <Container maxW="7xl" py={8}>
         {/* Header */}
         <Box mb={6}>
-          <Heading size="2xl" mb={2} color="primary">
+          <Heading size="2xl" mb={2} color="text" letterSpacing="tight">
             Congress Data Analytics
           </Heading>
-          <Text fontSize="lg" color="text">
+          <Text fontSize="lg" color="textMuted">
             Explore voting patterns and political positions across Congress
           </Text>
         </Box>
 
         <Tabs.Root defaultValue="histogram" variant="enclosed">
-          <Box bg="bgLightShade" p={4} rounded="xl">
+          <Box bg="bgLightShade" p={4} rounded="card" borderWidth="1px" borderColor="borderSubtle">
             <HStack align="flex-start" gap={4}>
               {/* Left sidebar: filters + tab triggers */}
               <VStack
@@ -144,8 +144,8 @@ export default function CongressDataPage() {
                 </Select.Root>
 
                 {/* Divider + View tab triggers */}
-                <Box borderTop="1px solid" borderColor="gray.200" pt={3}>
-                  <Text fontSize="sm" fontWeight="600" color="gray.500" mb={2}>
+                <Box borderTopWidth="1px" borderColor="border" pt={3}>
+                  <Text fontSize="sm" fontWeight="600" color="textMuted" mb={2}>
                     View
                   </Text>
                   <Tabs.List flexDirection="column" gap={1}>

@@ -6,33 +6,70 @@ const config = defineConfig({
     tokens: {
       colors: {
         text: {
-          light: { value: "#060706" },
-          dark: { value: "#f7f8f7" },
+          light: { value: "#0f1512" },
+          dark: { value: "#f4f6f5" },
+        },
+        textMuted: {
+          light: { value: "#5c6862" },
+          dark: { value: "#9aa8a1" },
         },
         background: {
-          light: { value: "#fbfdfc" }, // main light background
-          dark: { value: "#020303" }, // main dark background
-          lightShade: { value: "#f1f3f2" }, // slightly darker than main light
+          light: { value: "#fafcfb" }, // main light background
+          dark: { value: "#0b0f0d" }, // main dark background
+          lightShade: { value: "#f0f4f2" }, // slightly darker than main light
           lightTint: { value: "#ffffff" }, // slightly lighter than main light
-          darkShade: { value: "#010101" }, // slightly darker than main dark
-          darkTint: { value: "#121212" }, // slightly lighter than main dark
+          darkShade: { value: "#070a09" }, // slightly darker than main dark
+          darkTint: { value: "#141a17" }, // slightly lighter than main dark
           greenSubtle: {
-            light: { value: "#eaf2ee" },
-            dark: { value: "#0b1410" },
+            light: { value: "#e9f4ee" },
+            dark: { value: "#101b15" },
           },
         },
+        borderCol: {
+          light: { value: "#e2e8e5" },
+          dark: { value: "#232d28" },
+        },
+        borderSubtleCol: {
+          light: { value: "#ecf1ee" },
+          dark: { value: "#1a2320" },
+        },
         primary: {
-          light: { value: "#67ab8f" },
-          dark: { value: "#53977b" },
+          light: { value: "#178f5f" }, // refined emerald
+          dark: { value: "#34c98d" },
+        },
+        primaryHover: {
+          light: { value: "#0f7a50" },
+          dark: { value: "#4ad69d" },
         },
         secondary: {
-          light: { value: "#a3d7c2" },
-          dark: { value: "#285c47" },
+          light: { value: "#bfe3d2" },
+          dark: { value: "#1f4a38" },
         },
         accent: {
-          light: { value: "#6acea5" },
-          dark: { value: "#31966c" },
+          light: { value: "#12a06a" },
+          dark: { value: "#2fbd85" },
         },
+        // Party colors — reserved for data
+        party: {
+          rep: { light: { value: "#c53030" }, dark: { value: "#f56565" } },
+          dem: { light: { value: "#2b6cb0" }, dark: { value: "#63b3ed" } },
+          ind: { light: { value: "#6b46c1" }, dark: { value: "#b794f4" } },
+        },
+        // Vote colors
+        vote: {
+          yea: { light: { value: "#15803d" }, dark: { value: "#4ade80" } },
+          nay: { light: { value: "#b91c1c" }, dark: { value: "#f87171" } },
+          other: { light: { value: "#64748b" }, dark: { value: "#94a3b8" } },
+        },
+      },
+      shadows: {
+        card: { value: "0 1px 2px rgba(15, 21, 18, 0.05)" },
+        cardHover: {
+          value: "0 10px 30px -10px rgba(15, 21, 18, 0.18)",
+        },
+      },
+      radii: {
+        card: { value: "1rem" },
       },
     },
     semanticTokens: {
@@ -41,6 +78,12 @@ const config = defineConfig({
           value: {
             _light: "{colors.text.light}",
             _dark: "{colors.text.dark}",
+          },
+        },
+        textMuted: {
+          value: {
+            _light: "{colors.textMuted.light}",
+            _dark: "{colors.textMuted.dark}",
           },
         },
         bg: {
@@ -73,10 +116,35 @@ const config = defineConfig({
             _dark: "{colors.background.darkTint}",
           },
         },
+        // Elevated card surface
+        surface: {
+          value: {
+            _light: "{colors.background.lightTint}",
+            _dark: "{colors.background.darkTint}",
+          },
+        },
+        border: {
+          value: {
+            _light: "{colors.borderCol.light}",
+            _dark: "{colors.borderCol.dark}",
+          },
+        },
+        borderSubtle: {
+          value: {
+            _light: "{colors.borderSubtleCol.light}",
+            _dark: "{colors.borderSubtleCol.dark}",
+          },
+        },
         primary: {
           value: {
             _light: "{colors.primary.light}",
             _dark: "{colors.primary.dark}",
+          },
+        },
+        primaryHover: {
+          value: {
+            _light: "{colors.primaryHover.light}",
+            _dark: "{colors.primaryHover.dark}",
           },
         },
         secondary: {
@@ -93,14 +161,50 @@ const config = defineConfig({
         },
         bgAltGray: {
           value: {
-            _light: "{colors.background.lightShade}", // #f1f3f2
-            _dark: "{colors.background.darkTint}", // #121212 (elevated dark gray)
+            _light: "{colors.background.lightShade}",
+            _dark: "{colors.background.darkTint}",
           },
         },
         bgAltGreen: {
           value: {
-            _light: "{colors.background.greenSubtle.light}", // #eaf2ee
-            _dark: "{colors.background.greenSubtle.dark}", // #0b1410
+            _light: "{colors.background.greenSubtle.light}",
+            _dark: "{colors.background.greenSubtle.dark}",
+          },
+        },
+        partyRep: {
+          value: {
+            _light: "{colors.party.rep.light}",
+            _dark: "{colors.party.rep.dark}",
+          },
+        },
+        partyDem: {
+          value: {
+            _light: "{colors.party.dem.light}",
+            _dark: "{colors.party.dem.dark}",
+          },
+        },
+        partyInd: {
+          value: {
+            _light: "{colors.party.ind.light}",
+            _dark: "{colors.party.ind.dark}",
+          },
+        },
+        voteYea: {
+          value: {
+            _light: "{colors.vote.yea.light}",
+            _dark: "{colors.vote.yea.dark}",
+          },
+        },
+        voteNay: {
+          value: {
+            _light: "{colors.vote.nay.light}",
+            _dark: "{colors.vote.nay.dark}",
+          },
+        },
+        voteOther: {
+          value: {
+            _light: "{colors.vote.other.light}",
+            _dark: "{colors.vote.other.dark}",
           },
         },
       },
@@ -113,6 +217,7 @@ const config = defineConfig({
       background: "{colors.bg}",
       color: "{colors.text}",
       transition: "background-color 0.2s ease, color 0.2s ease",
+      fontFeatureSettings: '"cv02", "cv03", "cv04"',
     },
     a: {
       color: "{colors.accent}",
@@ -121,6 +226,9 @@ const config = defineConfig({
       _hover: {
         textDecoration: "underline",
       },
+    },
+    "::selection": {
+      background: "{colors.secondary}",
     },
   },
 });

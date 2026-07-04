@@ -13,6 +13,7 @@ import {
   Grid,
   GridItem,
 } from "@chakra-ui/react";
+import { ArrowLeft } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import BillVotes from "../components/Bills/BillVotes";
 import { Helmet } from "react-helmet-async";
@@ -66,6 +67,25 @@ interface BillAnalysis {
   last_modified?: string;
 }
 
+function Card({
+  children,
+  ...props
+}: React.ComponentProps<typeof Box>) {
+  return (
+    <Box
+      bg="surface"
+      p={{ base: 5, md: 8 }}
+      rounded="card"
+      borderWidth="1px"
+      borderColor="border"
+      boxShadow="card"
+      {...props}
+    >
+      {children}
+    </Box>
+  );
+}
+
 export default function BillDetailPage() {
   const { bill_id } = useParams<{ bill_id: string }>();
   const { model = "gpt-5-mini" } = useParams<{ model: string }>();
@@ -111,9 +131,9 @@ export default function BillDetailPage() {
   };
 
   const getIdeologyColor = (score: number) => {
-    if (score < -0.2) return "blue.500";
-    if (score > 0.2) return "red.500";
-    return "purple.500";
+    if (score < -0.2) return "partyDem";
+    if (score > 0.2) return "partyRep";
+    return "partyInd";
   };
 
   const getIdeologyLabel = (score: number) => {
@@ -122,16 +142,12 @@ export default function BillDetailPage() {
     return "Moderate";
   };
 
-  const getScoreBarWidth = (score: number, min: number, max: number) => {
-    return ((score - min) / (max - min)) * 100;
-  };
-
   if (loading) {
     return (
       <Center minH="100vh">
         <VStack gap={4}>
           <Spinner size="xl" color="primary" />
-          <Text color="text">Loading bill analysis...</Text>
+          <Text color="textMuted">Loading bill analysis...</Text>
         </VStack>
       </Center>
     );
@@ -141,13 +157,14 @@ export default function BillDetailPage() {
     return (
       <Center minH="100vh">
         <VStack gap={4}>
-          <Text color="red.500" fontSize="xl">
+          <Text color="voteNay" fontSize="xl">
             {error || "Bill not found"}
           </Text>
           <Button
             onClick={() => navigate("/bill-analyses")}
-            colorScheme="primary"
             variant="outline"
+            borderColor="border"
+            color="text"
           >
             Back to Bills
           </Button>
@@ -168,88 +185,89 @@ export default function BillDetailPage() {
         />
       </Helmet>
       <Container maxW="5xl" py={8}>
-        <VStack align="stretch" gap={8}>
+        <VStack align="stretch" gap={6}>
           {/* Back Button */}
           <Button
             onClick={() => navigate("/bill-analyses")}
             variant="ghost"
             alignSelf="flex-start"
+            color="textMuted"
+            _hover={{ color: "primary", bg: "bgLightShade" }}
           >
-            Back to Bills
+            <ArrowLeft size={16} /> Back to Bills
           </Button>
-          Bill Header
-          <Box bg="bgLightShade" p={8} rounded="xl">
-            <VStack align="stretch" gap={4}>
-              <HStack justify="space-between" flexWrap="wrap" gap={4}>
-                <VStack align="flex-start" gap={2}>
-                  <Heading size="2xl" color="primary">
-                    {bill.bill_id.toUpperCase()}
-                  </Heading>
-                  <HStack gap={2} flexWrap="wrap">
-                    <Badge
-                      colorScheme={bill.chamber === "house" ? "blue" : "green"}
-                      fontSize="sm"
-                    >
-                      {bill.chamber.toUpperCase()}
-                    </Badge>
-                    <Badge colorScheme="purple" fontSize="sm">
-                      {bill.congress}th Congress
-                    </Badge>
-                    <Badge colorScheme="gray" fontSize="sm">
-                      {bill.bill_type.toUpperCase()}
-                    </Badge>
-                    <Badge colorScheme="orange" fontSize="sm">
-                      {bill.model}
-                    </Badge>
-                  </HStack>
-                </VStack>
-              </HStack>
+
+          {/* Bill Header */}
+          <Card>
+            <VStack align="stretch" gap={6}>
+              <VStack align="flex-start" gap={3}>
+                <Heading size="2xl" color="text" letterSpacing="tight">
+                  {bill.bill_id.toUpperCase()}
+                </Heading>
+                <HStack gap={2} flexWrap="wrap">
+                  <Badge
+                    colorPalette={bill.chamber === "house" ? "blue" : "purple"}
+                    variant="subtle"
+                    rounded="full"
+                    px={3}
+                    py={1}
+                  >
+                    {bill.chamber.toUpperCase()}
+                  </Badge>
+                  <Badge
+                    variant="subtle"
+                    rounded="full"
+                    px={3}
+                    py={1}
+                    bg="bgAltGreen"
+                    color="primary"
+                  >
+                    {bill.congress}th Congress
+                  </Badge>
+                  <Badge
+                    variant="subtle"
+                    rounded="full"
+                    px={3}
+                    py={1}
+                    bg="bgLightShade"
+                    color="textMuted"
+                  >
+                    {bill.bill_type.toUpperCase()}
+                  </Badge>
+                  <Badge
+                    colorPalette="orange"
+                    variant="subtle"
+                    rounded="full"
+                    px={3}
+                    py={1}
+                  >
+                    {bill.model}
+                  </Badge>
+                </HStack>
+              </VStack>
 
               {/* Ideology Indicator */}
               <Box>
-                <HStack justify="space-between" mb={2}>
-                  <Text fontSize="sm" fontWeight="bold" color="text">
-                    Overall Ideology: {getIdeologyLabel(avgScore)}
+                <HStack justify="space-between" mb={3}>
+                  <Text fontSize="sm" fontWeight="semibold" color="text">
+                    Overall Ideology:{" "}
+                    <Box as="span" color={getIdeologyColor(avgScore)}>
+                      {getIdeologyLabel(avgScore)}
+                    </Box>
                   </Text>
-                  <Text fontSize="sm" color="text">
-                    Score: {avgScore.toFixed(3)}
+                  <Text fontSize="sm" color="textMuted" fontVariantNumeric="tabular-nums">
+                    {avgScore.toFixed(3)}
                   </Text>
                 </HStack>
 
-                {/* Add top padding to make room for labels */}
-                <Box
-                  position="relative"
-                  h="12px"
-                  bg="gray.200"
-                  rounded="full"
-                  pt="20px"
-                >
-                  <Text
-                    position="absolute"
-                    left="2px"
-                    top="0"
-                    fontSize="xs"
-                    color="text"
-                  >
-                    Liberal
-                  </Text>
-                  <Text
-                    position="absolute"
-                    right="2px"
-                    top="0"
-                    fontSize="xs"
-                    color="text"
-                  >
-                    Conservative
-                  </Text>
-
+                <Box position="relative" h="10px" rounded="full" bgGradient="to-r" gradientFrom="partyDem" gradientVia="bgLightShade" gradientTo="partyRep" opacity={0.9}>
                   <Box
                     position="absolute"
                     left="50%"
-                    top="0"
-                    bottom="0"
-                    w="2px"
-                    bg="gray.400"
+                    top="-3px"
+                    bottom="-3px"
+                    w="1px"
+                    bg="border"
                     transform="translateX(-50%)"
                   />
                   <Box
@@ -257,85 +275,123 @@ export default function BillDetailPage() {
                     left={`${((avgScore + 1) / 2) * 100}%`}
                     top="50%"
                     transform="translate(-50%, -50%)"
-                    w="16px"
-                    h="16px"
+                    w="18px"
+                    h="18px"
                     bg={getIdeologyColor(avgScore)}
                     rounded="full"
-                    border="3px solid white"
+                    borderWidth="3px"
+                    borderColor="surface"
                     shadow="md"
                   />
                 </Box>
+                <HStack justify="space-between" mt={2}>
+                  <Text fontSize="xs" color="textMuted" fontWeight="medium">
+                    Liberal
+                  </Text>
+                  <Text fontSize="xs" color="textMuted" fontWeight="medium">
+                    Conservative
+                  </Text>
+                </HStack>
               </Box>
             </VStack>
-          </Box>
+          </Card>
+
           {/* Bill Summary */}
-          <Box bg="bgLightShade" p={8} rounded="xl">
+          <Card>
             <VStack align="stretch" gap={4}>
-              <Heading size="lg" color="primary">
+              <Heading size="lg" color="text" letterSpacing="tight">
                 Bill Summary
               </Heading>
               <Text fontSize="lg" fontWeight="semibold" color="text">
                 {bill.bill_summary.title}
               </Text>
               <Box>
-                <Text fontSize="md" fontWeight="bold" color="primary" mb={2}>
-                  Key Provisions:
+                <Text
+                  fontSize="xs"
+                  fontWeight="semibold"
+                  color="textMuted"
+                  textTransform="uppercase"
+                  letterSpacing="wide"
+                  mb={3}
+                >
+                  Key Provisions
                 </Text>
-                <VStack align="stretch" gap={2}>
+                <VStack align="stretch" gap={2.5}>
                   {bill.bill_summary.key_provisions.map((provision, index) => (
-                    <HStack key={index} align="flex-start" gap={2}>
-                      <Text color="primary" fontWeight="bold" minW="20px">
-                        •
+                    <HStack key={index} align="flex-start" gap={3}>
+                      <Box
+                        mt="7px"
+                        boxSize="6px"
+                        rounded="full"
+                        bg="primary"
+                        flexShrink={0}
+                      />
+                      <Text color="text" fontSize="sm" lineHeight="1.7">
+                        {provision}
                       </Text>
-                      <Text color="text">{provision}</Text>
                     </HStack>
                   ))}
                 </VStack>
               </Box>
             </VStack>
-          </Box>
+          </Card>
+
           {/* Political Categories */}
-          <Box bg="bgLightShade" p={8} rounded="xl">
+          <Card>
             <VStack align="stretch" gap={6}>
-              <Heading size="lg" color="primary">
+              <Heading size="lg" color="text" letterSpacing="tight">
                 Political Analysis
               </Heading>
 
               {/* Primary Categories */}
               <Box>
-                <Text fontSize="md" fontWeight="bold" color="primary" mb={4}>
+                <Text
+                  fontSize="xs"
+                  fontWeight="semibold"
+                  color="textMuted"
+                  textTransform="uppercase"
+                  letterSpacing="wide"
+                  mb={4}
+                >
                   Primary Categories
                 </Text>
                 <VStack align="stretch" gap={4}>
                   {bill.political_categories.primary_categories.map(
                     (category, index) => (
-                      <Box key={index} bg="bg" p={4} rounded="lg">
-                        <VStack align="stretch" gap={3}>
-                          <Text fontSize="lg" fontWeight="bold" color="text">
+                      <Box
+                        key={index}
+                        bg="bg"
+                        p={5}
+                        rounded="xl"
+                        borderWidth="1px"
+                        borderColor="borderSubtle"
+                      >
+                        <VStack align="stretch" gap={4}>
+                          <Text fontSize="md" fontWeight="bold" color="text">
                             {category.name}
                           </Text>
 
                           {/* Partisan Score */}
                           <Box>
-                            <HStack justify="space-between" mb={1}>
-                              <Text fontSize="sm" color="text">
+                            <HStack justify="space-between" mb={1.5}>
+                              <Text fontSize="xs" color="textMuted" fontWeight="medium">
                                 Partisan Score
                               </Text>
                               <Text
                                 fontSize="sm"
                                 fontWeight="bold"
-                                color={getIdeologyColor(
-                                  category.partisan_score,
-                                )}
+                                fontVariantNumeric="tabular-nums"
+                                color={getIdeologyColor(category.partisan_score)}
                               >
                                 {category.partisan_score.toFixed(2)}
                               </Text>
                             </HStack>
                             <Box
                               position="relative"
-                              h="8px"
-                              bg="gray.200"
+                              h="6px"
+                              bg="bgLightShade"
                               rounded="full"
+                              overflow="hidden"
                             >
                               <Box
                                 position="absolute"
@@ -343,15 +399,18 @@ export default function BillDetailPage() {
                                 top="0"
                                 bottom="0"
                                 w="1px"
-                                bg="gray.400"
+                                bg="border"
                               />
                               <Box
-                                w={`${getScoreBarWidth(
-                                  category.partisan_score,
-                                  -1,
-                                  1,
-                                )}%`}
-                                h="100%"
+                                position="absolute"
+                                top="0"
+                                bottom="0"
+                                left={
+                                  category.partisan_score >= 0
+                                    ? "50%"
+                                    : `${((category.partisan_score + 1) / 2) * 100}%`
+                                }
+                                width={`${(Math.abs(category.partisan_score) / 2) * 100}%`}
                                 bg={getIdeologyColor(category.partisan_score)}
                                 rounded="full"
                               />
@@ -360,23 +419,24 @@ export default function BillDetailPage() {
 
                           {/* Impact Score */}
                           <Box>
-                            <HStack justify="space-between" mb={1}>
-                              <Text fontSize="sm" color="text">
+                            <HStack justify="space-between" mb={1.5}>
+                              <Text fontSize="xs" color="textMuted" fontWeight="medium">
                                 Impact Score
                               </Text>
                               <Text
                                 fontSize="sm"
                                 fontWeight="bold"
                                 color="primary"
+                                fontVariantNumeric="tabular-nums"
                               >
                                 {category.impact_score.toFixed(2)}
                               </Text>
                             </HStack>
                             <Box
-                              position="relative"
-                              h="8px"
-                              bg="gray.200"
+                              h="6px"
+                              bg="bgLightShade"
                               rounded="full"
+                              overflow="hidden"
                             >
                               <Box
                                 w={`${category.impact_score * 100}%`}
@@ -389,11 +449,11 @@ export default function BillDetailPage() {
 
                           {/* Reasoning */}
                           <Box
-                            pt={2}
-                            borderTop="1px solid"
-                            borderColor="gray.200"
+                            pt={3}
+                            borderTopWidth="1px"
+                            borderColor="borderSubtle"
                           >
-                            <Text fontSize="sm" color="text" fontStyle="italic">
+                            <Text fontSize="sm" color="textMuted" lineHeight="1.7">
                               {category.reasoning}
                             </Text>
                           </Box>
@@ -409,239 +469,203 @@ export default function BillDetailPage() {
                 bill.political_categories.subcategories.length > 0 && (
                   <Box>
                     <Text
-                      fontSize="md"
-                      fontWeight="bold"
-                      color="primary"
+                      fontSize="xs"
+                      fontWeight="semibold"
+                      color="textMuted"
+                      textTransform="uppercase"
+                      letterSpacing="wide"
                       mb={4}
                     >
                       Subcategories
                     </Text>
-                    <VStack align="stretch" gap={3}>
+                    <Grid
+                      templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                      gap={3}
+                    >
                       {bill.political_categories.subcategories.map(
                         (category, index) => (
-                          <Box key={index} bg="bg" p={3} rounded="lg">
+                          <Box
+                            key={index}
+                            bg="bg"
+                            p={4}
+                            rounded="xl"
+                            borderWidth="1px"
+                            borderColor="borderSubtle"
+                          >
                             <VStack align="stretch" gap={2}>
                               <Text
-                                fontSize="md"
+                                fontSize="sm"
                                 fontWeight="semibold"
                                 color="text"
                               >
                                 {category.name}
                               </Text>
                               <HStack gap={4}>
-                                <Text fontSize="xs" color="text">
-                                  Partisan: {category.partisan_score.toFixed(2)}
+                                <Text
+                                  fontSize="xs"
+                                  color="textMuted"
+                                  fontVariantNumeric="tabular-nums"
+                                >
+                                  Partisan:{" "}
+                                  <Box
+                                    as="span"
+                                    fontWeight="bold"
+                                    color={getIdeologyColor(
+                                      category.partisan_score,
+                                    )}
+                                  >
+                                    {category.partisan_score.toFixed(2)}
+                                  </Box>
                                 </Text>
-                                <Text fontSize="xs" color="text">
-                                  Impact: {category.impact_score.toFixed(2)}
+                                <Text
+                                  fontSize="xs"
+                                  color="textMuted"
+                                  fontVariantNumeric="tabular-nums"
+                                >
+                                  Impact:{" "}
+                                  <Box as="span" fontWeight="bold" color="primary">
+                                    {category.impact_score.toFixed(2)}
+                                  </Box>
                                 </Text>
                               </HStack>
                             </VStack>
                           </Box>
                         ),
                       )}
-                    </VStack>
+                    </Grid>
                   </Box>
                 )}
             </VStack>
-          </Box>
+          </Card>
+
           {/* Voting Analysis */}
-          <Box bg="bgLightShade" p={8} rounded="xl">
+          <Card>
             <VStack align="stretch" gap={6}>
-              <Heading size="lg" color="primary">
+              <Heading size="lg" color="text" letterSpacing="tight">
                 Voting Analysis
               </Heading>
 
               <Grid
                 templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-                gap={6}
+                gap={5}
               >
-                {/* YES Vote */}
-                <GridItem>
-                  <Box
-                    bg="bg"
-                    p={6}
-                    rounded="lg"
-                    h="100%"
-                    borderTop="4px solid"
-                    borderColor="green.500"
-                  >
-                    <VStack align="stretch" gap={4}>
-                      <HStack
-                        justify="space-between"
-                        align="flex-start"
-                        gap={4}
-                      >
-                        <Heading size="md" color="green.600" flexShrink={0}>
-                          YES Vote
-                        </Heading>
-                        <Badge
-                          colorScheme="green"
-                          fontSize="sm"
-                          whiteSpace="normal"
-                          textAlign="right"
-                          p={1}
-                        >
-                          {bill.voting_analysis.yes_vote.political_position}
-                        </Badge>
-                      </HStack>
-
-                      <Box>
-                        <Text
-                          fontSize="sm"
-                          fontWeight="bold"
-                          color="text"
-                          mb={2}
-                        >
-                          Philosophy:
-                        </Text>
-                        <Text fontSize="sm" color="text">
-                          {bill.voting_analysis.yes_vote.philosophy}
-                        </Text>
-                      </Box>
-
-                      <Box>
-                        <Text
-                          fontSize="sm"
-                          fontWeight="bold"
-                          color="text"
-                          mb={2}
-                        >
-                          Stakeholder Support:
-                        </Text>
-                        <VStack align="stretch" gap={1}>
-                          {bill.voting_analysis.yes_vote.stakeholder_support.map(
-                            (stakeholder, index) => (
-                              <HStack key={index} align="flex-start">
-                                <Text color="green.600" fontSize="sm">
-                                  •
-                                </Text>
-                                <Text fontSize="sm" color="text">
-                                  {stakeholder}
-                                </Text>
-                              </HStack>
-                            ),
-                          )}
+                {(
+                  [
+                    ["YES Vote", bill.voting_analysis.yes_vote, "voteYea"],
+                    ["NO Vote", bill.voting_analysis.no_vote, "voteNay"],
+                  ] as const
+                ).map(([label, position, token]) => (
+                  <GridItem key={label}>
+                    <Box
+                      bg="bg"
+                      p={6}
+                      rounded="xl"
+                      h="100%"
+                      borderWidth="1px"
+                      borderColor="borderSubtle"
+                      borderTopWidth="3px"
+                      borderTopColor={token}
+                    >
+                      <VStack align="stretch" gap={5}>
+                        <VStack align="flex-start" gap={2}>
+                          <Heading size="md" color={token}>
+                            {label}
+                          </Heading>
+                          <Badge
+                            colorPalette={token === "voteYea" ? "green" : "red"}
+                            variant="subtle"
+                            whiteSpace="normal"
+                            rounded="md"
+                            px={2}
+                            py={1}
+                          >
+                            {position.political_position}
+                          </Badge>
                         </VStack>
-                      </Box>
 
-                      <Box>
-                        <Text
-                          fontSize="sm"
-                          fontWeight="bold"
-                          color="text"
-                          mb={2}
-                        >
-                          Reasoning:
-                        </Text>
-                        <Text fontSize="sm" color="text" fontStyle="italic">
-                          {bill.voting_analysis.yes_vote.reasoning}
-                        </Text>
-                      </Box>
-                    </VStack>
-                  </Box>
-                </GridItem>
+                        <Box>
+                          <Text
+                            fontSize="xs"
+                            fontWeight="semibold"
+                            color="textMuted"
+                            textTransform="uppercase"
+                            letterSpacing="wide"
+                            mb={2}
+                          >
+                            Philosophy
+                          </Text>
+                          <Text fontSize="sm" color="text" lineHeight="1.7">
+                            {position.philosophy}
+                          </Text>
+                        </Box>
 
-                {/* NO Vote */}
-                <GridItem>
-                  <Box
-                    bg="bg"
-                    p={6}
-                    rounded="lg"
-                    h="100%"
-                    borderTop="4px solid"
-                    borderColor="red.500"
-                  >
-                    <VStack align="stretch" gap={4}>
-                      <HStack
-                        justify="space-between"
-                        align="flex-start"
-                        gap={4}
-                      >
-                        <Heading size="md" color="red.600" flexShrink={0}>
-                          NO Vote
-                        </Heading>
-                        <Badge
-                          colorScheme="red"
-                          fontSize="sm"
-                          whiteSpace="normal"
-                          textAlign="right"
-                          p={1}
-                        >
-                          {bill.voting_analysis.no_vote.political_position}
-                        </Badge>
-                      </HStack>
+                        <Box>
+                          <Text
+                            fontSize="xs"
+                            fontWeight="semibold"
+                            color="textMuted"
+                            textTransform="uppercase"
+                            letterSpacing="wide"
+                            mb={2}
+                          >
+                            Stakeholder Support
+                          </Text>
+                          <VStack align="stretch" gap={1.5}>
+                            {position.stakeholder_support.map(
+                              (stakeholder, index) => (
+                                <HStack key={index} align="flex-start" gap={2.5}>
+                                  <Box
+                                    mt="7px"
+                                    boxSize="5px"
+                                    rounded="full"
+                                    bg={token}
+                                    flexShrink={0}
+                                  />
+                                  <Text fontSize="sm" color="text">
+                                    {stakeholder}
+                                  </Text>
+                                </HStack>
+                              ),
+                            )}
+                          </VStack>
+                        </Box>
 
-                      <Box>
-                        <Text
-                          fontSize="sm"
-                          fontWeight="bold"
-                          color="text"
-                          mb={2}
-                        >
-                          Philosophy:
-                        </Text>
-                        <Text fontSize="sm" color="text">
-                          {bill.voting_analysis.no_vote.philosophy}
-                        </Text>
-                      </Box>
-
-                      <Box>
-                        <Text
-                          fontSize="sm"
-                          fontWeight="bold"
-                          color="text"
-                          mb={2}
-                        >
-                          Stakeholder Support:
-                        </Text>
-                        <VStack align="stretch" gap={1}>
-                          {bill.voting_analysis.no_vote.stakeholder_support.map(
-                            (stakeholder, index) => (
-                              <HStack key={index} align="flex-start">
-                                <Text color="red.600" fontSize="sm">
-                                  •
-                                </Text>
-                                <Text fontSize="sm" color="text">
-                                  {stakeholder}
-                                </Text>
-                              </HStack>
-                            ),
-                          )}
-                        </VStack>
-                      </Box>
-
-                      <Box>
-                        <Text
-                          fontSize="sm"
-                          fontWeight="bold"
-                          color="text"
-                          mb={2}
-                        >
-                          Reasoning:
-                        </Text>
-                        <Text fontSize="sm" color="text" fontStyle="italic">
-                          {bill.voting_analysis.no_vote.reasoning}
-                        </Text>
-                      </Box>
-                    </VStack>
-                  </Box>
-                </GridItem>
+                        <Box>
+                          <Text
+                            fontSize="xs"
+                            fontWeight="semibold"
+                            color="textMuted"
+                            textTransform="uppercase"
+                            letterSpacing="wide"
+                            mb={2}
+                          >
+                            Reasoning
+                          </Text>
+                          <Text fontSize="sm" color="textMuted" lineHeight="1.7">
+                            {position.reasoning}
+                          </Text>
+                        </Box>
+                      </VStack>
+                    </Box>
+                  </GridItem>
+                ))}
               </Grid>
             </VStack>
-          </Box>
-          {/* Roll Call Votes - New Section */}
+          </Card>
+
+          {/* Roll Call Votes */}
           <BillVotes bill_id={bill.bill_id} />
+
           {/* Footer Info */}
           {bill.bill_truncated && (
             <Box
-              bg="yellow.50"
+              bg="bgAltGreen"
               p={4}
-              rounded="lg"
-              borderLeft="4px solid"
-              borderColor="yellow.500"
+              rounded="xl"
+              borderLeftWidth="3px"
+              borderColor="primary"
             >
-              <Text fontSize="sm" color="yellow.800">
+              <Text fontSize="sm" color="textMuted">
                 Note: This bill was truncated during analysis due to length
                 constraints.
               </Text>

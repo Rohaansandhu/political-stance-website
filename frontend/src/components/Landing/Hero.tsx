@@ -55,9 +55,10 @@ export function Hero() {
                 <Button
                   size="lg"
                   px={8}
-                  bg="accent"
-                  color="bgDarkShade"
-                  _hover={{ bg: "secondary", transform: "translateY(-2px)" }}
+                  bg="primary"
+                  color="bg"
+                  rounded="xl"
+                  _hover={{ bg: "primaryHover", transform: "translateY(-2px)" }}
                   transition="all 0.2s ease"
                 >
                   Explore Legislators
@@ -67,11 +68,12 @@ export function Hero() {
                 <Button
                   size="lg"
                   variant="outline"
-                  borderColor="accent"
-                  color="accent"
+                  borderColor="border"
+                  color="text"
+                  rounded="xl"
                   _hover={{
-                    bg: "accent",
-                    color: "bgDarkShade",
+                    borderColor: "primary",
+                    color: "primary",
                     transform: "translateY(-2px)",
                   }}
                   transition="all 0.2s ease"
@@ -83,11 +85,12 @@ export function Hero() {
                 <Button
                   size="lg"
                   variant="outline"
-                  borderColor="accent"
-                  color="accent"
+                  borderColor="border"
+                  color="text"
+                  rounded="xl"
                   _hover={{
-                    bg: "accent",
-                    color: "bgDarkShade",
+                    borderColor: "primary",
+                    color: "primary",
                     transform: "translateY(-2px)",
                   }}
                 >
@@ -100,12 +103,14 @@ export function Hero() {
           {/* Right Column: Visual Anchor (Analysis Card) */}
           <GridItem display={{ base: "none", md: "block" }}>
             <Box
-              bg="bgLightShade"
+              bg="surface"
               p={8}
               rounded="2xl"
-              borderTop="4px solid"
-              borderColor="blue.500"
-              shadow="2xl"
+              borderWidth="1px"
+              borderColor="border"
+              borderTopWidth="3px"
+              borderTopColor="partyDem"
+              shadow="cardHover"
               position="relative"
             >
               <VStack align="stretch" gap={4}>
@@ -122,7 +127,7 @@ export function Hero() {
                     </Text>
                     <HStack gap={2}>
                       <Badge
-                        colorScheme="purple"
+                        colorPalette="purple" variant="subtle"
                         fontSize="xs"
                         px={2}
                         py={0.5}
@@ -131,7 +136,7 @@ export function Hero() {
                         FEATURED
                       </Badge>
                       <Badge
-                        colorScheme="blue"
+                        colorPalette="blue" variant="subtle"
                         fontSize="xs"
                         px={2}
                         py={0.5}
@@ -164,7 +169,7 @@ export function Hero() {
                     </Text>
                   </HStack>
 
-                  <Box position="relative" h="8px" bg="gray.300" rounded="full">
+                  <Box position="relative" h="8px" bg="bgLightShade" rounded="full">
                     {/* Center line */}
                     <Box
                       position="absolute"
@@ -172,7 +177,7 @@ export function Hero() {
                       top="0"
                       bottom="0"
                       w="2px"
-                      bg="gray.400"
+                      bg="border"
                       transform="translateX(-50%)"
                     />
                     {/* Score dot */}
@@ -183,9 +188,10 @@ export function Hero() {
                       transform="translate(-50%, -50%)"
                       w="16px"
                       h="16px"
-                      bg="blue.500"
+                      bg="partyDem"
                       rounded="full"
-                      border="3px solid white"
+                      borderWidth="3px"
+                      borderColor="surface"
                       shadow="md"
                     />
                   </Box>
@@ -193,10 +199,10 @@ export function Hero() {
 
                 {/* Category Badges */}
                 <HStack gap={2} flexWrap="wrap" mt={2}>
-                  <Badge size="md" variant="subtle" colorScheme="green">
+                  <Badge size="md" variant="subtle" colorPalette="green" rounded="full">
                     Climate Change
                   </Badge>
-                  <Badge size="md" variant="subtle" colorScheme="teal">
+                  <Badge size="md" variant="subtle" colorPalette="teal" rounded="full">
                     Energy Policy
                   </Badge>
                 </HStack>
@@ -205,8 +211,8 @@ export function Hero() {
                 <HStack
                   justify="space-between"
                   pt={4}
-                  borderTop="1px solid"
-                  borderColor="gray.300"
+                  borderTopWidth="1px"
+                  borderColor="borderSubtle"
                   mt={2}
                 >
                   <Text fontSize="xs" color="text" opacity={0.7}>

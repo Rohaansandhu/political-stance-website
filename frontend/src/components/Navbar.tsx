@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { Menu, X } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
+import { ColorModeButton } from "./ui/color-mode";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -52,7 +53,7 @@ function Navbar() {
           </RouterLink>
 
           {/* Desktop Nav Links */}
-          <HStack as="nav" display={{ base: "none", md: "flex" }} gap={8}>
+          <HStack as="nav" display={{ base: "none", md: "flex" }} gap={6}>
             {navItems.map((item) => (
               <Link
                 key={item.label}
@@ -73,18 +74,21 @@ function Navbar() {
                 <RouterLink to={item.to}>{item.label}</RouterLink>
               </Link>
             ))}
+            <ColorModeButton color="text" _hover={{ bg: "bgLightShade", color: "primary" }} />
           </HStack>
 
-          {/* Mobile Menu Button */}
-          <IconButton
-            aria-label="Toggle menu"
-            variant="ghost"
-            color="primary"
-            display={{ base: "flex", md: "none" }}
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </IconButton>
+          {/* Mobile Menu Button + Color Mode */}
+          <HStack display={{ base: "flex", md: "none" }} gap={1}>
+            <ColorModeButton color="text" _hover={{ bg: "bgLightShade", color: "primary" }} />
+            <IconButton
+              aria-label="Toggle menu"
+              variant="ghost"
+              color="primary"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
+            </IconButton>
+          </HStack>
         </Flex>
 
         {/* Mobile Nav Menu */}

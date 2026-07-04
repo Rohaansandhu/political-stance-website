@@ -127,7 +127,10 @@ export default function Pagination({
             onClick={() => handlePageClick(pageNum)}
             size="sm"
             variant={isActive ? 'solid' : 'ghost'}
-            colorScheme={isActive ? 'blue' : 'gray'}
+            bg={isActive ? 'primary' : undefined}
+            color={isActive ? 'bg' : 'text'}
+            _hover={isActive ? { bg: 'primaryHover' } : { bg: 'bgLightShade' }}
+            rounded="lg"
             disabled={disabled}
             minW="40px"
             fontWeight={isActive ? 'bold' : 'normal'}
@@ -162,7 +165,7 @@ export default function Pagination({
       )}
 
       {/* Page Info Text */}
-      <Text fontSize="sm" color="text" ml={4} display={{ base: 'none', md: 'block' }}>
+      <Text fontSize="sm" color="textMuted" ml={4} display={{ base: 'none', md: 'block' }}>
         Page {currentPage} of {totalPages}
       </Text>
     </HStack>

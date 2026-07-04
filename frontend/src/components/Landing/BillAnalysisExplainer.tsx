@@ -26,7 +26,7 @@ export function BillAnalysisExplainer() {
               How We Analyze Each Bill
             </Heading>
 
-            <Text fontSize="lg" color="text" opacity={0.9} maxW="3xl" mx="auto">
+            <Text fontSize="lg" color="textMuted" maxW="3xl" mx="auto">
               Large language models are used to analyze each bill, identify
               relevant political categories, and estimate the partisan leaning
               and impact of each category within the bill.
@@ -56,7 +56,7 @@ export function BillAnalysisExplainer() {
                 <Heading as="h3" size="md" color="primary">
                   AI-Powered Analysis
                 </Heading>
-                <Text color="text" opacity={0.8} textAlign="center">
+                <Text color="textMuted" textAlign="center">
                   Advanced language models read and interpret legislative text
                 </Text>
               </VStack>
@@ -78,7 +78,7 @@ export function BillAnalysisExplainer() {
                 <Heading as="h3" size="md" color="primary">
                   Category Identification
                 </Heading>
-                <Text color="text" opacity={0.8} textAlign="center">
+                <Text color="textMuted" textAlign="center">
                   Automatically tags bills with relevant political topics
                 </Text>
               </VStack>
@@ -100,7 +100,7 @@ export function BillAnalysisExplainer() {
                 <Heading as="h3" size="md" color="primary">
                   Partisan Impact
                 </Heading>
-                <Text color="text" opacity={0.8} textAlign="center">
+                <Text color="textMuted" textAlign="center">
                   Estimates the ideological direction and significance of each
                   bill
                 </Text>
@@ -108,7 +108,7 @@ export function BillAnalysisExplainer() {
             </GridItem>
           </Grid>
 
-          <Text color="text" opacity={0.8} textAlign="center">
+          <Text color="textMuted" textAlign="center">
             Find more complete analyses under the <strong>Bill Analyses</strong>{" "}
             tab.
           </Text>

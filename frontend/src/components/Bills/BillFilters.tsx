@@ -53,8 +53,8 @@ export default function BillFilters({
 
   if (!filterOptions) {
     return (
-      <Box bg="bgLightShade" p={6} rounded="lg">
-        <Heading size="md" color="text">
+      <Box bg="surface" p={6} rounded="card" borderWidth="1px" borderColor="border">
+        <Heading size="md" color="textMuted">
           Loading filters...
         </Heading>
       </Box>
@@ -62,24 +62,24 @@ export default function BillFilters({
   }
 
   return (
-    <Box bg="bgLightShade" p={6} rounded="lg">
+    <Box bg="surface" p={6} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card">
       <HStack justify="space-between" mb={4} flexWrap="wrap" gap={2}>
         <HStack gap={2}>
-          <Heading size="md" color="primary">
+          <Heading size="md" color="text" letterSpacing="tight">
             Filters
           </Heading>
           {activeFilterCount > 0 && (
-            <Badge colorScheme="blue" fontSize="sm" px={2} py={1}>
+            <Badge colorPalette="green" variant="subtle" rounded="full" fontSize="sm" px={2.5} py={0.5}>
               {activeFilterCount} active
             </Badge>
           )}
         </HStack>
-        
+
         {activeFilterCount > 0 && (
-          <Button 
-            size="sm" 
-            onClick={onClear} 
-            colorScheme="red" 
+          <Button
+            size="sm"
+            onClick={onClear}
+            colorPalette="red"
             variant="ghost"
           >
             Clear All

@@ -21,6 +21,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import IdeologyViewsBar from "./IdeologyViewBar";
+import { useChartTheme } from "./chartTheme";
 
 interface HistogramProps {
   specHash: string;
@@ -65,6 +66,7 @@ export default function CongressHistogram({
   subject,
   current,
 }: HistogramProps) {
+  const chart = useChartTheme();
   const [data, setData] = useState<HistogramData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +111,7 @@ export default function CongressHistogram({
   if (error) {
     return (
       <Center py={20}>
-        <Text color="red.500" fontSize="lg">
+        <Text color="voteNay" fontSize="lg">
           Error: {error}
         </Text>
       </Center>
@@ -133,13 +135,13 @@ export default function CongressHistogram({
       {/* Header */}
       <HStack justify="space-between" align="center">
         <VStack align="flex-start" gap={1}>
-          <Heading size="xl" color="primary">
+          <Heading size="xl" color="text" letterSpacing="tight">
             {subject}
           </Heading>
           <HStack gap={2}>
-            <Badge colorScheme="blue">{chamber}</Badge>
-            <Badge colorScheme="purple">{field.replace("_", " ")}</Badge>
-            <Text color="text" fontSize="sm">
+            <Badge colorPalette="blue" variant="subtle" rounded="full">{chamber}</Badge>
+            <Badge colorPalette="purple" variant="subtle" rounded="full">{field.replace("_", " ")}</Badge>
+            <Text color="textMuted" fontSize="sm">
               {data.total_count} legislators
             </Text>
           </HStack>
@@ -156,34 +158,38 @@ export default function CongressHistogram({
               : party === "R"
                 ? "Republicans"
                 : "Independents";
-          const colorScheme =
+          const colorPalette =
             party === "D" ? "blue" : party === "R" ? "red" : "yellow";
 
           return (
             <Stat.Root
               key={party}
-              bg="bg"
+              bg="surface"
               p={4}
-              rounded="lg"
+              rounded="card"
+              borderWidth="1px"
+              borderColor="border"
+              boxShadow="card"
               flex="1"
               minW="200px"
             >
               <Stat.Label>
-                <Badge colorScheme={colorScheme} mb={2}>
+                <Badge colorPalette={colorPalette} variant="subtle" rounded="full" mb={2}>
                   {partyName}
                 </Badge>
               </Stat.Label>
-              <Stat.ValueText fontSize="2xl" color="primary">
+              <Stat.ValueText fontSize="2xl" color="text" fontVariantNumeric="tabular-nums">
                 {partyStats.mean !== null ? partyStats.mean.toFixed(3) : "N/A"}
               </Stat.ValueText>
-              <Stat.HelpText>
+              <Stat.HelpText color="textMuted">
                 Mean Ideology Score • {partyStats.count} members
               </Stat.HelpText>
-              {partyStats.median !== null && (
-                <Text fontSize="sm" color="text" mt={1}>
-                  Median: {partyStats.median.toFixed(3)}
-                </Text>
-              )}
+              <Text fontSize="sm" color="textMuted" mt={1}>
+                Median:{" "}
+                {partyStats.median !== null
+                  ? partyStats.median.toFixed(3)
+                  : "N/A"}
+              </Text>
             </Stat.Root>
           );
         })}
@@ -192,44 +198,52 @@ export default function CongressHistogram({
       <IdeologyViewsBar subject={subject} />
 
       {/* Histogram Chart */}
-      <Box bg="bg" p={6} rounded="lg">
+      <Box bg="surface" p={6} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card">
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={data.bins} margin={{ left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} vertical={false} />
             <XAxis
               dataKey="range"
               angle={-45}
               textAnchor="end"
               height={100}
-              tick={{ fill: "#4a5568", fontSize: 12 }}
+              tickLine={false}
+              axisLine={{ stroke: chart.grid }}
+              tick={{ fill: chart.tick, fontSize: 12 }}
             />
             <YAxis
               width={60}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fill: chart.tick, fontSize: 12 }}
               label={{
                 value: "# Legislators",
                 angle: -90,
                 position: "insideLeft",
                 offset: 10,
+                fill: chart.tick,
                 style: { textAnchor: "middle" },
               }}
             />
             <Tooltip
+              cursor={{ fill: chart.grid, fillOpacity: 0.4 }}
               contentStyle={{
-                backgroundColor: "#ffffff",
-                border: "1px solid #e2e8f0",
-                borderRadius: "8px",
+                backgroundColor: chart.tooltipBg,
+                border: `1px solid ${chart.tooltipBorder}`,
+                borderRadius: "12px",
+                boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)",
               }}
             />
-            <Legend />
-            <Bar dataKey="D" name="Democrats" fill="#3182ce" stackId="a" />
-            <Bar dataKey="R" name="Republicans" fill="#e53e3e" stackId="a" />
-            <Bar dataKey="I" name="Independents" fill="#d69e2e" stackId="a" />
+            <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
+            <Bar dataKey="D" name="Democrats" fill={chart.partyColors.D} stackId="a" radius={[0, 0, 0, 0]} />
+            <Bar dataKey="R" name="Republicans" fill={chart.partyColors.R} stackId="a" />
+            <Bar dataKey="I" name="Independents" fill={chart.partyColors.I} stackId="a" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </Box>
 
       {/* Additional Stats */}
-      <HStack gap={4} fontSize="sm" color="text" justify="center">
+      <HStack gap={4} fontSize="sm" color="textMuted" justify="center">
         <Text>
           Ideology Score Range: -1.0 (Liberal) to 1.0 (Conservative) • Data
           based on voting records

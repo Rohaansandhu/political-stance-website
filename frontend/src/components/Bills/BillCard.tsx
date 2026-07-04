@@ -62,9 +62,9 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
   const avgScore = calculateAvgScore();
 
   const getIdeologyColor = (score: number) => {
-    if (score < -0.3) return 'blue.500';
-    if (score > 0.3) return 'red.500';
-    return 'purple.500';
+    if (score < -0.3) return 'partyDem';
+    if (score > 0.3) return 'partyRep';
+    return 'partyInd';
   };
 
   const getIdeologyLabel = (score: number) => {
@@ -74,24 +74,27 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
   };
 
   const getChamberColor = (chamber: string) => {
-    return chamber === 'house' ? 'blue' : 'green';
+    return chamber === 'house' ? 'blue' : 'purple';
   };
 
   return (
     <Box
-      bg="bgLightShade"
+      bg="surface"
       p={6}
-      rounded="lg"
+      rounded="card"
       cursor="pointer"
       onClick={() => navigate(`/bill-analyses/${bill.bill_id}/${bill.model}`)}
+      borderWidth="1px"
+      borderColor="border"
+      boxShadow="card"
       _hover={{
         transform: 'translateY(-4px)',
-        shadow: 'lg',
-        bg: 'bg',
+        boxShadow: 'cardHover',
+        borderColor: 'primary',
       }}
-      transition="all 0.2s"
-      borderTop={featured ? '4px solid' : 'none'}
-      borderColor={featured ? getIdeologyColor(avgScore) : 'transparent'}
+      transition="all 0.25s ease"
+      borderTopWidth={featured ? '3px' : '1px'}
+      borderTopColor={featured ? getIdeologyColor(avgScore) : 'border'}
       position="relative"
     >
       <VStack align="stretch" gap={3}>
@@ -103,11 +106,11 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
             </Text>
             <HStack gap={2}>
               {featured && (
-                <Badge colorScheme="purple" fontSize="xs">
+                <Badge colorPalette="purple" variant="subtle" rounded="full" fontSize="xs">
                   FEATURED
                 </Badge>
               )}
-              <Badge colorScheme={getChamberColor(bill.chamber)} fontSize="xs">
+              <Badge colorPalette={getChamberColor(bill.chamber)} variant="subtle" rounded="full" fontSize="xs">
                 {bill.chamber.toUpperCase()}
               </Badge>
             </HStack>
@@ -126,23 +129,23 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
         {/* Ideology Indicator */}
         <Box>
           <HStack justify="space-between" mb={2}>
-            <Text fontSize="xs" color="text" fontWeight="medium">
+            <Text fontSize="xs" color={getIdeologyColor(avgScore)} fontWeight="semibold">
               {getIdeologyLabel(avgScore)}
             </Text>
-            <Text fontSize="xs" color="text">
+            <Text fontSize="xs" color="textMuted" fontVariantNumeric="tabular-nums">
               {avgScore.toFixed(2)}
             </Text>
           </HStack>
 
-          <Box position="relative" h="6px" bg="gray.200" rounded="full">
+          <Box position="relative" h="6px" bg="bgLightShade" rounded="full">
             {/* Center line */}
             <Box
               position="absolute"
               left="50%"
               top="0"
               bottom="0"
-              w="2px"
-              bg="gray.400"
+              w="1px"
+              bg="border"
               transform="translateX(-50%)"
             />
 
@@ -156,7 +159,8 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
               h="12px"
               bg={getIdeologyColor(avgScore)}
               rounded="full"
-              border="2px solid white"
+              borderWidth="2px"
+              borderColor="surface"
               shadow="sm"
             />
           </Box>
@@ -171,6 +175,9 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
                 key={cat.name}
                 size="sm"
                 variant="subtle"
+                rounded="full"
+                bg="bgLightShade"
+                color="textMuted"
                 fontSize="xs"
               >
                 {cat.name}
@@ -182,13 +189,13 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
         <HStack
           justify="space-between"
           pt={2}
-          borderTop="1px solid"
-          borderColor="gray.200"
+          borderTopWidth="1px"
+          borderColor="borderSubtle"
         >
-          <Text fontSize="xs" color="text">
+          <Text fontSize="xs" color="textMuted">
             {bill.congress}th Congress
           </Text>
-          <Text fontSize="xs" color="text" fontWeight="medium">
+          <Text fontSize="xs" color="textMuted" fontWeight="medium">
             {bill.model}
           </Text>
         </HStack>

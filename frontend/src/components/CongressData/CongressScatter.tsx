@@ -21,6 +21,7 @@ import {
   Cell,
 } from "recharts";
 import IdeologyViewsBar from "./IdeologyViewBar";
+import { useChartTheme } from "./chartTheme";
 
 interface ScatterProps {
   specHash: string;
@@ -57,18 +58,14 @@ interface ScatterData {
   };
 }
 
-const PARTY_COLORS = {
-  D: "#3182ce", // Match Histogram Blue
-  R: "#e53e3e", // Match Histogram Red
-  I: "#d69e2e", // Match Histogram Yellow
-};
-
 export default function CongressScatter({
   specHash,
   field,
   subject,
   current,
 }: ScatterProps) {
+  const chart = useChartTheme();
+  const PARTY_COLORS = chart.partyColors;
   const [data, setData] = useState<ScatterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -113,7 +110,7 @@ export default function CongressScatter({
   if (error) {
     return (
       <Center py={20}>
-        <Text color="red.500" fontSize="lg">
+        <Text color="voteNay" fontSize="lg">
           Error: {error}
         </Text>
       </Center>
@@ -140,30 +137,30 @@ export default function CongressScatter({
 
       return (
         <Box
-          bg="white"
+          bg="surface"
           p={3}
-          border="1px solid"
-          borderColor="gray.200"
-          borderRadius="8px"
+          borderWidth="1px"
+          borderColor="border"
+          borderRadius="12px"
           shadow="lg"
           zIndex={10}
         >
-          <Text fontWeight="bold" color="primary">
+          <Text fontWeight="bold" color="text">
             {legislator.official_full_name}
           </Text>
           <HStack gap={2} my={1}>
-            <Badge bg={color} color="white">
+            <Badge bg={color} color="white" rounded="full">
               {legislator.party}
             </Badge>
-            <Text fontSize="sm" color="text">
+            <Text fontSize="sm" color="textMuted">
               {legislator.state}
             </Text>
           </HStack>
           <VStack align="flex-start" gap={0} mt={2}>
-            <Text fontSize="sm" color="text">
+            <Text fontSize="sm" color="textMuted">
               Score: <b>{legislator.score.toFixed(3)}</b>
             </Text>
-            <Text fontSize="sm" color="text">
+            <Text fontSize="sm" color="textMuted">
               Bills: <b>{legislator.bill_count}</b>
             </Text>
           </VStack>
@@ -176,20 +173,20 @@ export default function CongressScatter({
   const CustomLegend = () => (
     <HStack justify="center" mt={4} gap={6}>
       <HStack>
-        <Box w="10px" h="10px" borderRadius="2px" bg={PARTY_COLORS.D} />
-        <Text fontSize="sm" color="text">
+        <Box w="10px" h="10px" rounded="full" bg={PARTY_COLORS.D} />
+        <Text fontSize="sm" color="textMuted">
           Democrats
         </Text>
       </HStack>
       <HStack>
-        <Box w="10px" h="10px" borderRadius="2px" bg={PARTY_COLORS.R} />
-        <Text fontSize="sm" color="text">
+        <Box w="10px" h="10px" rounded="full" bg={PARTY_COLORS.R} />
+        <Text fontSize="sm" color="textMuted">
           Republicans
         </Text>
       </HStack>
       <HStack>
-        <Box w="10px" h="10px" borderRadius="2px" bg={PARTY_COLORS.I} />
-        <Text fontSize="sm" color="text">
+        <Box w="10px" h="10px" rounded="full" bg={PARTY_COLORS.I} />
+        <Text fontSize="sm" color="textMuted">
           Independents
         </Text>
       </HStack>
@@ -201,13 +198,13 @@ export default function CongressScatter({
       {/* Header */}
       <HStack justify="space-between" align="center">
         <VStack align="flex-start" gap={1}>
-          <Heading size="xl" color="primary">
+          <Heading size="xl" color="text" letterSpacing="tight">
             {subject}
           </Heading>
           <HStack gap={2}>
-            <Badge colorScheme="blue">{chamber}</Badge>
-            <Badge colorScheme="purple">{field.replace("_", " ")}</Badge>
-            <Text color="text" fontSize="sm">
+            <Badge colorPalette="blue" variant="subtle" rounded="full">{chamber}</Badge>
+            <Badge colorPalette="purple" variant="subtle" rounded="full">{field.replace("_", " ")}</Badge>
+            <Text color="textMuted" fontSize="sm">
               {data.metadata.total_count} legislators
             </Text>
           </HStack>
@@ -216,16 +213,16 @@ export default function CongressScatter({
 
       {/* Statistics Cards */}
       <HStack gap={4} wrap="wrap">
-        <Stat.Root bg="bg" p={4} rounded="lg" flex="1" minW="200px">
+        <Stat.Root bg="surface" p={4} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card" flex="1" minW="200px">
           <Stat.Label>
-            <Badge colorScheme="purple" mb={2}>
+            <Badge colorPalette="purple" variant="subtle" rounded="full" mb={2}>
               Correlation
             </Badge>
           </Stat.Label>
-          <Stat.ValueText fontSize="2xl" color="primary">
+          <Stat.ValueText fontSize="2xl" color="text" fontVariantNumeric="tabular-nums">
             {data.metadata.correlation.toFixed(3)}
           </Stat.ValueText>
-          <Stat.HelpText>Score vs Bill Count</Stat.HelpText>
+          <Stat.HelpText color="textMuted">Score vs Bill Count</Stat.HelpText>
         </Stat.Root>
 
         {(["D", "R", "I"] as const).map((party) => {
@@ -236,27 +233,30 @@ export default function CongressScatter({
               : party === "R"
                 ? "Republicans"
                 : "Independents";
-          const colorScheme =
+          const colorPalette =
             party === "D" ? "blue" : party === "R" ? "red" : "yellow";
 
           return (
             <Stat.Root
               key={party}
-              bg="bg"
+              bg="surface"
               p={4}
-              rounded="lg"
+              rounded="card"
+              borderWidth="1px"
+              borderColor="border"
+              boxShadow="card"
               flex="1"
               minW="200px"
             >
               <Stat.Label>
-                <Badge colorScheme={colorScheme} mb={2}>
+                <Badge colorPalette={colorPalette} variant="subtle" rounded="full" mb={2}>
                   {partyName}
                 </Badge>
               </Stat.Label>
-              <Stat.ValueText fontSize="2xl" color="primary">
+              <Stat.ValueText fontSize="2xl" color="text" fontVariantNumeric="tabular-nums">
                 {count}
               </Stat.ValueText>
-              <Stat.HelpText>Members</Stat.HelpText>
+              <Stat.HelpText color="textMuted">Members</Stat.HelpText>
             </Stat.Root>
           );
         })}
@@ -265,40 +265,44 @@ export default function CongressScatter({
       <IdeologyViewsBar subject={subject} />
 
       {/* Scatter Plot */}
-      <Box bg="bg" p={6} rounded="lg">
+      <Box bg="surface" p={6} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card">
         <ResponsiveContainer width="100%" height={350}>
           <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
 
             <XAxis
               type="number"
               dataKey="score"
               domain={[-1, 1]}
               name="Ideology Score"
+              tickLine={false}
+              axisLine={{ stroke: chart.grid }}
               label={{
                 value: "Ideology Score",
                 position: "insideBottom",
                 offset: -10,
-                fill: "#4a5568",
+                fill: chart.tick,
                 fontSize: 12,
                 style: { textAnchor: "middle" },
               }}
-              tick={{ fill: "#4a5568", fontSize: 12 }}
+              tick={{ fill: chart.tick, fontSize: 12 }}
             />
 
             <YAxis
               type="number"
               dataKey="bill_count"
               name="Bill Count"
+              tickLine={false}
+              axisLine={false}
               label={{
                 value: "Number of Bills",
                 angle: -90,
                 position: "insideLeft",
-                fill: "#4a5568",
+                fill: chart.tick,
                 fontSize: 12,
                 style: { textAnchor: "middle" },
               }}
-              tick={{ fill: "#4a5568", fontSize: 12 }}
+              tick={{ fill: chart.tick, fontSize: 12 }}
             />
 
             <Tooltip
@@ -331,7 +335,7 @@ export default function CongressScatter({
       </Box>
 
       {/* Additional Info */}
-      <HStack gap={4} fontSize="sm" color="text" justify="center">
+      <HStack gap={4} fontSize="sm" color="textMuted" justify="center">
         <Text>
           Ideology Score Range: {data.metadata.score_range[0].toFixed(2)} to{" "}
           {data.metadata.score_range[1].toFixed(2)} • Bill Count Range:{" "}

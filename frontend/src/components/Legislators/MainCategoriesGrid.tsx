@@ -61,7 +61,7 @@ function ScoreBar({
 }) {
   const pct = ((value - min) / (max - min)) * 100;
   return (
-    <Box position="relative" h="8px" bg="gray.200" rounded="full">
+    <Box position="relative" h="8px" bg="bgLightShade" rounded="full">
       <Box
         position="absolute"
         left={`${pct}%`}
@@ -71,7 +71,7 @@ function ScoreBar({
         h="12px"
         bg={color}
         rounded="full"
-        border="2px solid white"
+        borderWidth="2px" borderColor="surface"
         boxShadow="sm"
       />
     </Box>
@@ -123,12 +123,12 @@ function BillRow({
       justify="space-between"
       px={2}
       py={1}
-      bg={isLib ? "blue.50" : "red.50"}
+      bg={isLib ? "blue.subtle" : "red.subtle"}
       rounded="md"
       gap={2}
     >
       <VStack align="flex-start" gap={0} flex={1} minW={0}>
-        <Text fontSize="xs" fontWeight="700" color={`${color}.700`}>
+        <Text fontSize="xs" fontWeight="700" color={`${color}.fg`}>
           <Link
             href={getBillUrl(bill.bill_id, model)}
             _hover={{ textDecoration: "underline" }}
@@ -136,12 +136,12 @@ function BillRow({
             {formatBillId(bill.bill_id)}
           </Link>
         </Text>
-        <Text fontSize="xs" color="gray.400">
+        <Text fontSize="xs" color="textMuted">
           {formatDate(bill.date)}
         </Text>
       </VStack>
       <Badge
-        colorScheme={voteIsYea ? "green" : "red"}
+        colorPalette={voteIsYea ? "green" : "red"}
         variant="solid"
         fontSize="xs"
         fontWeight="bold"
@@ -155,7 +155,7 @@ function BillRow({
       <Text
         fontSize="xs"
         fontWeight="700"
-        color={isLib ? "blue.600" : "red.600"}
+        color={isLib ? "blue.fg" : "red.fg"}
         flexShrink={0}
         w="36px"
         textAlign="right"
@@ -179,7 +179,7 @@ function TopBillsSection({
       <Text
         fontSize="xs"
         fontWeight="700"
-        color="gray.500"
+        color="textMuted"
         textTransform="uppercase"
         letterSpacing="0.05em"
         mb={2}
@@ -190,8 +190,8 @@ function TopBillsSection({
         {/* Liberal bills */}
         <VStack align="stretch" gap={1} flex={1}>
           <HStack gap={1} mb={1}>
-            <Box w="8px" h="8px" borderRadius="full" bg="blue.500" />
-            <Text fontSize="xs" fontWeight="700" color="blue.600">
+            <Box w="8px" h="8px" borderRadius="full" bg="partyDem" />
+            <Text fontSize="xs" fontWeight="700" color="blue.fg">
               Most Liberal Votes
             </Text>
           </HStack>
@@ -208,8 +208,8 @@ function TopBillsSection({
         {/* Conservative bills */}
         <VStack align="stretch" gap={1} flex={1}>
           <HStack gap={1} mb={1}>
-            <Box w="8px" h="8px" borderRadius="full" bg="red.500" />
-            <Text fontSize="xs" fontWeight="700" color="red.600">
+            <Box w="8px" h="8px" borderRadius="full" bg="partyRep" />
+            <Text fontSize="xs" fontWeight="700" color="red.fg">
               Most Conservative Votes
             </Text>
           </HStack>
@@ -250,10 +250,10 @@ function CategoryRow({
 
   return (
     <Box
-      bg="bg"
+      bg="surface"
       rounded="lg"
-      border="1px solid"
-      borderColor="gray.100"
+      borderWidth="1px"
+      borderColor="borderSubtle"
       borderLeft="3px solid"
       borderLeftColor={ideology.color}
       overflow="hidden"
@@ -290,7 +290,7 @@ function CategoryRow({
         </Text>
         <Text
           fontSize="sm"
-          color="gray.500"
+          color="textMuted"
           flexShrink={0}
           w="44px"
           textAlign="right"
@@ -313,20 +313,20 @@ function CategoryRow({
         >
           {ideology.label}
         </Box>
-        <Text fontSize="xs" color="gray.400" flexShrink={0}>
+        <Text fontSize="xs" color="textMuted" flexShrink={0}>
           {expanded ? "▲" : "▼"}
         </Text>
       </HStack>
 
       {/* Expanded content */}
       {expanded && (
-        <Box px={4} pb={4} pt={2} borderTop="1px solid" borderColor="gray.100">
+        <Box px={4} pb={4} pt={2} borderTopWidth="1px" borderColor="borderSubtle">
           {!hasSufficientData ? (
             <Box py={3} textAlign="center">
-              <Text fontSize="sm" color="gray.500" fontWeight="600">
+              <Text fontSize="sm" color="textMuted" fontWeight="600">
                 Not Enough Voting Data
               </Text>
-              <Text fontSize="xs" color="gray.400">
+              <Text fontSize="xs" color="textMuted">
                 Bills analyzed: {info.bill_count}
               </Text>
             </Box>
@@ -337,7 +337,7 @@ function CategoryRow({
                 <VStack gap={0} align="flex-start">
                   <Text
                     fontSize="xs"
-                    color="gray.500"
+                    color="textMuted"
                     fontWeight="600"
                     textTransform="uppercase"
                   >
@@ -350,7 +350,7 @@ function CategoryRow({
                 <VStack gap={0} align="flex-start">
                   <Text
                     fontSize="xs"
-                    color="gray.500"
+                    color="textMuted"
                     fontWeight="600"
                     textTransform="uppercase"
                   >
@@ -363,7 +363,7 @@ function CategoryRow({
                 <VStack gap={0} align="flex-start">
                   <Text
                     fontSize="xs"
-                    color="gray.500"
+                    color="textMuted"
                     fontWeight="600"
                     textTransform="uppercase"
                   >
@@ -379,7 +379,7 @@ function CategoryRow({
                   <VStack gap={0} align="flex-start">
                     <Text
                       fontSize="xs"
-                      color="gray.500"
+                      color="textMuted"
                       fontWeight="600"
                       textTransform="uppercase"
                     >
@@ -387,7 +387,7 @@ function CategoryRow({
                     </Text>
                     <Text fontSize="lg" fontWeight="700" color="text">
                       #{info.current_rank}{" "}
-                      <Text as="span" fontSize="xs" color="gray.400">
+                      <Text as="span" fontSize="xs" color="textMuted">
                         of {info.total_current_members}
                       </Text>
                     </Text>
@@ -398,7 +398,7 @@ function CategoryRow({
               {/* Ideology score bar */}
               <Box>
                 <HStack justify="space-between" mb={1}>
-                  <Text fontSize="xs" color="gray.500" fontWeight="600">
+                  <Text fontSize="xs" color="textMuted" fontWeight="600">
                     Ideology Score
                   </Text>
                 </HStack>
@@ -409,10 +409,10 @@ function CategoryRow({
                   color={scoreColor}
                 />
                 <HStack justify="space-between" mt={1}>
-                  <Text fontSize="xs" color="blue.500">
+                  <Text fontSize="xs" color="partyDem">
                     Liberal (−1)
                   </Text>
-                  <Text fontSize="xs" color="red.500">
+                  <Text fontSize="xs" color="partyRep">
                     Conservative (+1)
                   </Text>
                 </HStack>
@@ -422,7 +422,7 @@ function CategoryRow({
               {hasCurrentData && (
                 <Box>
                   <HStack justify="space-between" mb={1}>
-                    <Text fontSize="xs" color="gray.500" fontWeight="600">
+                    <Text fontSize="xs" color="textMuted" fontWeight="600">
                       Ideological Position
                     </Text>
                   </HStack>
@@ -433,10 +433,10 @@ function CategoryRow({
                     color={ideology.color}
                   />
                   <HStack justify="space-between" mt={1}>
-                    <Text fontSize="xs" color="blue.500">
+                    <Text fontSize="xs" color="partyDem">
                       Liberal
                     </Text>
-                    <Text fontSize="xs" color="red.500">
+                    <Text fontSize="xs" color="partyRep">
                       Conservative
                     </Text>
                   </HStack>
@@ -523,7 +523,7 @@ export default function MainCategoryGrid({
           Policy Categories
         </Heading>
         <HStack gap={2}>
-          <Text fontSize="xs" color="gray.500">
+          <Text fontSize="xs" color="textMuted">
             Sort by:
           </Text>
           {[
@@ -537,13 +537,13 @@ export default function MainCategoryGrid({
               px={3}
               py={1}
               rounded="md"
-              bg={sortBy === option.key ? "blue.500" : "gray.100"}
-              color={sortBy === option.key ? "white" : "gray.700"}
+              bg={sortBy === option.key ? "primary" : "bgLightShade"}
+              color={sortBy === option.key ? "bg" : "textMuted"}
               cursor="pointer"
               fontSize="xs"
               fontWeight="600"
               transition="all 0.2s"
-              _hover={{ bg: sortBy === option.key ? "blue.600" : "gray.200" }}
+              _hover={{ bg: sortBy === option.key ? "primaryHover" : "border" }}
             >
               {option.label}
             </Box>
@@ -553,16 +553,16 @@ export default function MainCategoryGrid({
 
       {/* Column headers */}
       <HStack px={3} pb={1} gap={3}>
-        <Text fontSize="xs" color="gray.400" flex={1}>
+        <Text fontSize="xs" color="textMuted" flex={1}>
           Category
         </Text>
-        <Text fontSize="xs" color="gray.400" w="40px" textAlign="right">
+        <Text fontSize="xs" color="textMuted" w="40px" textAlign="right">
           Score
         </Text>
-        <Text fontSize="xs" color="gray.400" w="44px" textAlign="right">
+        <Text fontSize="xs" color="textMuted" w="44px" textAlign="right">
           Pctile
         </Text>
-        <Text fontSize="xs" color="gray.400" w="110px" textAlign="center">
+        <Text fontSize="xs" color="textMuted" w="110px" textAlign="center">
           Position
         </Text>
         <Box w="16px" />
@@ -585,18 +585,18 @@ export default function MainCategoryGrid({
         <Box
           mt={6}
           mb={4}
-          bg="bg"
+          bg="surface"
           rounded="lg"
-          border="1px solid"
-          borderColor="gray.200"
+          borderWidth="1px"
+          borderColor="border"
           overflow="hidden"
         >
           <HStack
             px={4}
             py={3}
-            bg="gray.50"
-            borderBottom="1px solid"
-            borderColor="gray.200"
+            bg="bgLightShade"
+            borderBottomWidth="1px"
+            borderColor="border"
           >
             <Text fontSize="sm" fontWeight="700" color="text">
               Recent Votes
@@ -607,8 +607,8 @@ export default function MainCategoryGrid({
             <HStack align="flex-start" gap={3}>
               <VStack align="stretch" gap={1} flex={1}>
                 <HStack gap={1} mb={1}>
-                  <Box w="8px" h="8px" borderRadius="full" bg="blue.500" />
-                  <Text fontSize="xs" fontWeight="700" color="blue.600">
+                  <Box w="8px" h="8px" borderRadius="full" bg="partyDem" />
+                  <Text fontSize="xs" fontWeight="700" color="blue.fg">
                     Most Liberal
                   </Text>
                 </HStack>
@@ -617,12 +617,12 @@ export default function MainCategoryGrid({
                     key={`${bill.bill_id}-${bill.date}`}
                     px={2}
                     py={1}
-                    bg="blue.50"
+                    bg="blue.subtle"
                     rounded="md"
                   >
                     <HStack justify="space-between">
                       <VStack align="flex-start" gap={0} flex={1} minW={0}>
-                        <Text fontSize="xs" fontWeight="700" color="blue.700">
+                        <Text fontSize="xs" fontWeight="700" color="blue.fg">
                           <Link
                             href={getBillUrl(bill.bill_id, model)}
                             _hover={{ textDecoration: "underline" }}
@@ -631,10 +631,10 @@ export default function MainCategoryGrid({
                           </Link>
                         </Text>
                         <HStack gap={2}>
-                          <Text fontSize="xs" color="gray.400">
+                          <Text fontSize="xs" color="textMuted">
                             {formatDate(bill.date)}
                           </Text>
-                          <Badge fontSize="2xs" colorScheme="purple">
+                          <Badge fontSize="2xs" variant="solid" colorPalette="purple">
                             {bill.category}
                           </Badge>
                         </HStack>
@@ -646,7 +646,7 @@ export default function MainCategoryGrid({
                         px={2}
                         py={0.5}
                         borderRadius="md"
-                        colorScheme={
+                        colorPalette={
                           ["yea", "aye", "yes"].includes(
                             bill.vote.toLowerCase(),
                           )
@@ -662,8 +662,8 @@ export default function MainCategoryGrid({
               </VStack>
               <VStack align="stretch" gap={1} flex={1}>
                 <HStack gap={1} mb={1}>
-                  <Box w="8px" h="8px" borderRadius="full" bg="red.500" />
-                  <Text fontSize="xs" fontWeight="700" color="red.600">
+                  <Box w="8px" h="8px" borderRadius="full" bg="partyRep" />
+                  <Text fontSize="xs" fontWeight="700" color="red.fg">
                     Most Conservative
                   </Text>
                 </HStack>
@@ -672,12 +672,12 @@ export default function MainCategoryGrid({
                     key={`${bill.bill_id}-${bill.date}`}
                     px={2}
                     py={1}
-                    bg="red.50"
+                    bg="red.subtle"
                     rounded="md"
                   >
                     <HStack justify="space-between">
                       <VStack align="flex-start" gap={0} flex={1} minW={0}>
-                        <Text fontSize="xs" fontWeight="700" color="red.700">
+                        <Text fontSize="xs" fontWeight="700" color="red.fg">
                           <Link
                             href={getBillUrl(bill.bill_id, model)}
                             _hover={{ textDecoration: "underline" }}
@@ -686,10 +686,10 @@ export default function MainCategoryGrid({
                           </Link>
                         </Text>
                         <HStack gap={2}>
-                          <Text fontSize="xs" color="gray.400">
+                          <Text fontSize="xs" color="textMuted">
                             {formatDate(bill.date)}
                           </Text>
-                          <Badge fontSize="2xs" colorScheme="purple">
+                          <Badge fontSize="2xs" variant="solid" colorPalette="purple">
                             {bill.category}
                           </Badge>
                         </HStack>
@@ -701,7 +701,7 @@ export default function MainCategoryGrid({
                         px={2}
                         py={0.5}
                         borderRadius="md"
-                        colorScheme={
+                        colorPalette={
                           ["yea", "aye", "yes"].includes(
                             bill.vote.toLowerCase(),
                           )

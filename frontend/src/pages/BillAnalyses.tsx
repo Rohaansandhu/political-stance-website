@@ -205,10 +205,10 @@ export default function BillAnalysesPage() {
         <VStack align="stretch" gap={8}>
           {/* Header */}
           <Box>
-            <Heading size="2xl" mb={2} color="primary">
+            <Heading size="2xl" mb={2} color="text" letterSpacing="tight">
               Bill Analyses
             </Heading>
-            <Text fontSize="lg" color="text">
+            <Text fontSize="lg" color="textMuted">
               Explore AI-powered political analyses of congressional bills
             </Text>
           </Box>
@@ -218,7 +218,7 @@ export default function BillAnalysesPage() {
           {/* Featured Bills */}
           {!featuredLoading && featuredBills.length > 0 && (
             <Box>
-              <Heading size="lg" mb={4} color="primary">
+              <Heading size="lg" mb={4} color="text" letterSpacing="tight">
                 Featured Bills
               </Heading>
               <BillGrid
@@ -245,7 +245,7 @@ export default function BillAnalysesPage() {
           {/* Bills Grid */}
           <Box>
             {!loading && bills.length > 0 && (
-              <Text color="text" mb={4}>
+              <Text color="textMuted" fontSize="sm" mb={4}>
                 Showing {bills.length} of {pagination.total} bills
               </Text>
             )}

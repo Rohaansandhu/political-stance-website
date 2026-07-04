@@ -33,7 +33,7 @@ function StatItem({
       <Text
         fontSize="xs"
         fontWeight="600"
-        color="gray.500"
+        color="textMuted"
         textTransform="uppercase"
         letterSpacing="0.05em"
         mb="1px"
@@ -49,7 +49,7 @@ function StatItem({
         {value}
       </Text>
       {sub && (
-        <Text fontSize="xs" color="gray.400">
+        <Text fontSize="xs" color="textMuted" opacity={0.8}>
           {sub}
         </Text>
       )}
@@ -81,16 +81,16 @@ export default function LegislatorStatsOverview({ data }: { data: DataInfo }) {
       : 0;
 
   const getOverallIdeology = (percentile: number) => {
-    if (percentile < 0.4) return { label: "Liberal", color: "blue.600" };
-    if (percentile > 0.6) return { label: "Conservative", color: "red.600" };
-    return { label: "Moderate", color: "purple.600" };
+    if (percentile < 0.4) return { label: "Liberal", color: "partyDem" };
+    if (percentile > 0.6) return { label: "Conservative", color: "partyRep" };
+    return { label: "Moderate", color: "partyInd" };
   };
 
   const ideology = getOverallIdeology(avgPercentile);
   const chamber = data.member_id?.startsWith("S") ? "Senate" : "House";
 
   return (
-    <VStack align="stretch" gap={3} bg="bg" p={3} rounded="lg">
+    <VStack align="stretch" gap={3} bg="surface" p={4} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card">
       <StatItem
         label="Total Votes"
         value={data.vote_count?.toLocaleString() || "0"}

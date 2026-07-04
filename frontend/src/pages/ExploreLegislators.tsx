@@ -116,13 +116,16 @@ export default function ExploreLegislators() {
               return (
                 <Link key={memberId} to={`/legislators/${memberId}`}>
                   <Box
-                    bg="bgLightShade"
+                    bg="surface"
                     p={4}
-                    rounded="lg"
-                    borderLeft="3px solid"
-                    borderLeftColor={`${partyColor}.400`}
-                    _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
-                    transition="all 0.2s"
+                    rounded="card"
+                    borderWidth="1px"
+                    borderColor="border"
+                    borderLeftWidth="3px"
+                    borderLeftColor={`${partyColor}.solid`}
+                    boxShadow="card"
+                    _hover={{ transform: "translateY(-2px)", boxShadow: "cardHover", borderColor: "primary" }}
+                    transition="all 0.2s ease"
                     cursor="pointer"
                   >
                     <Flex gap={3} align="center">
@@ -130,18 +133,18 @@ export default function ExploreLegislators() {
                         <Avatar.Fallback name={leg.name.official_full} />
                       </Avatar.Root>
                       <VStack align="flex-start" gap={1} minW={0}>
-                        <Text fontWeight="700" color="primary" fontSize="sm" truncate>
+                        <Text fontWeight="700" color="text" fontSize="sm" truncate>
                           {leg.name.official_full}
                         </Text>
-                        <HStack gap={2} wrap="wrap">
-                          <Badge colorScheme="blue" fontSize="2xs">{currentTerm.state}</Badge>
+                        <HStack gap={1.5} wrap="wrap">
+                          <Badge colorPalette="blue" variant="subtle" rounded="full" fontSize="2xs">{currentTerm.state}</Badge>
                           {currentTerm.district && (
-                            <Badge colorScheme="green" fontSize="2xs">D{currentTerm.district}</Badge>
+                            <Badge colorPalette="green" variant="subtle" rounded="full" fontSize="2xs">D{currentTerm.district}</Badge>
                           )}
-                          <Badge colorScheme={partyColor} fontSize="2xs">
+                          <Badge colorPalette={partyColor} variant="subtle" rounded="full" fontSize="2xs">
                             {currentTerm.type === "sen" ? "Senate" : "House"}
                           </Badge>
-                          <Badge variant="outline" colorScheme={partyColor} fontSize="2xs">
+                          <Badge variant="outline" colorPalette={partyColor} rounded="full" fontSize="2xs">
                             {currentTerm.party}
                           </Badge>
                         </HStack>

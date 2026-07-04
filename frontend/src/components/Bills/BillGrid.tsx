@@ -52,7 +52,7 @@ export default function BillGrid({
       <Center py={20}>
         <VStack gap={4}>
           <Spinner size="xl" color="primary" />
-          <Text color="text" fontSize="sm">
+          <Text color="textMuted" fontSize="sm">
             Loading bills...
           </Text>
         </VStack>
@@ -67,7 +67,7 @@ export default function BillGrid({
           <Text color="text" fontSize="lg" fontWeight="medium">
             {emptyMessage}
           </Text>
-          <Text color="text" fontSize="sm">
+          <Text color="textMuted" fontSize="sm">
             Try different search terms or filters
           </Text>
         </VStack>

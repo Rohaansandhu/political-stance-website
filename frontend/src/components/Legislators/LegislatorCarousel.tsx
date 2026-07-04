@@ -143,7 +143,7 @@ export default function LegislatorCarousel() {
         slidesPerPage={carouselSize}
       >
         <HStack justify="space-between" mb={4}>
-          <Heading size="xl" color="primary">
+          <Heading size="xl" color="text" letterSpacing="tight">
             {title}
           </Heading>
         </HStack>
@@ -162,17 +162,20 @@ export default function LegislatorCarousel() {
             return (
               <Carousel.Item key={memberId} index={idx}>
                 <Box
-                  bg="bgLightShade"
+                  bg="surface"
                   p={6}
-                  rounded="lg"
+                  rounded="card"
+                  borderWidth="1px"
+                  borderColor="border"
+                  boxShadow="card"
                   cursor="pointer"
                   h="100%"
                   display="flex"
                   flexDirection="column"
                   _hover={{
                     transform: "translateY(-4px)",
-                    boxShadow: "lg",
-                    transition: "all 0.2s",
+                    boxShadow: "cardHover",
+                    borderColor: "primary",
                   }}
                   transition="all 0.2s"
                   onClick={() =>
@@ -187,7 +190,7 @@ export default function LegislatorCarousel() {
                           alt={`${leg.name.official_full} headshot`}
                           borderRadius="xl"
                           borderWidth="1px"
-                          borderColor="gray.200"
+                          borderColor="border"
                           w="100%"
                           h="100%"
                           objectFit="cover"
@@ -200,29 +203,25 @@ export default function LegislatorCarousel() {
                     </Box>
 
                     <VStack gap={1} textAlign="center" flex="1">
-                      <Heading size="md" color="primary">
+                      <Heading size="md" color="text">
                         {leg.name.official_full}
                       </Heading>
 
-                      <Badge colorScheme="purple" fontSize="xs">
+                      <Badge colorPalette="purple" variant="subtle" rounded="full" fontSize="xs">
                         {role}
                       </Badge>
 
                       <HStack gap={2}>
-                        <Badge colorScheme="blue">{currentTerm.state}</Badge>
+                        <Badge colorPalette="blue" variant="subtle" rounded="full">{currentTerm.state}</Badge>
                         {currentTerm.district && (
-                          <Badge colorScheme="green">
+                          <Badge colorPalette="green" variant="subtle" rounded="full">
                             District {currentTerm.district}
                           </Badge>
                         )}
                       </HStack>
 
-                      <Text color="text" fontSize="sm">
-                        {currentTerm.type === "sen" ? "Senate" : "House"}
-                      </Text>
-
-                      <Text color="text" fontSize="sm">
-                        {currentTerm.party}
+                      <Text color="textMuted" fontSize="sm">
+                        {currentTerm.type === "sen" ? "Senate" : "House"} • {currentTerm.party}
                       </Text>
                     </VStack>
                   </VStack>
@@ -241,8 +240,8 @@ export default function LegislatorCarousel() {
                 variant="outline"
                 size="md"
                 rounded="full"
-                borderColor="gray.300"
-                _hover={{ bg: "gray.100", borderColor: "primary" }}
+                borderColor="border"
+                _hover={{ bg: "bgLightShade", borderColor: "primary" }}
               >
                 <svg
                   width="20"
@@ -267,8 +266,8 @@ export default function LegislatorCarousel() {
                 variant="outline"
                 size="md"
                 rounded="full"
-                borderColor="gray.300"
-                _hover={{ bg: "gray.100", borderColor: "primary" }}
+                borderColor="border"
+                _hover={{ bg: "bgLightShade", borderColor: "primary" }}
               >
                 <svg
                   width="20"

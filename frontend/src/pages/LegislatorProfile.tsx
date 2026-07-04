@@ -132,7 +132,7 @@ export default function LegislatorProfile() {
       </Box>
 
       {/* Sidebar + main content */}
-      <Box bg="bgLightShade" p={4} rounded="xl">
+      <Box bg="bgLightShade" p={4} rounded="card" borderWidth="1px" borderColor="borderSubtle">
         <HStack align="flex-start" gap={4}>
           {/* Left sidebar */}
           <VStack align="stretch" gap={4} flexShrink={0} w="180px">

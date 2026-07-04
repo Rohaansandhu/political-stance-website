@@ -26,7 +26,7 @@ export function IdeologyScoreExplainer() {
               How We Score Each Legislator
             </Heading>
 
-            <Text fontSize="lg" color="text" opacity={0.9} maxW="3xl" mx="auto">
+            <Text fontSize="lg" color="textMuted" maxW="3xl" mx="auto">
               Ideology Score shows where a legislator falls on the political
               spectrum for a specific issue based on how they actually vote.
               Each score reflects the direction, importance, and partisan nature
@@ -47,8 +47,8 @@ export function IdeologyScoreExplainer() {
                       px={6}
                       py={2}
                       rounded="full"
-                      bg="blue.500"
-                      color="white"
+                      bg="partyDem"
+                      color="bg"
                       fontWeight="semibold"
                     >
                       -1 Liberal
@@ -72,8 +72,8 @@ export function IdeologyScoreExplainer() {
                       px={6}
                       py={2}
                       rounded="full"
-                      bg="red.500"
-                      color="white"
+                      bg="partyRep"
+                      color="bg"
                       fontWeight="semibold"
                     >
                       +1 Conservative
@@ -106,7 +106,7 @@ export function IdeologyScoreExplainer() {
                 <Heading as="h3" size="md" color="primary">
                   Roll-Call Votes
                 </Heading>
-                <Text color="text" opacity={0.8} textAlign="center">
+                <Text color="textMuted" textAlign="center">
                   Calculated directly from actual voting records on legislation
                 </Text>
               </VStack>
@@ -128,7 +128,7 @@ export function IdeologyScoreExplainer() {
                 <Heading as="h3" size="md" color="primary">
                   Weighted Analysis
                 </Heading>
-                <Text color="text" opacity={0.8} textAlign="center">
+                <Text color="textMuted" textAlign="center">
                   Accounts for bill importance and partisan significance
                 </Text>
               </VStack>
@@ -150,7 +150,7 @@ export function IdeologyScoreExplainer() {
                 <Heading as="h3" size="md" color="primary">
                   Issue-Specific
                 </Heading>
-                <Text color="text" opacity={0.8} textAlign="center">
+                <Text color="textMuted" textAlign="center">
                   Separate scores for different political categories and topics
                 </Text>
               </VStack>

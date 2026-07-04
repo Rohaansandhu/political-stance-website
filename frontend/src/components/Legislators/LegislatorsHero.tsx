@@ -101,9 +101,11 @@ export function LegislatorsHero({
       px={8}
       borderRadius="2xl"
       textAlign="center"
-      bgGradient="linear(to-br, teal.100, blue.100)"
-      border="1px solid"
-      borderColor="teal.200"
+      bgGradient="to-br"
+      gradientFrom="bgAltGreen"
+      gradientTo="bgLightShade"
+      borderWidth="1px"
+      borderColor="border"
       position="relative"
     >
       {/* Decorative blobs */}
@@ -121,7 +123,7 @@ export function LegislatorsHero({
           w="200px"
           h="200px"
           borderRadius="full"
-          bg="teal.100"
+          bg="secondary"
           opacity={0.4}
           filter="blur(40px)"
         />
@@ -132,17 +134,17 @@ export function LegislatorsHero({
           w="180px"
           h="180px"
           borderRadius="full"
-          bg="blue.100"
+          bg="secondary"
           opacity={0.4}
           filter="blur(40px)"
         />
       </Box>
 
       <Container maxW="3xl" position="relative">
-        <Heading size="3xl" mb={3} color="primary" letterSpacing="-0.02em">
+        <Heading size="3xl" mb={3} color="text" letterSpacing="-0.02em">
           Explore U.S. Legislators
         </Heading>
-        <Text fontSize="md" color="gray.500" mb={8}>
+        <Text fontSize="md" color="textMuted" mb={8}>
           Search and discover detailed political profiles for every member of
           Congress.
         </Text>
@@ -151,10 +153,11 @@ export function LegislatorsHero({
         <Flex maxW="560px" mx="auto" gap={2} mb={6}>
           <Input
             placeholder="Search by name..."
-            bg="white"
-            borderColor="gray.200"
+            bg="surface"
+            borderColor="border"
+            rounded="xl"
             shadow="sm"
-            _focusVisible={{ outline: "2px solid", outlineColor: "teal.400" }}
+            _focusVisible={{ outline: "2px solid", outlineColor: "primary" }}
             size="lg"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -163,7 +166,10 @@ export function LegislatorsHero({
           />
           <Button
             size="lg"
-            colorScheme="teal"
+            bg="primary"
+            color="bg"
+            _hover={{ bg: "primaryHover" }}
+            rounded="xl"
             px={7}
             onClick={onSearch}
             flexShrink={0}
@@ -186,7 +192,7 @@ export function LegislatorsHero({
             w="140px"
             position="relative"
           >
-            <Select.Trigger bg="white" shadow="sm">
+            <Select.Trigger bg="surface" borderColor="border" rounded="lg" shadow="sm">
               <Select.ValueText placeholder="All States" />
             </Select.Trigger>
             <Select.Content
@@ -195,7 +201,7 @@ export function LegislatorsHero({
               zIndex={10}
               w="full"
               mt={1}
-              bg="white"
+              bg="surface"
               shadow="md"
               borderRadius="md"
               maxH="200px"
@@ -225,7 +231,7 @@ export function LegislatorsHero({
             w="150px"
             position="relative"
           >
-            <Select.Trigger bg="white" shadow="sm">
+            <Select.Trigger bg="surface" borderColor="border" rounded="lg" shadow="sm">
               <Select.ValueText placeholder="All Chambers" />
             </Select.Trigger>
             <Select.Content
@@ -234,7 +240,7 @@ export function LegislatorsHero({
               zIndex={10}
               w="full"
               mt={1}
-              bg="white"
+              bg="surface"
               shadow="md"
               borderRadius="md"
             >
@@ -264,7 +270,7 @@ export function LegislatorsHero({
             w="150px"
             position="relative"
           >
-            <Select.Trigger bg="white" shadow="sm">
+            <Select.Trigger bg="surface" borderColor="border" rounded="lg" shadow="sm">
               <Select.ValueText placeholder="All Parties" />
             </Select.Trigger>
             <Select.Content
@@ -273,7 +279,7 @@ export function LegislatorsHero({
               zIndex={10}
               w="full"
               mt={1}
-              bg="white"
+              bg="surface"
               shadow="md"
               borderRadius="md"
             >
@@ -293,7 +299,7 @@ export function LegislatorsHero({
           </Select.Root>
 
           {hasSearched && resultCount !== undefined && (
-            <Text fontSize="sm" color="gray.500" alignSelf="center">
+            <Text fontSize="sm" color="textMuted" alignSelf="center">
               {resultCount} legislator{resultCount !== 1 ? "s" : ""} found
             </Text>
           )}

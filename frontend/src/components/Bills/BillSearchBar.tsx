@@ -56,8 +56,9 @@ export default function BillSearchBar({
             transform="translateY(-50%)"
             pointerEvents="none"
             zIndex={1}
+            color="textMuted"
           >
-            <Search size={20} color="var(--chakra-colors-gray-500)" />
+            <Search size={20} />
           </HStack>
 
           <Input
@@ -65,7 +66,9 @@ export default function BillSearchBar({
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder={placeholder}
             size="lg"
-            bg="bgLightShade"
+            bg="surface"
+            rounded="xl"
+            borderColor="border"
             pl="44px"
             pr={searchInput ? "44px" : "12px"}
             _focus={{
@@ -86,10 +89,11 @@ export default function BillSearchBar({
               zIndex={1}
               p={1}
               rounded="md"
-              _hover={{ bg: "gray.200" }}
+              color="textMuted"
+              _hover={{ bg: "bgLightShade" }}
               transition="background 0.2s"
             >
-              <X size={20} color="var(--chakra-colors-gray-500)" />
+              <X size={20} />
             </HStack>
           )}
         </>
@@ -103,7 +107,7 @@ export default function BillSearchBar({
           right={0}
           mt={1}
           fontSize="xs"
-          color="text"
+          color="textMuted"
         >
           Searching for: "{searchInput}"
         </Box>

@@ -46,24 +46,26 @@ function RankingRow({ ranking, side }: { ranking: RankingData; side: "liberal" |
     }
   };
 
-  const scoreColor = side === "liberal" ? "blue.600" : "red.600";
-  const borderColor = side === "liberal" ? "blue.400" : "red.400";
+  const scoreColor = side === "liberal" ? "partyDem" : "partyRep";
+  const borderColor = side === "liberal" ? "partyDem" : "partyRep";
 
   return (
     <Link to={`/legislators/${ranking.member_id}`}>
       <Box
-        bg="bg"
+        bg="surface"
         px={3}
         py={2}
-        rounded="md"
-        borderLeft="3px solid"
-        borderColor={borderColor}
+        rounded="lg"
+        borderWidth="1px"
+        borderColor="borderSubtle"
+        borderLeftWidth="3px"
+        borderLeftColor={borderColor}
         _hover={{ bg: "bgLightShade", transform: "translateX(2px)" }}
         transition="all 0.15s"
       >
         <HStack justify="space-between" align="center">
           <HStack gap={2} flex={1} minW={0}>
-            <Text fontSize="sm" fontWeight="700" color="gray.400" w="40px" flexShrink={0}>
+            <Text fontSize="sm" fontWeight="700" color="textMuted" opacity={0.7} w="40px" flexShrink={0} fontVariantNumeric="tabular-nums">
               #{ranking.current_rank}
             </Text>
             <VStack align="flex-start" gap={0} flex={1} minW={0}>
@@ -71,14 +73,14 @@ function RankingRow({ ranking, side }: { ranking: RankingData; side: "liberal" |
                 {ranking.official_full_name}
               </Text>
               <HStack gap={1}>
-                <Text fontSize="xs" color="gray.500">{ranking.state}</Text>
-                <Badge colorScheme={getPartyColor(ranking.party)} fontSize="2xs" px={1}>
+                <Text fontSize="xs" color="textMuted">{ranking.state}</Text>
+                <Badge colorPalette={getPartyColor(ranking.party)} variant="subtle" rounded="full" fontSize="2xs" px={1.5}>
                   {ranking.party}
                 </Badge>
               </HStack>
             </VStack>
           </HStack>
-          <Text fontSize="sm" fontWeight="700" color={scoreColor} flexShrink={0}>
+          <Text fontSize="sm" fontWeight="700" color={scoreColor} flexShrink={0} fontVariantNumeric="tabular-nums">
             {ranking.score.toFixed(3)}
           </Text>
         </HStack>
@@ -160,7 +162,7 @@ export default function CongressRankings({
   if (error) {
     return (
       <Center py={20}>
-        <Text color="red.500" fontSize="lg">Error: {error}</Text>
+        <Text color="voteNay" fontSize="lg">Error: {error}</Text>
       </Center>
     );
   }
@@ -189,25 +191,25 @@ export default function CongressRankings({
       {/* Header */}
       <HStack justify="space-between" align="center">
         <VStack align="flex-start" gap={0}>
-          <Heading size="xl" color="primary">{subject}</Heading>
-          <Text color="text" fontSize="sm">{rankings.length} legislators ranked</Text>
+          <Heading size="xl" color="text" letterSpacing="tight">{subject}</Heading>
+          <Text color="textMuted" fontSize="sm">{rankings.length} legislators ranked</Text>
         </VStack>
       </HStack>
 
       <IdeologyViewsBar subject={subject} />
 
       {/* Two-column rankings */}
-      <Grid templateColumns="1fr 1fr" gap={4}>
+      <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
 
         {/* Liberal column */}
         <GridItem>
           <VStack align="stretch" gap={2}>
-            <HStack gap={2} pb={1} borderBottom="2px solid" borderColor="blue.200">
-              <Box w="10px" h="10px" borderRadius="full" bg="blue.500" />
-              <Text fontWeight="700" fontSize="sm" color="blue.700" textTransform="uppercase" letterSpacing="0.05em">
+            <HStack gap={2} pb={1} borderBottom="2px solid" borderColor="partyDem">
+              <Box w="10px" h="10px" borderRadius="full" bg="partyDem" />
+              <Text fontWeight="700" fontSize="sm" color="partyDem" textTransform="uppercase" letterSpacing="0.05em">
                 Most Liberal
               </Text>
-              <Text fontSize="xs" color="gray.400">({liberalRankings.length})</Text>
+              <Text fontSize="xs" color="textMuted">({liberalRankings.length})</Text>
             </HStack>
             {liberalRankings.map((ranking) => (
               <RankingRow key={ranking.member_id} ranking={ranking} side="liberal" />
@@ -218,12 +220,12 @@ export default function CongressRankings({
         {/* Conservative column */}
         <GridItem>
           <VStack align="stretch" gap={2}>
-            <HStack gap={2} pb={1} borderBottom="2px solid" borderColor="red.200">
-              <Box w="10px" h="10px" borderRadius="full" bg="red.500" />
-              <Text fontWeight="700" fontSize="sm" color="red.700" textTransform="uppercase" letterSpacing="0.05em">
+            <HStack gap={2} pb={1} borderBottom="2px solid" borderColor="partyRep">
+              <Box w="10px" h="10px" borderRadius="full" bg="partyRep" />
+              <Text fontWeight="700" fontSize="sm" color="partyRep" textTransform="uppercase" letterSpacing="0.05em">
                 Most Conservative
               </Text>
-              <Text fontSize="xs" color="gray.400">({conservativeRankings.length})</Text>
+              <Text fontSize="xs" color="textMuted">({conservativeRankings.length})</Text>
             </HStack>
             {conservativeRankings.map((ranking) => (
               <RankingRow key={ranking.member_id} ranking={ranking} side="conservative" />
@@ -237,11 +239,11 @@ export default function CongressRankings({
       <HStack
         gap={6}
         fontSize="sm"
-        color="text"
+        color="textMuted"
         justify="center"
         pt={3}
-        borderTop="1px solid"
-        borderColor="gray.200"
+        borderTopWidth="1px"
+        borderColor="borderSubtle"
       >
         <Text>Score Range: -1.0 (Liberal) to 1.0 (Conservative)</Text>
         <Text>•</Text>

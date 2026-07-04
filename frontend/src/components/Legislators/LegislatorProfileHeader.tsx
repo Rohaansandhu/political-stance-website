@@ -41,10 +41,13 @@ export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
 
   return (
     <Flex
-      bg="bgLightTint"
+      bg="surface"
       px={6}
       py={4}
-      rounded="xl"
+      rounded="card"
+      borderWidth="1px"
+      borderColor="border"
+      boxShadow="card"
       gap={5}
       align="center"
       w="100%"
@@ -57,7 +60,7 @@ export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
             alt={`${name.official_full} headshot`}
             borderRadius="lg"
             borderWidth="1px"
-            borderColor="gray.200"
+            borderColor="border"
             fit="cover"
             w="90px"
           />
@@ -72,22 +75,24 @@ export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
       <VStack align="flex-start" gap={1} flex={1} minW={0}>
         <Heading size="xl">{name.official_full}</Heading>
         <HStack gap={2} wrap="wrap">
-          <Badge colorScheme="blue">{data.state}</Badge>
+          <Badge colorPalette="blue" variant="subtle" rounded="full">{data.state}</Badge>
           {data.district && (
-            <Badge colorScheme="green">District {data.district}</Badge>
+            <Badge colorPalette="green" variant="subtle" rounded="full">District {data.district}</Badge>
           )}
           {currentTerm && (
             <Badge
-              colorScheme={currentTerm.party === "Republican" ? "red" : "blue"}
+              colorPalette={currentTerm.party === "Republican" ? "red" : "blue"}
+              variant="subtle"
+              rounded="full"
             >
               {currentTerm.party}
             </Badge>
           )}
           {currentTerm && (
-            <Badge>{currentTerm.type === "rep" ? "House" : "Senate"}</Badge>
+            <Badge variant="subtle" rounded="full">{currentTerm.type === "rep" ? "House" : "Senate"}</Badge>
           )}
         </HStack>
-        <HStack gap={4} fontSize="sm" color="gray.500">
+        <HStack gap={4} fontSize="sm" color="textMuted">
           <Text>Born: {bio.birthday}</Text>
           <Text>Gender: {bio.gender}</Text>
           {currentTerm && (
@@ -103,7 +108,7 @@ export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
         <Box flexShrink={0} textAlign="right">
           <Text
             fontSize="sm"
-            color="blue.500"
+            color="primary"
             cursor="pointer"
             onClick={() => setTermsExpanded(!termsExpanded)}
             userSelect="none"
@@ -118,9 +123,9 @@ export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
               position="absolute"
               right={6}
               mt={2}
-              bg="white"
-              border="1px solid"
-              borderColor="gray.200"
+              bg="surface"
+              borderWidth="1px"
+              borderColor="border"
               rounded="lg"
               p={3}
               zIndex={10}
@@ -131,15 +136,18 @@ export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
                 {historicalTerms.map((term, idx) => (
                   <Box
                     key={idx}
-                    bg="gray.50"
+                    bg="bgLightShade"
                     p={2}
                     rounded="md"
                     borderWidth="1px"
+                    borderColor="borderSubtle"
                   >
                     <HStack justify="space-between" mb={1}>
                       <Badge
                         fontSize="2xs"
-                        colorScheme={
+                        variant="subtle"
+                        rounded="full"
+                        colorPalette={
                           term.party === "Republican" ? "red" : "blue"
                         }
                       >
@@ -157,7 +165,7 @@ export default function LegislatorProfileHeader({ data }: { data: DataInfo }) {
                           ? ` — C${term.class}`
                           : ""}
                     </Text>
-                    <Text fontSize="xs" color="gray.500">
+                    <Text fontSize="xs" color="textMuted">
                       {term.start} → {term.end}
                     </Text>
                   </Box>

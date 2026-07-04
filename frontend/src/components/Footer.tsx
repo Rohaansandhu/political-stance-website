@@ -19,22 +19,15 @@ export function Footer() {
 
   const resourcesLinks = [
     { label: "About", href: "/about" },
-    { label: "Methodology", href: "/about" },
-    // { label: "Blog", href: "#" }, 
-    { label: "Glossary", href: "/about" },
-  ];
-
-  const legalLinks = [
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
-    { label: "Contact", href: "/contact" },
+    { label: "Methodology", href: "/about?tab=methodology" },
+    { label: "Glossary", href: "/about?tab=glossary" },
   ];
 
   return (
-    <Box as="footer" bg="gray.800" color="white" py={12}>
+    <Box as="footer" bg="bgLightShade" color="text" py={12} borderTopWidth="1px" borderColor="border">
       <Box maxW="6xl" mx="auto" px={4}>
         <Grid
-          templateColumns={{ base: "1fr", md: "repeat(4, 1fr)" }}
+          templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
           gap={8}
           mb={8}
         >
@@ -42,7 +35,7 @@ export function Footer() {
             <Heading as="h3" size="md" mb={4}>
               US PoliTrack
             </Heading>
-            <Text color="whiteAlpha.700">
+            <Text color="textMuted">
               Empowering citizens with transparent political data and legislator
               accountability.
             </Text>
@@ -57,8 +50,8 @@ export function Footer() {
                 <Link
                   key={label}
                   href={href}
-                  color="whiteAlpha.700"
-                  _hover={{ color: "white" }}
+                  color="textMuted"
+                  _hover={{ color: "primary" }}
                   transition="color 0.2s"
                 >
                   {label}
@@ -76,27 +69,8 @@ export function Footer() {
                 <Link
                   key={label}
                   href={href}
-                  color="whiteAlpha.700"
-                  _hover={{ color: "white" }}
-                  transition="color 0.2s"
-                >
-                  {label}
-                </Link>
-              ))}
-            </Flex>
-          </Box>
-
-          <Box>
-            <Heading as="h4" size="sm" mb={4}>
-              Legal
-            </Heading>
-            <Flex direction="column" gap={2}>
-              {legalLinks.map(({ label, href }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  color="whiteAlpha.700"
-                  _hover={{ color: "white" }}
+                  color="textMuted"
+                  _hover={{ color: "primary" }}
                   transition="color 0.2s"
                 >
                   {label}
@@ -106,7 +80,7 @@ export function Footer() {
           </Box>
         </Grid>
 
-        <Separator borderColor="whiteAlpha.300" mb={8} />
+        <Separator borderColor="border" mb={8} />
 
         <Flex
           direction={{ base: "column", md: "row" }}
@@ -117,8 +91,8 @@ export function Footer() {
           <Flex gap={4}>
             <Link
               href="https://github.com/Rohaansandhu/political-stance-tracker" 
-              color="whiteAlpha.700"
-              _hover={{ color: "white" }}
+              color="textMuted"
+              _hover={{ color: "primary" }}
               transition="color 0.2s"
             >
               <img src={GithubIcon} alt="GitHub" width={20} height={20} />

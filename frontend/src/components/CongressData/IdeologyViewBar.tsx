@@ -20,10 +20,10 @@ export default function IdeologyViewsBar({
 
   return (
     <Box
-      borderRadius="lg"
+      borderRadius="xl"
       overflow="hidden"
-      border="1px solid"
-      borderColor="gray.200"
+      borderWidth="1px"
+      borderColor="border"
       mb={4}
       fontSize={compact ? "sm" : "md"}
     >
@@ -32,23 +32,23 @@ export default function IdeologyViewsBar({
         {/* Liberal side */}
         <Box
           flex={1}
-          bg="blue.50"
+          bg="blue.subtle"
           px={compact ? 4 : 6}
           py={compact ? 3 : 4}
           borderRight="2px solid"
-          borderColor="blue.200"
+          borderColor="blue.muted"
         >
           <HStack gap={2} mb={1}>
             <Box
               w="10px"
               h="10px"
               borderRadius="full"
-              bg="blue.500"
+              bg="partyDem"
               flexShrink={0}
             />
             <Text
               fontWeight="700"
-              color="blue.700"
+              color="blue.fg"
               fontSize={compact ? "xs" : "sm"}
               letterSpacing="0.05em"
               textTransform="uppercase"
@@ -56,7 +56,7 @@ export default function IdeologyViewsBar({
               Liberal View
             </Text>
           </HStack>
-          <Text color="blue.900" lineHeight="1.5">
+          <Text color="blue.fg" lineHeight="1.5">
             {category.liberal_view}
           </Text>
         </Box>
@@ -64,23 +64,23 @@ export default function IdeologyViewsBar({
         {/* Conservative side */}
         <Box
           flex={1}
-          bg="red.50"
+          bg="red.subtle"
           px={compact ? 4 : 6}
           py={compact ? 3 : 4}
           borderLeft="2px solid"
-          borderColor="red.200"
+          borderColor="red.muted"
         >
           <HStack gap={2} mb={1}>
             <Box
               w="10px"
               h="10px"
               borderRadius="full"
-              bg="red.500"
+              bg="partyRep"
               flexShrink={0}
             />
             <Text
               fontWeight="700"
-              color="red.700"
+              color="red.fg"
               fontSize={compact ? "xs" : "sm"}
               letterSpacing="0.05em"
               textTransform="uppercase"
@@ -88,39 +88,29 @@ export default function IdeologyViewsBar({
               Conservative View
             </Text>
           </HStack>
-          <Text color="red.900" lineHeight="1.5">
+          <Text color="red.fg" lineHeight="1.5">
             {category.conservative_view}
           </Text>
         </Box>
       </HStack>
 
       {/* Spectrum label bar */}
-      <Box position="relative" bg="gray.100" px={6} py={1}>
-        <Box
-          position="absolute"
-          left={0}
-          right={0}
-          top="50%"
-          transform="translateY(-50%)"
-          height="2px"
-          bgGradient="linear(to-r, blue.400, gray.300, red.400)"
-          mx={6}
-        />
+      <Box position="relative" bg="bgLightShade" px={6} py={1.5} borderTopWidth="1px" borderColor="borderSubtle">
         <HStack justify="space-between" position="relative" zIndex={1}>
-          <Text fontSize="xs" color="blue.600" fontWeight="600">
+          <Text fontSize="xs" color="blue.fg" fontWeight="600">
             ← −1.0 Liberal
           </Text>
           <Text
             fontSize="xs"
-            color="gray.500"
+            color="textMuted"
             cursor="pointer"
-            _hover={{ color: "gray.700" }}
+            _hover={{ color: "text" }}
             onClick={() => setExpanded((p) => !p)}
             userSelect="none"
           >
             {expanded ? "Show less ▲" : "Show more ▼"}
           </Text>
-          <Text fontSize="xs" color="red.600" fontWeight="600">
+          <Text fontSize="xs" color="red.fg" fontWeight="600">
             Conservative +1.0 →
           </Text>
         </HStack>
@@ -128,11 +118,11 @@ export default function IdeologyViewsBar({
 
       {/* Subcategory detail — shown when expanded */}
       {expanded && category.subcategories?.length > 0 && (
-        <Box bg="white" px={compact ? 4 : 6} py={4}>
+        <Box bg="surface" px={compact ? 4 : 6} py={4}>
           <Text
             fontWeight="700"
             fontSize="sm"
-            color="gray.600"
+            color="textMuted"
             mb={3}
             textTransform="uppercase"
             letterSpacing="0.05em"
@@ -145,38 +135,38 @@ export default function IdeologyViewsBar({
                 key={sub.name}
                 borderRadius="md"
                 overflow="hidden"
-                border="1px solid"
-                borderColor="gray.100"
+                borderWidth="1px"
+                borderColor="borderSubtle"
               >
                 <Box
-                  bg="gray.50"
+                  bg="bgLightShade"
                   px={4}
                   py={2}
-                  borderBottom="1px solid"
-                  borderColor="gray.100"
+                  borderBottomWidth="1px"
+                  borderColor="borderSubtle"
                 >
-                  <Text fontWeight="700" fontSize="sm" color="gray.800">
+                  <Text fontWeight="700" fontSize="sm" color="text">
                     {sub.name}
                   </Text>
-                  <Text fontSize="xs" color="gray.500">
+                  <Text fontSize="xs" color="textMuted">
                     {sub.description}
                   </Text>
                 </Box>
                 <HStack gap={0} align="stretch">
                   <Box
                     flex={1}
-                    bg="blue.50"
+                    bg="blue.subtle"
                     px={4}
                     py={2}
                     borderRight="1px solid"
-                    borderColor="blue.100"
+                    borderColor="blue.muted"
                   >
-                    <Text fontSize="xs" color="blue.900" lineHeight="1.5">
+                    <Text fontSize="xs" color="blue.fg" lineHeight="1.5">
                       {sub.liberal_view}
                     </Text>
                   </Box>
-                  <Box flex={1} bg="red.50" px={4} py={2}>
-                    <Text fontSize="xs" color="red.900" lineHeight="1.5">
+                  <Box flex={1} bg="red.subtle" px={4} py={2}>
+                    <Text fontSize="xs" color="red.fg" lineHeight="1.5">
                       {sub.conservative_view}
                     </Text>
                   </Box>

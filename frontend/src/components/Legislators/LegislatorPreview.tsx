@@ -14,7 +14,7 @@ export function LegislatorPreview() {
           <Heading mb={4} fontSize={{ base: "3xl", md: "4xl" }} color={"primary"}>
             Legislator Profiles
           </Heading>
-          <Text color="gray.600" maxW="2xl" mx="auto"
+          <Text color="textMuted" maxW="2xl" mx="auto"
             fontSize={{ base: "md", md: "lg" }}>
             Each legislator profile includes detailed political spectrum analysis,
             voting history rankings, and comparative data across congressional

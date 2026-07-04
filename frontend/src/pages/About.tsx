@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Box,
   Heading,
@@ -421,8 +421,22 @@ const politicalCategoriesData = [
   }
 ];
 
+const TAB_VALUES = ["overview", "methodology", "glossary"];
+
 export function About() {
-  const [activeTab, setActiveTab] = useState("0");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab") || "overview";
+  const activeTab = TAB_VALUES.includes(tabParam) ? tabParam : "overview";
+
+  const setActiveTab = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value === "overview") {
+      newParams.delete("tab");
+    } else {
+      newParams.set("tab", value);
+    }
+    setSearchParams(newParams, { replace: true });
+  };
 
   return (
     <Box maxW="6xl" mx="auto" p={8}>
@@ -439,13 +453,13 @@ export function About() {
         variant="enclosed"
       >
         <Tabs.List mb={6}>
-          <Tabs.Trigger value="0">Overview</Tabs.Trigger>
-          <Tabs.Trigger value="1">Methodology</Tabs.Trigger>
-          <Tabs.Trigger value="2">Glossary</Tabs.Trigger>
+          <Tabs.Trigger value="overview">Overview</Tabs.Trigger>
+          <Tabs.Trigger value="methodology">Methodology</Tabs.Trigger>
+          <Tabs.Trigger value="glossary">Glossary</Tabs.Trigger>
         </Tabs.List>
 
         {/* Overview Tab */}
-        <Tabs.Content value="0">
+        <Tabs.Content value="overview">
           <VStack gap={6} align="start">
             <Heading as="h1" size="xl">
               About United States Political Stance Tracker
@@ -597,7 +611,7 @@ export function About() {
         </Tabs.Content>
 
         {/* Methodology Tab */}
-        <Tabs.Content value="1">
+        <Tabs.Content value="methodology">
           <VStack gap={6} align="start">
             <Heading as="h1" size="xl">
               Methodology
@@ -854,7 +868,7 @@ export function About() {
         </Tabs.Content>
 
         {/* Glossary Tab */}
-        <Tabs.Content value="2">
+        <Tabs.Content value="glossary">
           <VStack gap={6} align="start">
             <Heading as="h1" size="xl">
               Glossary
@@ -969,17 +983,17 @@ export function About() {
                 <Box key={idx} w="full">
                   <Text fontWeight="bold" fontSize="lg">{category.name}</Text>
                   <Text mb={2}>{category.description}</Text>
-                  <Text fontSize="sm" color="gray.600" mt={1}>
+                  <Text fontSize="sm" color="textMuted" mt={1}>
                     <strong>Conservative view:</strong> {category.conservative_view}
                   </Text>
-                  <Text fontSize="sm" color="gray.600" mb={3}>
+                  <Text fontSize="sm" color="textMuted" mb={3}>
                     <strong>Liberal view:</strong> {category.liberal_view}
                   </Text>
 
                   {/* Subcategories Rendering */}
                   {category.subcategories && category.subcategories.length > 0 && (
-                    <Box pl={4} borderLeft="2px solid" borderColor="gray.200" mt={4}>
-                      <Text fontWeight="semibold" fontSize="sm" mb={3} color="gray.500" textTransform="uppercase" letterSpacing="wide">
+                    <Box pl={4} borderLeft="2px solid" borderColor="border" mt={4}>
+                      <Text fontWeight="semibold" fontSize="sm" mb={3} color="textMuted" textTransform="uppercase" letterSpacing="wide">
                         Subcategories
                       </Text>
                       <VStack align="start" gap={4}>
@@ -987,10 +1001,10 @@ export function About() {
                           <Box key={sIdx}>
                             <Text fontWeight="bold" fontSize="sm">{sub.name}</Text>
                             <Text fontSize="sm" mb={1}>{sub.description}</Text>
-                            <Text fontSize="xs" color="gray.600" mt={1}>
+                            <Text fontSize="xs" color="textMuted" mt={1}>
                               <strong>Conservative:</strong> {sub.conservative_view}
                             </Text>
-                            <Text fontSize="xs" color="gray.600">
+                            <Text fontSize="xs" color="textMuted">
                               <strong>Liberal:</strong> {sub.liberal_view}
                             </Text>
                           </Box>
