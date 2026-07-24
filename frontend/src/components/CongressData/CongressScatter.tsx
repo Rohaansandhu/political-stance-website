@@ -211,59 +211,6 @@ export default function CongressScatter({
         </VStack>
       </HStack>
 
-      {/* Statistics Cards */}
-      <HStack gap={4} wrap="wrap">
-        <Stat.Root bg="surface" p={4} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card" flex="1" minW="200px">
-          <Stat.Label>
-            <Badge colorPalette="purple" variant="subtle" rounded="full" mb={2}>
-              Correlation
-            </Badge>
-          </Stat.Label>
-          <Stat.ValueText fontSize="2xl" color="text" fontVariantNumeric="tabular-nums">
-            {data.metadata.correlation.toFixed(3)}
-          </Stat.ValueText>
-          <Stat.HelpText color="textMuted">Score vs Bill Count</Stat.HelpText>
-        </Stat.Root>
-
-        {(["D", "R", "I"] as const).map((party) => {
-          const count = data.metadata.party_counts[party];
-          const partyName =
-            party === "D"
-              ? "Democrats"
-              : party === "R"
-                ? "Republicans"
-                : "Independents";
-          const colorPalette =
-            party === "D" ? "blue" : party === "R" ? "red" : "yellow";
-
-          return (
-            <Stat.Root
-              key={party}
-              bg="surface"
-              p={4}
-              rounded="card"
-              borderWidth="1px"
-              borderColor="border"
-              boxShadow="card"
-              flex="1"
-              minW="200px"
-            >
-              <Stat.Label>
-                <Badge colorPalette={colorPalette} variant="subtle" rounded="full" mb={2}>
-                  {partyName}
-                </Badge>
-              </Stat.Label>
-              <Stat.ValueText fontSize="2xl" color="text" fontVariantNumeric="tabular-nums">
-                {count}
-              </Stat.ValueText>
-              <Stat.HelpText color="textMuted">Members</Stat.HelpText>
-            </Stat.Root>
-          );
-        })}
-      </HStack>
-
-      <IdeologyViewsBar subject={subject} />
-
       {/* Scatter Plot */}
       <Box bg="surface" p={6} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card">
         <ResponsiveContainer width="100%" height={350}>
@@ -343,6 +290,59 @@ export default function CongressScatter({
           {data.metadata.bill_count_range[1]}
         </Text>
       </HStack>
+
+      {/* Statistics Cards */}
+      <HStack gap={4} wrap="wrap">
+        <Stat.Root bg="surface" p={4} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card" flex="1" minW="200px">
+          <Stat.Label>
+            <Badge colorPalette="purple" variant="subtle" rounded="full" mb={2}>
+              Correlation
+            </Badge>
+          </Stat.Label>
+          <Stat.ValueText fontSize="2xl" color="text" fontVariantNumeric="tabular-nums">
+            {data.metadata.correlation.toFixed(3)}
+          </Stat.ValueText>
+          <Stat.HelpText color="textMuted">Score vs Bill Count</Stat.HelpText>
+        </Stat.Root>
+
+        {(["D", "R", "I"] as const).map((party) => {
+          const count = data.metadata.party_counts[party];
+          const partyName =
+            party === "D"
+              ? "Democrats"
+              : party === "R"
+                ? "Republicans"
+                : "Independents";
+          const colorPalette =
+            party === "D" ? "blue" : party === "R" ? "red" : "yellow";
+
+          return (
+            <Stat.Root
+              key={party}
+              bg="surface"
+              p={4}
+              rounded="card"
+              borderWidth="1px"
+              borderColor="border"
+              boxShadow="card"
+              flex="1"
+              minW="200px"
+            >
+              <Stat.Label>
+                <Badge colorPalette={colorPalette} variant="subtle" rounded="full" mb={2}>
+                  {partyName}
+                </Badge>
+              </Stat.Label>
+              <Stat.ValueText fontSize="2xl" color="text" fontVariantNumeric="tabular-nums">
+                {count}
+              </Stat.ValueText>
+              <Stat.HelpText color="textMuted">Members</Stat.HelpText>
+            </Stat.Root>
+          );
+        })}
+      </HStack>
+
+      <IdeologyViewsBar subject={subject} />
     </VStack>
   );
 }
