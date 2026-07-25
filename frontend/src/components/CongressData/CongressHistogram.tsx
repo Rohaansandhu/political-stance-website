@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Heading,
@@ -22,42 +22,18 @@ import {
 } from "recharts";
 import IdeologyViewsBar from "./IdeologyViewBar";
 import { useChartTheme } from "./chartTheme";
+import {
+  computeBinnedData,
+  computePartyStats,
+  computeDomain,
+  type ScatterData,
+} from "./histogramUtils";
 
 interface HistogramProps {
   specHash: string;
   field: string;
   subject: string;
   current: boolean;
-}
-
-interface BinData {
-  range: string;
-  D: number;
-  R: number;
-  I: number;
-}
-
-interface PartyStats {
-  mean: number | null;
-  median: number | null;
-  count: number;
-  min: number | null;
-  max: number | null;
-  std: number | null;
-}
-
-interface HistogramData {
-  spec_hash: string;
-  field: string;
-  subject: string;
-  chart_type: string;
-  bins: BinData[];
-  stats: {
-    D: PartyStats;
-    R: PartyStats;
-    I: PartyStats;
-  };
-  total_count: number;
 }
 
 export default function CongressHistogram({
@@ -67,15 +43,15 @@ export default function CongressHistogram({
   current,
 }: HistogramProps) {
   const chart = useChartTheme();
-  const [data, setData] = useState<HistogramData | null>(null);
+  const [data, setData] = useState<ScatterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchHistogramData();
+    fetchLegislatorData();
   }, [specHash, field, subject, current]);
 
-  const fetchHistogramData = async () => {
+  const fetchLegislatorData = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -83,22 +59,30 @@ export default function CongressHistogram({
       const response = await fetch(
         `${
           import.meta.env.VITE_API_URL
-        }/api/congress-data/${specHash}/histogram/${field}/${encodedSubject}/${current}`,
+        }/api/congress-data/${specHash}/scatter/${field}/${encodedSubject}/${current}`,
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch histogram data");
+        throw new Error("Failed to fetch legislator data");
       }
 
       const result = await response.json();
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
-      console.error("Error fetching histogram:", err);
+      console.error("Error fetching legislator data:", err);
     } finally {
       setLoading(false);
     }
   };
+
+  const legislators = data?.legislators ?? [];
+  const bins = useMemo(() => computeBinnedData(legislators), [legislators]);
+  const stats = useMemo(() => computePartyStats(legislators), [legislators]);
+  const domain = useMemo(
+    () => computeDomain(legislators.map((l) => l.score)),
+    [legislators],
+  );
 
   if (loading) {
     return (
@@ -142,7 +126,7 @@ export default function CongressHistogram({
             <Badge colorPalette="blue" variant="subtle" rounded="full">{chamber}</Badge>
             <Badge colorPalette="purple" variant="subtle" rounded="full">{field.replace("_", " ")}</Badge>
             <Text color="textMuted" fontSize="sm">
-              {data.total_count} legislators
+              {data.metadata.total_count} legislators
             </Text>
           </HStack>
         </VStack>
@@ -151,13 +135,11 @@ export default function CongressHistogram({
       {/* Histogram Chart */}
       <Box bg="surface" p={6} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card">
         <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={data.bins} margin={{ left: 20 }}>
+          <BarChart data={bins} margin={{ left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} vertical={false} />
             <XAxis
               dataKey="range"
-              angle={-45}
-              textAnchor="end"
-              height={100}
+              tickFormatter={(_, index) => bins[index]?.midLabel ?? ""}
               tickLine={false}
               axisLine={{ stroke: chart.grid }}
               tick={{ fill: chart.tick, fontSize: 12 }}
@@ -186,9 +168,9 @@ export default function CongressHistogram({
               }}
             />
             <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
-            <Bar dataKey="D" name="Democrats" fill={chart.partyColors.D} stackId="a" radius={[0, 0, 0, 0]} />
-            <Bar dataKey="R" name="Republicans" fill={chart.partyColors.R} stackId="a" />
-            <Bar dataKey="I" name="Independents" fill={chart.partyColors.I} stackId="a" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="D" name="Democrats" fill={chart.partyColors.D} stackId="a" radius={[0, 0, 0, 0]} isAnimationActive={false} />
+            <Bar dataKey="R" name="Republicans" fill={chart.partyColors.R} stackId="a" isAnimationActive={false} />
+            <Bar dataKey="I" name="Independents" fill={chart.partyColors.I} stackId="a" radius={[3, 3, 0, 0]} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
       </Box>
@@ -196,15 +178,15 @@ export default function CongressHistogram({
       {/* Additional Stats */}
       <HStack gap={4} fontSize="sm" color="textMuted" justify="center">
         <Text>
-          Ideology Score Range: -1.0 (Liberal) to 1.0 (Conservative) • Data
-          based on voting records
+          Ideology Score Range: {domain[0].toFixed(2)} (Liberal) to{" "}
+          {domain[1].toFixed(2)} (Conservative) • Data based on voting records
         </Text>
       </HStack>
 
       {/* Statistics Cards */}
       <HStack gap={4} wrap="wrap">
         {(["D", "R", "I"] as const).map((party) => {
-          const partyStats = data.stats[party];
+          const partyStats = stats[party];
           const partyName =
             party === "D"
               ? "Democrats"

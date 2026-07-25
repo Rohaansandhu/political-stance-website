@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Heading,
@@ -22,40 +22,13 @@ import {
 } from "recharts";
 import IdeologyViewsBar from "./IdeologyViewBar";
 import { useChartTheme } from "./chartTheme";
+import { computeDomain, type ScatterData } from "./histogramUtils";
 
 interface ScatterProps {
   specHash: string;
   field: string;
   subject: string;
   current: boolean;
-}
-
-interface Legislator {
-  member_id: string;
-  official_full_name: string;
-  party: "D" | "R" | "I";
-  state: string;
-  score: number;
-  bill_count: number;
-}
-
-interface ScatterData {
-  spec_hash: string;
-  field: string;
-  subject: string;
-  chart_type: string;
-  legislators: Legislator[];
-  metadata: {
-    correlation: number;
-    total_count: number;
-    score_range: [number, number];
-    bill_count_range: [number, number];
-    party_counts: {
-      D: number;
-      R: number;
-      I: number;
-    };
-  };
 }
 
 export default function CongressScatter({
@@ -98,6 +71,11 @@ export default function CongressScatter({
       setLoading(false);
     }
   };
+
+  const scoreDomain = useMemo(
+    () => computeDomain((data?.legislators ?? []).map((l) => l.score)),
+    [data],
+  );
 
   if (loading) {
     return (
@@ -220,10 +198,11 @@ export default function CongressScatter({
             <XAxis
               type="number"
               dataKey="score"
-              domain={[-1, 1]}
+              domain={scoreDomain}
               name="Ideology Score"
               tickLine={false}
               axisLine={{ stroke: chart.grid }}
+              tickFormatter={(value: number) => value.toFixed(2)}
               label={{
                 value: "Ideology Score",
                 position: "insideBottom",
