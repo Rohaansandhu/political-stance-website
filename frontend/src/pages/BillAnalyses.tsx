@@ -6,6 +6,7 @@ import BillFilters from "../components/Bills/BillFilters";
 import BillGrid from "../components/Bills/BillGrid";
 import Pagination from "../components/Bills/Pagination";
 import { BillAnalysisReminder } from "../components/Bills/BillAnalysisReminder";
+import { RecentBills } from "../components/Bills/RecentBills";
 import { Helmet } from "react-helmet-async";
 
 interface BillSummary {
@@ -56,12 +57,10 @@ export default function BillAnalysesPage() {
 
   // State
   const [bills, setBills] = useState<BillAnalysis[]>([]);
-  const [featuredBills, setFeaturedBills] = useState<BillAnalysis[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(
     null
   );
   const [loading, setLoading] = useState(true);
-  const [featuredLoading, setFeaturedLoading] = useState(true);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -83,7 +82,6 @@ export default function BillAnalysesPage() {
 
   useEffect(() => {
     fetchFilterOptions();
-    fetchFeaturedBills();
   }, []);
 
   useEffect(() => {
@@ -117,21 +115,6 @@ export default function BillAnalysesPage() {
       console.error("Error fetching bills:", err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchFeaturedBills = async () => {
-    setFeaturedLoading(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/bill-analyses/featured`
-      );
-      const data = await response.json();
-      setFeaturedBills(data.featured_bills || []);
-    } catch (err) {
-      console.error("Error fetching featured bills:", err);
-    } finally {
-      setFeaturedLoading(false);
     }
   };
 
@@ -215,20 +198,7 @@ export default function BillAnalysesPage() {
 
           <BillAnalysisReminder />
 
-          {/* Featured Bills */}
-          {!featuredLoading && featuredBills.length > 0 && (
-            <Box>
-              <Heading size="lg" mb={4} color="text" letterSpacing="tight">
-                Featured Bills
-              </Heading>
-              <BillGrid
-                bills={featuredBills}
-                loading={false}
-                featured={true}
-                emptyMessage="No featured bills available"
-              />
-            </Box>
-          )}
+          <RecentBills />
 
           {/* Search Bar */}
           <BillSearchBar value={searchValue} onChange={handleSearchChange} />

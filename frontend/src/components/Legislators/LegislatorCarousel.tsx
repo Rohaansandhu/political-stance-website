@@ -21,11 +21,6 @@ const CONGRESSIONAL_LEADERS = {
   house: ["J000299", "S001176", "J000294"],
 };
 
-const POPULAR_LEGISLATORS = {
-  senate: ["S313", "S355", "S366"],
-  house: ["C001120", "O000172"],
-};
-
 interface Legislator {
   member_id: string;
   bioguide: string;
@@ -42,7 +37,6 @@ interface Legislator {
 
 export default function LegislatorCarousel() {
   const [leaders, setLeaders] = useState<Legislator[]>([]);
-  const [popular, setPopular] = useState<Legislator[]>([]);
   const [loading, setLoading] = useState(true);
 
   const slidesPerPage =
@@ -73,27 +67,9 @@ export default function LegislatorCarousel() {
           })
       );
 
-      const popularIds = [
-        ...POPULAR_LEGISLATORS.senate,
-        ...POPULAR_LEGISLATORS.house,
-      ];
-
-      const popularPromises = popularIds.map((id) =>
-        fetch(`${import.meta.env.VITE_API_URL}/api/legislators/${id}`)
-          .then((res) => res.json())
-          .catch((err) => {
-            console.error(`Failed to fetch ${id}:`, err);
-            return null;
-          })
-      );
-
-      const [leaderResults, popularResults] = await Promise.all([
-        Promise.all(leaderPromises),
-        Promise.all(popularPromises),
-      ]);
+      const leaderResults = await Promise.all(leaderPromises);
 
       setLeaders(leaderResults.filter((r) => r !== null));
-      setPopular(popularResults.filter((r) => r !== null));
     } catch (error) {
       console.error("Failed to fetch legislators:", error);
     } finally {
@@ -127,7 +103,7 @@ export default function LegislatorCarousel() {
       return "House Leader";
     }
 
-    return "Popular";
+    return "Member";
   };
 
   const renderCarousel = (
@@ -148,7 +124,7 @@ export default function LegislatorCarousel() {
           </Heading>
         </HStack>
 
-        <Carousel.ItemGroup>
+        <Carousel.ItemGroup pt={2} pb={2}>
           {legislators.map((leg, idx) => {
             const currentTerm = getCurrentTerm(leg);
             const memberId = getMemberId(leg);
@@ -301,8 +277,6 @@ export default function LegislatorCarousel() {
     <Box>
       {leaders.length > 0 &&
         renderCarousel(leaders, "Congressional Leaders", slidesPerPage)}
-      {popular.length > 0 &&
-        renderCarousel(popular, "Popular Legislators", slidesPerPage)}
     </Box>
   );
 }

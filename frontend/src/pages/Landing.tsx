@@ -22,7 +22,6 @@ export default function Landing() {
         <BillAnalysisExplainer />
         <IdeologyScoreExplainer />
         <LegislatorPreview />
-        {/* <FeaturedBills /> */}
       </Box>
     </>
   );
