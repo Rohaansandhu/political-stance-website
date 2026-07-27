@@ -13,6 +13,7 @@ import {
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   Tooltip,
@@ -26,6 +27,8 @@ import {
   computeBinnedData,
   computePartyStats,
   computeDomain,
+  getBinIndexForScore,
+  type Legislator,
   type ScatterData,
 } from "./histogramUtils";
 
@@ -34,6 +37,8 @@ interface HistogramProps {
   field: string;
   subject: string;
   current: boolean;
+  selectedMemberId?: string | null;
+  onLegislatorsLoaded?: (legislators: Legislator[]) => void;
 }
 
 export default function CongressHistogram({
@@ -41,6 +46,8 @@ export default function CongressHistogram({
   field,
   subject,
   current,
+  selectedMemberId = null,
+  onLegislatorsLoaded,
 }: HistogramProps) {
   const chart = useChartTheme();
   const [data, setData] = useState<ScatterData | null>(null);
@@ -76,13 +83,88 @@ export default function CongressHistogram({
     }
   };
 
+  useEffect(() => {
+    if (data) onLegislatorsLoaded?.(data.legislators);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
   const legislators = data?.legislators ?? [];
-  const bins = useMemo(() => computeBinnedData(legislators), [legislators]);
+  const { bins, edges } = useMemo(() => computeBinnedData(legislators), [legislators]);
   const stats = useMemo(() => computePartyStats(legislators), [legislators]);
   const domain = useMemo(
     () => computeDomain(legislators.map((l) => l.score)),
     [legislators],
   );
+
+  const selectedLegislator = useMemo(
+    () => legislators.find((l) => l.member_id === selectedMemberId) ?? null,
+    [legislators, selectedMemberId],
+  );
+  const selectedBinIndex = useMemo(
+    () => (selectedLegislator ? getBinIndexForScore(selectedLegislator.score, edges) : null),
+    [selectedLegislator, edges],
+  );
+
+  const isHighlighted = (binIndex: number, party: Legislator["party"]) =>
+    selectedBinIndex === binIndex && selectedLegislator?.party === party;
+
+  const cellHighlightProps = (binIndex: number, party: Legislator["party"]) =>
+    isHighlighted(binIndex, party)
+      ? {
+          stroke: "var(--chakra-colors-primary)",
+          strokeWidth: 4,
+          style: { filter: "drop-shadow(0 0 8px var(--chakra-colors-primary))" },
+        }
+      : { stroke: undefined, strokeWidth: 0 };
+
+  const renderHighlightLabel =
+    (party: Legislator["party"]) =>
+    (props: {
+      x?: string | number;
+      y?: string | number;
+      width?: string | number;
+      index?: number;
+    }) => {
+      const x = Number(props.x);
+      const y = Number(props.y);
+      const width = Number(props.width);
+      if (
+        !selectedLegislator ||
+        props.index === undefined ||
+        !isHighlighted(props.index, party) ||
+        Number.isNaN(x) ||
+        Number.isNaN(y) ||
+        Number.isNaN(width)
+      ) {
+        return null;
+      }
+      const labelText = selectedLegislator.score.toFixed(3);
+      const pillWidth = labelText.length * 8 + 16;
+      const centerX = x + width / 2;
+      const labelY = y - 14;
+      return (
+        <g>
+          <rect
+            x={centerX - pillWidth / 2}
+            y={labelY - 16}
+            width={pillWidth}
+            height={22}
+            rx={11}
+            fill="var(--chakra-colors-primary)"
+          />
+          <text
+            x={centerX}
+            y={labelY}
+            textAnchor="middle"
+            fontSize={13}
+            fontWeight={800}
+            fill="#0a0f0d"
+          >
+            {labelText}
+          </text>
+        </g>
+      );
+    };
 
   if (loading) {
     return (
@@ -135,7 +217,7 @@ export default function CongressHistogram({
       {/* Histogram Chart */}
       <Box bg="surface" p={6} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card">
         <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={bins} margin={{ left: 20 }}>
+          <BarChart data={bins} margin={{ top: 40, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} vertical={false} />
             <XAxis
               dataKey="range"
@@ -168,9 +250,44 @@ export default function CongressHistogram({
               }}
             />
             <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
-            <Bar dataKey="D" name="Democrats" fill={chart.partyColors.D} stackId="a" radius={[0, 0, 0, 0]} isAnimationActive={false} />
-            <Bar dataKey="R" name="Republicans" fill={chart.partyColors.R} stackId="a" isAnimationActive={false} />
-            <Bar dataKey="I" name="Independents" fill={chart.partyColors.I} stackId="a" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+            <Bar
+              dataKey="D"
+              name="Democrats"
+              fill={chart.partyColors.D}
+              stackId="a"
+              radius={[0, 0, 0, 0]}
+              isAnimationActive={false}
+              label={renderHighlightLabel("D")}
+            >
+              {bins.map((_, i) => (
+                <Cell key={i} fill={chart.partyColors.D} {...cellHighlightProps(i, "D")} />
+              ))}
+            </Bar>
+            <Bar
+              dataKey="R"
+              name="Republicans"
+              fill={chart.partyColors.R}
+              stackId="a"
+              isAnimationActive={false}
+              label={renderHighlightLabel("R")}
+            >
+              {bins.map((_, i) => (
+                <Cell key={i} fill={chart.partyColors.R} {...cellHighlightProps(i, "R")} />
+              ))}
+            </Bar>
+            <Bar
+              dataKey="I"
+              name="Independents"
+              fill={chart.partyColors.I}
+              stackId="a"
+              radius={[3, 3, 0, 0]}
+              isAnimationActive={false}
+              label={renderHighlightLabel("I")}
+            >
+              {bins.map((_, i) => (
+                <Cell key={i} fill={chart.partyColors.I} {...cellHighlightProps(i, "I")} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </Box>

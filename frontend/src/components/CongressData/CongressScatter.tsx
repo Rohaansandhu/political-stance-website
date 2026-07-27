@@ -18,17 +18,17 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
-  Cell,
 } from "recharts";
 import IdeologyViewsBar from "./IdeologyViewBar";
 import { useChartTheme } from "./chartTheme";
-import { computeDomain, type ScatterData } from "./histogramUtils";
+import { computeDomain, type Legislator, type ScatterData } from "./histogramUtils";
 
 interface ScatterProps {
   specHash: string;
   field: string;
   subject: string;
   current: boolean;
+  selectedMemberId?: string | null;
 }
 
 export default function CongressScatter({
@@ -36,6 +36,7 @@ export default function CongressScatter({
   field,
   subject,
   current,
+  selectedMemberId = null,
 }: ScatterProps) {
   const chart = useChartTheme();
   const PARTY_COLORS = chart.partyColors;
@@ -76,6 +77,18 @@ export default function CongressScatter({
     () => computeDomain((data?.legislators ?? []).map((l) => l.score)),
     [data],
   );
+
+  const selectedLegislator = useMemo(
+    () => (data?.legislators ?? []).find((l) => l.member_id === selectedMemberId) ?? null,
+    [data, selectedMemberId],
+  );
+
+  const plottedData = useMemo(() => {
+    const legislators = data?.legislators ?? [];
+    if (!selectedLegislator) return legislators;
+    const rest = legislators.filter((l) => l.member_id !== selectedLegislator.member_id);
+    return [...rest, selectedLegislator];
+  }, [data, selectedLegislator]);
 
   if (loading) {
     return (
@@ -192,7 +205,7 @@ export default function CongressScatter({
       {/* Scatter Plot */}
       <Box bg="surface" p={6} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card">
         <ResponsiveContainer width="100%" height={350}>
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
+          <ScatterChart margin={{ top: 40, right: 20, bottom: 20, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
 
             <XAxis
@@ -239,21 +252,54 @@ export default function CongressScatter({
 
             <Scatter
               name="Legislators"
-              data={data.legislators}
+              data={plottedData}
               fill="#8884d8"
               isAnimationActive={false}
-            >
-              {data.legislators.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={
-                    PARTY_COLORS[entry.party as keyof typeof PARTY_COLORS] ??
-                    "#718096"
-                  }
-                  fillOpacity={0.7}
-                />
-              ))}
-            </Scatter>
+              shape={(props: any) => {
+                const legislator: Legislator = props.payload;
+                const isSelected = legislator.member_id === selectedMemberId;
+                const color =
+                  PARTY_COLORS[legislator.party as keyof typeof PARTY_COLORS] ?? "#718096";
+                if (!isSelected) {
+                  return <circle cx={props.cx} cy={props.cy} r={4} fill={color} fillOpacity={0.7} />;
+                }
+                const name = legislator.official_full_name;
+                const pillWidth = name.length * 7 + 20;
+                const labelY = props.cy - 20;
+                return (
+                  <g>
+                    <circle cx={props.cx} cy={props.cy} r={16} fill="var(--chakra-colors-primary)" fillOpacity={0.25} />
+                    <circle
+                      cx={props.cx}
+                      cy={props.cy}
+                      r={9}
+                      fill={color}
+                      stroke="var(--chakra-colors-primary)"
+                      strokeWidth={3}
+                      style={{ filter: "drop-shadow(0 0 8px var(--chakra-colors-primary))" }}
+                    />
+                    <rect
+                      x={props.cx - pillWidth / 2}
+                      y={labelY - 16}
+                      width={pillWidth}
+                      height={22}
+                      rx={11}
+                      fill="var(--chakra-colors-primary)"
+                    />
+                    <text
+                      x={props.cx}
+                      y={labelY}
+                      textAnchor="middle"
+                      fontSize={12}
+                      fontWeight={800}
+                      fill="#0a0f0d"
+                    >
+                      {name}
+                    </text>
+                  </g>
+                );
+              }}
+            />
           </ScatterChart>
         </ResponsiveContainer>
 

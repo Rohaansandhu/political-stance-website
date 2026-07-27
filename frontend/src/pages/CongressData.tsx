@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Container,
@@ -13,6 +13,8 @@ import {
 import CongressHistogram from "../components/CongressData/CongressHistogram";
 import CongressScatter from "../components/CongressData/CongressScatter";
 import CongressRankings from "../components/CongressData/CongressRankings";
+import LegislatorSearch from "../components/CongressData/LegislatorSearch";
+import type { Legislator } from "../components/CongressData/histogramUtils";
 import { Helmet } from "react-helmet-async";
 
 export default function CongressDataPage() {
@@ -20,9 +22,20 @@ export default function CongressDataPage() {
   const [model, setModel] = useState("gpt-5-mini");
   const [subject, setSubject] = useState("Economy & Finance");
   const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [searchIndex, setSearchIndex] = useState<Legislator[]>([]);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState("histogram");
 
   useEffect(() => {
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    setSelectedMemberId(null);
+  }, [chamber]);
+
+  const handleLegislatorsLoaded = useCallback((legs: Legislator[]) => {
+    setSearchIndex(legs);
   }, []);
 
   const fetchCategories = async () => {
@@ -51,16 +64,30 @@ export default function CongressDataPage() {
       </Helmet>
       <Container maxW="7xl" py={8}>
         {/* Header */}
-        <Box mb={6}>
-          <Heading size="2xl" mb={2} color="text" letterSpacing="tight">
-            Congress Data Analytics
-          </Heading>
-          <Text fontSize="lg" color="textMuted">
-            Explore voting patterns and political positions across Congress
-          </Text>
-        </Box>
+        <HStack justify="space-between" align="flex-end" mb={6} gap={6} wrap="wrap">
+          <Box>
+            <Heading size="2xl" mb={2} color="text" letterSpacing="tight">
+              Congress Data Analytics
+            </Heading>
+            <Text fontSize="lg" color="textMuted">
+              Explore voting patterns and political positions across Congress
+            </Text>
+          </Box>
 
-        <Tabs.Root defaultValue="histogram" variant="enclosed">
+          <Box minW="320px">
+            <LegislatorSearch
+              legislators={searchIndex}
+              selectedMemberId={selectedMemberId}
+              onSelect={setSelectedMemberId}
+            />
+          </Box>
+        </HStack>
+
+        <Tabs.Root
+          defaultValue="histogram"
+          variant="enclosed"
+          onValueChange={(details) => setActiveView(details.value)}
+        >
           <Box bg="bgLightShade" p={4} rounded="card" borderWidth="1px" borderColor="borderSubtle">
             <HStack align="flex-start" gap={4}>
               {/* Left sidebar: filters + tab triggers */}
@@ -188,6 +215,8 @@ export default function CongressDataPage() {
                     field="primary_categories"
                     subject={subject}
                     current={true}
+                    selectedMemberId={selectedMemberId}
+                    onLegislatorsLoaded={handleLegislatorsLoaded}
                   />
                 </Tabs.Content>
 
@@ -197,6 +226,7 @@ export default function CongressDataPage() {
                     field="primary_categories"
                     subject={subject}
                     current={true}
+                    selectedMemberId={selectedMemberId}
                   />
                 </Tabs.Content>
 
@@ -205,6 +235,8 @@ export default function CongressDataPage() {
                     specHash={specHash}
                     field="primary_categories"
                     subject={subject}
+                    selectedMemberId={selectedMemberId}
+                    isActive={activeView === "rankings"}
                   />
                 </Tabs.Content>
               </Box>

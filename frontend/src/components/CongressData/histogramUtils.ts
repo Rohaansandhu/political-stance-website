@@ -94,13 +94,20 @@ export function computeBins(
   return { edges, labels };
 }
 
-export function computeBinnedData(legislators: Legislator[]): BinData[] {
+export function getBinIndexForScore(score: number, edges: number[]): number {
+  const binCount = edges.length - 1;
+  const lo = edges[0];
+  const binWidth = (edges[edges.length - 1] - lo) / binCount;
+  return Math.min(binCount - 1, Math.max(0, Math.floor((score - lo) / binWidth)));
+}
+
+export function computeBinnedData(
+  legislators: Legislator[],
+): { bins: BinData[]; edges: number[] } {
   const scores = legislators.map((l) => l.score);
   const domain = computeDomain(scores);
   const { edges, labels } = computeBins(scores, domain);
-  const binCount = labels.length;
-  const lo = edges[0];
-  const binWidth = (edges[edges.length - 1] - lo) / binCount;
+  const binWidth = (edges[edges.length - 1] - edges[0]) / labels.length;
   const decimals = pickDecimals(binWidth);
 
   const bins: BinData[] = labels.map((range, i) => ({
@@ -112,14 +119,11 @@ export function computeBinnedData(legislators: Legislator[]): BinData[] {
   }));
 
   for (const legislator of legislators) {
-    const idx = Math.min(
-      binCount - 1,
-      Math.max(0, Math.floor((legislator.score - lo) / binWidth)),
-    );
+    const idx = getBinIndexForScore(legislator.score, edges);
     bins[idx][legislator.party] += 1;
   }
 
-  return bins;
+  return { bins, edges };
 }
 
 export function computePartyStats(

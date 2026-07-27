@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Box,
   Heading,
@@ -18,6 +18,8 @@ interface CongressRankingsProps {
   specHash: string;
   field: "primary_categories" | "main_categories" | "detailed_spectrums";
   subject: string;
+  selectedMemberId?: string | null;
+  isActive?: boolean;
 }
 
 interface RankingData {
@@ -36,7 +38,17 @@ interface RankingData {
   current_percentile_rank?: number;
 }
 
-function RankingRow({ ranking, side }: { ranking: RankingData; side: "liberal" | "conservative" }) {
+function RankingRow({
+  ranking,
+  side,
+  selected = false,
+  rowRef,
+}: {
+  ranking: RankingData;
+  side: "liberal" | "conservative";
+  selected?: boolean;
+  rowRef?: React.Ref<HTMLDivElement>;
+}) {
   const getPartyColor = (party: string) => {
     switch (party) {
       case "D": return "blue";
@@ -52,14 +64,16 @@ function RankingRow({ ranking, side }: { ranking: RankingData; side: "liberal" |
   return (
     <Link to={`/legislators/${ranking.member_id}`}>
       <Box
-        bg="surface"
+        ref={rowRef}
+        bg={selected ? "bgLightShade" : "surface"}
         px={3}
         py={2}
         rounded="lg"
-        borderWidth="1px"
-        borderColor="borderSubtle"
+        borderWidth={selected ? "2px" : "1px"}
+        borderColor={selected ? "primary" : "borderSubtle"}
         borderLeftWidth="3px"
         borderLeftColor={borderColor}
+        boxShadow={selected ? "0 0 0 1px var(--chakra-colors-primary)" : undefined}
         _hover={{ bg: "bgLightShade", transform: "translateX(2px)" }}
         transition="all 0.15s"
       >
@@ -93,14 +107,22 @@ export default function CongressRankings({
   specHash,
   field,
   subject,
+  selectedMemberId = null,
+  isActive = true,
 }: CongressRankingsProps) {
   const [rankings, setRankings] = useState<RankingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const highlightRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchRankings();
   }, [specHash, field, subject]);
+
+  useEffect(() => {
+    if (!isActive) return;
+    highlightRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [selectedMemberId, rankings, isActive]);
 
   const fetchRankings = async () => {
     setLoading(true);
@@ -211,9 +233,18 @@ export default function CongressRankings({
               </Text>
               <Text fontSize="xs" color="textMuted">({liberalRankings.length})</Text>
             </HStack>
-            {liberalRankings.map((ranking) => (
-              <RankingRow key={ranking.member_id} ranking={ranking} side="liberal" />
-            ))}
+            {liberalRankings.map((ranking) => {
+              const isSelected = ranking.member_id === selectedMemberId;
+              return (
+                <RankingRow
+                  key={ranking.member_id}
+                  ranking={ranking}
+                  side="liberal"
+                  selected={isSelected}
+                  rowRef={isSelected ? highlightRef : undefined}
+                />
+              );
+            })}
           </VStack>
         </GridItem>
 
@@ -227,9 +258,18 @@ export default function CongressRankings({
               </Text>
               <Text fontSize="xs" color="textMuted">({conservativeRankings.length})</Text>
             </HStack>
-            {conservativeRankings.map((ranking) => (
-              <RankingRow key={ranking.member_id} ranking={ranking} side="conservative" />
-            ))}
+            {conservativeRankings.map((ranking) => {
+              const isSelected = ranking.member_id === selectedMemberId;
+              return (
+                <RankingRow
+                  key={ranking.member_id}
+                  ranking={ranking}
+                  side="conservative"
+                  selected={isSelected}
+                  rowRef={isSelected ? highlightRef : undefined}
+                />
+              );
+            })}
           </VStack>
         </GridItem>
 
