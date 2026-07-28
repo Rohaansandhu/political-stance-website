@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Heading } from "@chakra-ui/react";
+import { Box, Heading, Text, VStack } from "@chakra-ui/react";
 import BillGrid from "./BillGrid";
 
 interface RecentBillsProps {
@@ -31,15 +31,23 @@ export function RecentBills({ limit = 6 }: RecentBillsProps) {
   if (!bills.length && !loading) return null;
 
   return (
-    <Box>
-      <Heading size="lg" mb={4} color="text" letterSpacing="tight">
-        Recent Bills
-      </Heading>
-      <BillGrid
-        bills={bills}
-        loading={loading}
-        emptyMessage="No recent bills available"
-      />
+    <Box as="section" py={20} bg="bgAltGray">
+      <Box maxW="6xl" mx="auto" px={4}>
+        <VStack spaceX={4} mb={12} textAlign="center">
+          <Heading mb={4} fontSize={{ base: "3xl", md: "4xl" }} color="primary">
+            Recent Bills
+          </Heading>
+          <Text color="textMuted" maxW="2xl" mx="auto" fontSize={{ base: "md", md: "lg" }}>
+            The most recently analyzed bills, with AI-generated partisan and
+            category breakdowns.
+          </Text>
+        </VStack>
+        <BillGrid
+          bills={bills}
+          loading={loading}
+          emptyMessage="No recent bills available"
+        />
+      </Box>
     </Box>
   );
 }

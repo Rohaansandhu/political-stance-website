@@ -6,7 +6,6 @@ import BillFilters from "../components/Bills/BillFilters";
 import BillGrid from "../components/Bills/BillGrid";
 import Pagination from "../components/Bills/Pagination";
 import { BillAnalysisReminder } from "../components/Bills/BillAnalysisReminder";
-import { RecentBills } from "../components/Bills/RecentBills";
 import { Helmet } from "react-helmet-async";
 
 interface BillSummary {
@@ -197,8 +196,6 @@ export default function BillAnalysesPage() {
           </Box>
 
           <BillAnalysisReminder />
-
-          <RecentBills />
 
           {/* Search Bar */}
           <BillSearchBar value={searchValue} onChange={handleSearchChange} />

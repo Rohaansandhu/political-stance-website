@@ -3,6 +3,7 @@ import { Hero } from "../components/Landing/Hero.tsx";
 import { LegislatorPreview } from "../components/Legislators/LegislatorPreview.tsx";
 import { IdeologyScoreExplainer } from "../components/Landing/IdeologyScoreExplainer.tsx";
 import { BillAnalysisExplainer } from "../components/Landing/BillAnalysisExplainer.tsx";
+import { RecentBills } from "../components/Bills/RecentBills.tsx";
 import { Helmet } from "react-helmet-async";
 import { SectionDivider } from "../components/SectionDivider.tsx";
 
@@ -22,6 +23,7 @@ export default function Landing() {
         <BillAnalysisExplainer />
         <IdeologyScoreExplainer />
         <LegislatorPreview />
+        <RecentBills />
       </Box>
     </>
   );
