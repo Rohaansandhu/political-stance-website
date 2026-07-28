@@ -1,12 +1,15 @@
-import { Box, Button, Container, Flex, Heading, Text } from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Heading, Image, Text } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
+import { useReducedMotion } from "framer-motion";
 import heroImage from "../../assets/hero_capitol_image.avif";
+import { MotionBox } from "../motion/MotionBox";
 
 export function Hero() {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <Box as="section" position="relative" h={{ base: "620px", md: "760px" }} color="white" overflow="hidden">
-      <Box
-        as="img"
+      <Image
         src={heroImage}
         alt="United States Capitol building"
         position="absolute"
@@ -22,17 +25,18 @@ export function Hero() {
         bg="linear-gradient(180deg, rgba(8,12,10,.68) 0%, rgba(8,12,10,.4) 38%, rgba(8,12,10,.48) 68%, rgba(8,12,10,.82) 100%)"
       />
 
-      <Container
-        maxW="7xl"
-        px={4}
-        position="relative"
-        h="full"
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        textAlign="center"
-      >
+      <Container maxW="7xl" px={4} position="relative" h="full">
+        <MotionBox
+          h="full"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: prefersReducedMotion ? 0.2 : 0.7, ease: [0.16, 1, 0.3, 1] }}
+        >
         <Text
           fontSize="sm"
           fontWeight="medium"
@@ -118,6 +122,7 @@ export function Hero() {
             </Button>
           </Link>
         </Flex>
+        </MotionBox>
       </Container>
     </Box>
   );

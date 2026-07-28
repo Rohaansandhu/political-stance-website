@@ -5,7 +5,6 @@ import { IdeologyScoreExplainer } from "../components/Landing/IdeologyScoreExpla
 import { BillAnalysisExplainer } from "../components/Landing/BillAnalysisExplainer.tsx";
 import { RecentBills } from "../components/Bills/RecentBills.tsx";
 import { Helmet } from "react-helmet-async";
-import { SectionDivider } from "../components/SectionDivider.tsx";
 
 export default function Landing() {
   return (
@@ -19,7 +18,6 @@ export default function Landing() {
           />
         </Helmet>
         <Hero />
-        <SectionDivider topBg="bg" bottomBg="bgAltGray" />
         <BillAnalysisExplainer />
         <IdeologyScoreExplainer />
         <LegislatorPreview />
