@@ -78,9 +78,9 @@ export default function BillGrid({
   const getTemplateColumns = () => {
     const { base = 1, md = 2, lg = 3 } = columns;
     return {
-      base: `repeat(${base}, 1fr)`,
-      md: `repeat(${md}, 1fr)`,
-      lg: `repeat(${lg}, 1fr)`
+      base: `repeat(${base}, minmax(0, 1fr))`,
+      md: `repeat(${md}, minmax(0, 1fr))`,
+      lg: `repeat(${lg}, minmax(0, 1fr))`
     };
   };
 
@@ -91,7 +91,7 @@ export default function BillGrid({
       w="100%"
     >
       {bills.map((bill) => (
-        <GridItem key={bill.bill_id}>
+        <GridItem key={bill.bill_id} minW={0}>
           <BillCard bill={bill} featured={featured} />
         </GridItem>
       ))}

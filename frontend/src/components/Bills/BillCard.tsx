@@ -81,6 +81,8 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
     <Box
       bg="surface"
       p={6}
+      h="280px"
+      overflow="hidden"
       rounded="card"
       cursor="pointer"
       onClick={() => navigate(`/bill-analyses/${bill.bill_id}/${bill.model}`)}
@@ -97,11 +99,11 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
       borderTopColor={featured ? getIdeologyColor(avgScore) : 'border'}
       position="relative"
     >
-      <VStack align="stretch" gap={3}>
+      <VStack align="stretch" gap={3} h="100%">
         {/* Header */}
         <HStack justify="space-between" align="flex-start">
-          <VStack align="flex-start" gap={1} flex={1}>
-            <Text fontSize="xl" fontWeight="bold" color="primary" lineHeight="1.2">
+          <VStack align="flex-start" gap={1} flex={1} minW={0}>
+            <Text fontSize="xl" fontWeight="bold" color="primary" lineHeight="1.2" truncate w="100%">
               {bill.bill_id.toUpperCase()}
             </Text>
             <HStack gap={2}>
@@ -122,6 +124,7 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
           fontSize={featured ? 'md' : 'sm'}
           color="text"
           lineHeight="1.4"
+          lineClamp={2}
         >
           {bill.bill_summary.title}
         </Text>
@@ -167,7 +170,7 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
         </Box>
 
         {/* Category Badges */}
-        <HStack gap={2} flexWrap="wrap" minH="24px">
+        <HStack gap={2} flexWrap="nowrap" overflow="hidden" minH="24px">
           {primaryCategories
             .slice(0, featured ? 2 : 3)
             .map(cat => (
@@ -179,8 +182,13 @@ export default function BillCard({ bill, featured = false }: BillCardProps) {
                 bg="bgLightShade"
                 color="textMuted"
                 fontSize="xs"
+                minW={0}
+                flexShrink={1}
+                flexGrow={0}
               >
-                {cat.name}
+                <Text as="span" display="block" truncate minW={0}>
+                  {cat.name}
+                </Text>
               </Badge>
             ))}
         </HStack>
