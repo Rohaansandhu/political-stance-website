@@ -5,23 +5,28 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import LegislatorCarousel from "./LegislatorCarousel";
+import { Reveal } from "../motion/Reveal";
 
 export function LegislatorPreview() {
   return (
     <Box id="legislators" py={20} bg="bg">
       <Box maxW="6xl" mx="auto" px={4}>
-        <VStack spaceX={4} mb={12} textAlign="center">
-          <Heading mb={4} fontSize={{ base: "3xl", md: "4xl" }} color={"primary"}>
-            Legislator Profiles
-          </Heading>
-          <Text color="textMuted" maxW="2xl" mx="auto"
-            fontSize={{ base: "md", md: "lg" }}>
-            Each legislator profile includes detailed political spectrum analysis,
-            voting history rankings, and comparative data across congressional
-            sessions.
-          </Text>
-        </VStack>
-        <LegislatorCarousel />
+        <Reveal direction="up">
+          <VStack spaceX={4} mb={12} textAlign="center">
+            <Heading mb={4} fontSize={{ base: "3xl", md: "4xl" }} color={"primary"}>
+              Legislator Profiles
+            </Heading>
+            <Text color="textMuted" maxW="2xl" mx="auto"
+              fontSize={{ base: "md", md: "lg" }}>
+              Each legislator profile includes detailed political spectrum analysis,
+              voting history rankings, and comparative data across congressional
+              sessions.
+            </Text>
+          </VStack>
+        </Reveal>
+        <Reveal direction="up" delay={0.12}>
+          <LegislatorCarousel />
+        </Reveal>
       </Box>
     </Box>
   );
