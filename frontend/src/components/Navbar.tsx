@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -10,11 +10,26 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { Menu, X } from "lucide-react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import { ColorModeButton } from "./ui/color-mode";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const isLanding = location.pathname === "/";
+
+  useEffect(() => {
+    if (!isLanding) return;
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isLanding]);
+
+  // On the landing page the navbar overlays the hero image transparently
+  // until the user scrolls (or opens the mobile menu), then becomes solid.
+  const transparent = isLanding && !scrolled && !isOpen;
 
   const navItems = [
     { label: "Home", to: "/" },
@@ -27,15 +42,16 @@ function Navbar() {
   return (
     <Box
       as="header"
-      // Sticky navbar to stay at top during scroll
-      pos="sticky"
+      pos={isLanding ? "fixed" : "sticky"}
       top={0}
+      left={0}
+      right={0}
       zIndex="sticky"
-      bg="bg/80"
+      bg={transparent ? "transparent" : "bg/80"}
       // glass effect
-      backdropFilter="blur(10px)"
+      backdropFilter={transparent ? "none" : "blur(10px)"}
       borderBottomWidth="1px"
-      borderColor="bgLightShade"
+      borderColor={transparent ? "transparent" : "bgLightShade"}
       transition="all 0.2s ease-in-out"
     >
       <Container maxW="7xl" px={4} py={4}>
@@ -44,9 +60,10 @@ function Navbar() {
           <RouterLink to="/">
             <Heading
               size="xl"
-              color="primary"
+              color={transparent ? "white" : "primary"}
               fontWeight="bold"
               letterSpacing="tight"
+              transition="color 0.2s ease-in-out"
             >
               US PoliTrack
             </Heading>
@@ -60,30 +77,36 @@ function Navbar() {
                 asChild
                 fontSize="sm"
                 fontWeight="semibold"
-                color="text"
-                opacity={0.7}
+                color={transparent ? "white" : "text"}
+                opacity={transparent ? 0.9 : 0.7}
                 _focus={{ boxShadow: "none", outline: "none" }}
                 _focusVisible={{ boxShadow: "outline" }}
                 _hover={{
                   textDecoration: "none",
                   opacity: 1,
-                  color: "primary",
+                  color: transparent ? "white" : "primary",
                 }}
                 transition="all 0.2s"
               >
                 <RouterLink to={item.to}>{item.label}</RouterLink>
               </Link>
             ))}
-            <ColorModeButton color="text" _hover={{ bg: "bgLightShade", color: "primary" }} />
+            <ColorModeButton
+              color={transparent ? "white" : "text"}
+              _hover={{ bg: transparent ? "whiteAlpha.200" : "bgLightShade", color: transparent ? "white" : "primary" }}
+            />
           </HStack>
 
           {/* Mobile Menu Button + Color Mode */}
           <HStack display={{ base: "flex", md: "none" }} gap={1}>
-            <ColorModeButton color="text" _hover={{ bg: "bgLightShade", color: "primary" }} />
+            <ColorModeButton
+              color={transparent ? "white" : "text"}
+              _hover={{ bg: transparent ? "whiteAlpha.200" : "bgLightShade", color: transparent ? "white" : "primary" }}
+            />
             <IconButton
               aria-label="Toggle menu"
               variant="ghost"
-              color="primary"
+              color={transparent ? "white" : "primary"}
               onClick={() => setIsOpen(!isOpen)}
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
