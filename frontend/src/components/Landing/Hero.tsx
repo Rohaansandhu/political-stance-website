@@ -1,4 +1,4 @@
-import { Box, Button, Container, Flex, Heading, Image, Text } from "@chakra-ui/react";
+import { Box, Button, Container, Grid, Heading, Image, Text } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import { useReducedMotion } from "framer-motion";
 import heroImage from "../../assets/hero_capitol_image.avif";
@@ -8,120 +8,129 @@ export function Hero() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <Box as="section" position="relative" h={{ base: "620px", md: "760px" }} color="white" overflow="hidden">
-      <Image
-        src={heroImage}
-        alt="United States Capitol building"
-        position="absolute"
-        inset={0}
-        w="full"
-        h="full"
-        objectFit="cover"
-        objectPosition="center 30%"
-      />
-      <Box
-        position="absolute"
-        inset={0}
-        bg="linear-gradient(180deg, rgba(8,12,10,.68) 0%, rgba(8,12,10,.4) 38%, rgba(8,12,10,.48) 68%, rgba(8,12,10,.82) 100%)"
-      />
-
-      <Container maxW="7xl" px={4} position="relative" h="full">
+    <Box as="section" bg="bg" color="text" overflow="hidden">
+      <Container maxW="7xl" px={4} py={{ base: 12, md: 0 }}>
         <MotionBox
-          h="full"
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          textAlign="center"
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: prefersReducedMotion ? 0.2 : 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-        <Text
-          fontSize="sm"
-          fontWeight="medium"
-          letterSpacing="0.16em"
-          textTransform="uppercase"
-          color="#3ddc97"
-          mb={5}
-          textShadow="0 2px 10px rgba(0,0,0,.5)"
-        >
-          Where votes meet ideology
-        </Text>
+          <Grid
+            templateColumns={{ base: "1fr", md: "1.02fr 0.98fr" }}
+            alignItems="center"
+            gap={{ base: 10, md: 11 }}
+            minH={{ md: "600px" }}
+          >
+            <Box>
+              <Heading
+                as="h1"
+                fontFamily="'Fraunces', serif"
+                fontWeight="400"
+                fontSize={{ base: "4xl", md: "5xl", lg: "6xl" }}
+                lineHeight="1.06"
+                letterSpacing="-0.015em"
+                mb={5}
+              >
+                Measure political stances
+                <br />
+                <Text as="span" color="primary">
+                  through votes
+                </Text>
+              </Heading>
 
-        <Heading
-          as="h1"
-          fontFamily="'Fraunces', serif"
-          fontWeight="400"
-          fontSize={{ base: "4xl", md: "6xl", lg: "7xl" }}
-          lineHeight="1.08"
-          mb={6}
-          textShadow="0 4px 24px rgba(0,0,0,.45)"
-          maxW="4xl"
-        >
-          Measure political stances
-          <br />
-          through votes
-        </Heading>
+              <Text fontSize={{ base: "md", md: "lg" }} color="textMuted" maxW="420px" mb={7}>
+                Explore legislator voting patterns and ideological trends
+                across major issues, powered by congressional data and
+                AI-assisted analysis.
+              </Text>
 
-        <Text
-          fontSize={{ base: "md", md: "lg" }}
-          opacity={0.92}
-          maxW="2xl"
-          mb={10}
-          textShadow="0 2px 10px rgba(0,0,0,.4)"
-        >
-          Explore legislator voting patterns and ideological trends across
-          major issues, powered by congressional data and AI-assisted
-          analysis.
-        </Text>
+              <Box display="flex" flexWrap="wrap" gap={3}>
+                <Link to="/explore-legislators">
+                  <Button
+                    size="lg"
+                    px={7}
+                    bg="primary"
+                    color="white"
+                    rounded="md"
+                    _hover={{ bg: "primaryHover" }}
+                    transition="all 0.2s ease"
+                  >
+                    Explore Legislators
+                  </Button>
+                </Link>
+                <Link to="/bill-analyses">
+                  <Button
+                    size="lg"
+                    px={7}
+                    variant="outline"
+                    borderColor="border"
+                    bg="surface"
+                    color="text"
+                    rounded="md"
+                    _hover={{ bg: "bgAltGray" }}
+                    transition="all 0.2s ease"
+                  >
+                    Find Bills
+                  </Button>
+                </Link>
+                <Link to="/congress-data">
+                  <Button
+                    size="lg"
+                    px={7}
+                    variant="outline"
+                    borderColor="border"
+                    bg="surface"
+                    color="text"
+                    rounded="md"
+                    _hover={{ bg: "bgAltGray" }}
+                    transition="all 0.2s ease"
+                  >
+                    View Congress Data
+                  </Button>
+                </Link>
+              </Box>
 
-        <Flex wrap="wrap" align="center" justify="center" gap={4}>
-          <Link to="/explore-legislators">
-            <Button
-              size="lg"
-              px={8}
-              bg="primaryHover"
-              color="white"
-              _dark={{ color: "black" }}
-              rounded="sm"
-              _hover={{ bg: "primary" }}
-              transition="all 0.2s ease"
+              <Box mt={8} pt={5} borderTop="1px solid" borderColor="borderSubtle" display="flex" gap={10}>
+                <Box>
+                  <Text fontSize="2xl" fontWeight="600" letterSpacing="-0.02em">
+                    535
+                  </Text>
+                  <Text fontSize="sm" color="textMuted" mt={0.5}>
+                    legislators
+                  </Text>
+                </Box>
+                <Box>
+                  <Text fontSize="2xl" fontWeight="600" letterSpacing="-0.02em">
+                    10,000+
+                  </Text>
+                  <Text fontSize="sm" color="textMuted" mt={0.5}>
+                    roll-call votes analyzed
+                  </Text>
+                </Box>
+              </Box>
+            </Box>
+
+            <Box
+              position="relative"
+              h={{ base: "280px", md: "556px" }}
+              m={{ base: 0, md: "22px 0px 22px 0" }}
+              rounded="lg"
+              overflow="hidden"
             >
-              Explore Legislators
-            </Button>
-          </Link>
-          <Link to="/bill-analyses">
-            <Button
-              size="lg"
-              px={8}
-              variant="outline"
-              borderColor="whiteAlpha.700"
-              bg="blackAlpha.300"
-              color="white"
-              rounded="sm"
-              _hover={{ bg: "blackAlpha.500", borderColor: "white" }}
-              transition="all 0.2s ease"
-            >
-              Find Bills
-            </Button>
-          </Link>
-          <Link to="/congress-data">
-            <Button
-              size="lg"
-              px={8}
-              variant="outline"
-              borderColor="whiteAlpha.700"
-              bg="blackAlpha.300"
-              color="white"
-              rounded="sm"
-              _hover={{ bg: "blackAlpha.500", borderColor: "white" }}
-              transition="all 0.2s ease"
-            >
-              View Congress Data
-            </Button>
-          </Link>
-        </Flex>
+              <Image
+                src={heroImage}
+                alt="United States Capitol building"
+                position="absolute"
+                top="50%"
+                left="50%"
+                transform="translate(-50%, -50%)"
+                h="full"
+                w="auto"
+                maxW="none"
+                objectFit="cover"
+              />
+            </Box>
+          </Grid>
         </MotionBox>
       </Container>
     </Box>

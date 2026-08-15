@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Flex,
@@ -10,26 +10,11 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { Menu, X } from "lucide-react";
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import { ColorModeButton } from "./ui/color-mode";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const location = useLocation();
-  const isLanding = location.pathname === "/";
-
-  useEffect(() => {
-    if (!isLanding) return;
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [isLanding]);
-
-  // On the landing page the navbar overlays the hero image transparently
-  // until the user scrolls (or opens the mobile menu), then becomes solid.
-  const transparent = isLanding && !scrolled && !isOpen;
 
   const navItems = [
     { label: "Home", to: "/" },
@@ -42,16 +27,16 @@ function Navbar() {
   return (
     <Box
       as="header"
-      pos={isLanding ? "fixed" : "sticky"}
+      pos="sticky"
       top={0}
       left={0}
       right={0}
       zIndex="sticky"
-      bg={transparent ? "transparent" : "bg/80"}
+      bg="bg/80"
       // glass effect
-      backdropFilter={transparent ? "none" : "blur(10px)"}
+      backdropFilter="blur(10px)"
       borderBottomWidth="1px"
-      borderColor={transparent ? "transparent" : "bgLightShade"}
+      borderColor="bgLightShade"
       transition="all 0.2s ease-in-out"
     >
       <Container maxW="7xl" px={4} py={4}>
@@ -60,7 +45,7 @@ function Navbar() {
           <RouterLink to="/">
             <Heading
               size="xl"
-              color={transparent ? "white" : "primary"}
+              color="primary"
               fontWeight="bold"
               letterSpacing="tight"
               transition="color 0.2s ease-in-out"
@@ -77,14 +62,14 @@ function Navbar() {
                 asChild
                 fontSize="sm"
                 fontWeight="semibold"
-                color={transparent ? "white" : "text"}
-                opacity={transparent ? 0.9 : 0.7}
+                color="text"
+                opacity={0.7}
                 _focus={{ boxShadow: "none", outline: "none" }}
                 _focusVisible={{ boxShadow: "outline" }}
                 _hover={{
                   textDecoration: "none",
                   opacity: 1,
-                  color: transparent ? "white" : "primary",
+                  color: "primary",
                 }}
                 transition="all 0.2s"
               >
@@ -92,21 +77,21 @@ function Navbar() {
               </Link>
             ))}
             <ColorModeButton
-              color={transparent ? "white" : "text"}
-              _hover={{ bg: transparent ? "whiteAlpha.200" : "bgLightShade", color: transparent ? "white" : "primary" }}
+              color="text"
+              _hover={{ bg: "bgLightShade", color: "primary" }}
             />
           </HStack>
 
           {/* Mobile Menu Button + Color Mode */}
           <HStack display={{ base: "flex", md: "none" }} gap={1}>
             <ColorModeButton
-              color={transparent ? "white" : "text"}
-              _hover={{ bg: transparent ? "whiteAlpha.200" : "bgLightShade", color: transparent ? "white" : "primary" }}
+              color="text"
+              _hover={{ bg: "bgLightShade", color: "primary" }}
             />
             <IconButton
               aria-label="Toggle menu"
               variant="ghost"
-              color={transparent ? "white" : "primary"}
+              color="primary"
               onClick={() => setIsOpen(!isOpen)}
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
