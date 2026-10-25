@@ -21,6 +21,7 @@ import {
 } from "recharts";
 import IdeologyViewsBar from "./IdeologyViewBar";
 import { useChartTheme } from "./chartTheme";
+import politicalAxes from "../../../data/politicalAxes.json";
 import { computeDomain, type Legislator, type ScatterData } from "./histogramUtils";
 
 interface ScatterProps {
@@ -119,6 +120,10 @@ export default function CongressScatter({
   }
 
   const chamber = specHash.includes("senate") ? "Senate" : "House";
+  const displaySubject =
+    field === "axes"
+      ? politicalAxes.political_axes.find((a) => a.id === subject)?.name ?? subject
+      : subject;
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -190,7 +195,7 @@ export default function CongressScatter({
       <HStack justify="space-between" align="center">
         <VStack align="flex-start" gap={1}>
           <Heading size="xl" color="text" letterSpacing="tight">
-            {subject}
+            {displaySubject}
           </Heading>
           <HStack gap={2}>
             <Badge colorPalette="blue" variant="subtle" rounded="full">{chamber}</Badge>
@@ -367,7 +372,11 @@ export default function CongressScatter({
         })}
       </HStack>
 
-      <IdeologyViewsBar subject={subject} />
+      {field === "axes" ? (
+        <IdeologyViewsBar axisId={subject} />
+      ) : (
+        <IdeologyViewsBar subject={subject} />
+      )}
     </VStack>
   );
 }

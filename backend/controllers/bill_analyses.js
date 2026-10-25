@@ -1,4 +1,11 @@
 import { getDB } from "../config/db.js";
+import { MODEL_SCHEMAS } from "../config/modelSchemas.js";
+
+// Bills exist with schema v3 (different categories shape, excluded), v4,
+// and now v5 (gpt-6-luna). Aggregate/list endpoints that aren't scoped to a
+// single model only read political_categories.primary_categories, whose
+// shape is unchanged between v4 and v5, so both are included here.
+const SUPPORTED_SCHEMA_VERSIONS = [4, 5];
 
 export const getBillAnalyses = async (req, res) => {
   try {
@@ -20,7 +27,7 @@ export const getBillAnalyses = async (req, res) => {
     } = req.query;
 
     // Build query object
-    const query = { schema_version: 4 }; // Only get v4 schema
+    const query = { schema_version: { $in: SUPPORTED_SCHEMA_VERSIONS } };
 
     if (model) query.model = model;
     if (bill_type) query.bill_type = bill_type;
@@ -143,7 +150,7 @@ export const getFeaturedBills = async (req, res) => {
 
     const featuredBills = await collection
       .aggregate([
-        { $match: { schema_version: 4 } },
+        { $match: { schema_version: { $in: SUPPORTED_SCHEMA_VERSIONS } } },
 
         // Ensure avg_partisan_score exists
         {
@@ -231,11 +238,12 @@ export const getFilterOptions = async (req, res) => {
     const db = getDB();
     const collection = db.collection("bill_analyses");
 
+    const schemaFilter = { schema_version: { $in: SUPPORTED_SCHEMA_VERSIONS } };
     const [models, billTypes, chambers, congresses] = await Promise.all([
-      collection.distinct("model", { schema_version: 4 }),
-      collection.distinct("bill_type", { schema_version: 4 }),
-      collection.distinct("chamber", { schema_version: 4 }),
-      collection.distinct("congress", { schema_version: 4 }),
+      collection.distinct("model", schemaFilter),
+      collection.distinct("bill_type", schemaFilter),
+      collection.distinct("chamber", schemaFilter),
+      collection.distinct("congress", schemaFilter),
     ]);
 
     // For categories, need to extract from nested array
@@ -259,16 +267,45 @@ export const getFilterOptions = async (req, res) => {
   }
 };
 
+export const getBillAxisAnalysisByIdAndModel = async (req, res) => {
+  try {
+    const db = getDB();
+    const collection = db.collection("bill_axis_analyses");
+    const { bill_id, model } = req.params;
+    const axis_schema_version = MODEL_SCHEMAS[model]?.axisSchemaVersion;
+
+    if (!axis_schema_version) {
+      return res.status(404).json({ error: "Model has no axis analyses" });
+    }
+
+    const axisAnalysis = await collection.findOne({
+      bill_id,
+      model,
+      axis_schema_version,
+    });
+
+    if (!axisAnalysis) {
+      return res.status(404).json({ error: "Bill axis analysis not found" });
+    }
+
+    res.json(axisAnalysis);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch bill axis analysis" });
+  }
+};
+
 export const getBillAnalysisByIdAndModel = async (req, res) => {
   try {
     const db = getDB();
     const collection = db.collection("bill_analyses");
     const { bill_id, model } = req.params;
+    const schema_version = MODEL_SCHEMAS[model]?.schemaVersion ?? 4;
 
     const bill = await collection.findOne({
       bill_id,
       model,
-      schema_version: 4,
+      schema_version,
     });
 
     if (!bill) {
@@ -289,7 +326,7 @@ export const getIdeologyDistribution = async (req, res) => {
 
     const distribution = await collection
       .aggregate([
-        { $match: { schema_version: 4 } },
+        { $match: { schema_version: { $in: SUPPORTED_SCHEMA_VERSIONS } } },
         {
           $addFields: {
             avg_partisan_score: {

@@ -23,6 +23,7 @@ import {
 } from "recharts";
 import IdeologyViewsBar from "./IdeologyViewBar";
 import { useChartTheme } from "./chartTheme";
+import politicalAxes from "../../../data/politicalAxes.json";
 import {
   computeBinnedData,
   computePartyStats,
@@ -195,6 +196,10 @@ export default function CongressHistogram({
   }
 
   const chamber = specHash.includes("senate") ? "Senate" : "House";
+  const displaySubject =
+    field === "axes"
+      ? politicalAxes.political_axes.find((a) => a.id === subject)?.name ?? subject
+      : subject;
 
   return (
     <VStack align="stretch" gap={6}>
@@ -202,7 +207,7 @@ export default function CongressHistogram({
       <HStack justify="space-between" align="center">
         <VStack align="flex-start" gap={1}>
           <Heading size="xl" color="text" letterSpacing="tight">
-            {subject}
+            {displaySubject}
           </Heading>
           <HStack gap={2}>
             <Badge colorPalette="blue" variant="subtle" rounded="full">{chamber}</Badge>
@@ -347,7 +352,11 @@ export default function CongressHistogram({
         })}
       </HStack>
 
-      <IdeologyViewsBar subject={subject} />
+      {field === "axes" ? (
+        <IdeologyViewsBar axisId={subject} />
+      ) : (
+        <IdeologyViewsBar subject={subject} />
+      )}
     </VStack>
   );
 }

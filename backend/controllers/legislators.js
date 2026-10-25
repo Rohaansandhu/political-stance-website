@@ -1,4 +1,5 @@
 import { getDB } from "../config/db.js";
+import { buildSpecHash } from "../config/modelSchemas.js";
 
 export const getLegislators = async (req, res) => {
   try {
@@ -105,14 +106,6 @@ export const getLegislatorProfileByMemberId = async (req, res) => {
   }
 };
 
-const model_to_latest_schema = {
-  "gpt-5-mini": "4",
-  "gpt-oss-120b": "3",
-  "gemini-2.5-flash-lite": "3",
-  "llama3.3-70b": "3",
-  "qwen-3-32b": "3",
-};
-
 export const getLegislatorProfileByMemberIdAndModel = async (req, res) => {
   try {
     if (!req.params.member_id) {
@@ -121,12 +114,11 @@ export const getLegislatorProfileByMemberIdAndModel = async (req, res) => {
     if (!req.params.model) {
       return res.status(400).json({ error: "model is required" });
     }
-    const spec_hash_house = `${req.params.model}_${
-      model_to_latest_schema[req.params.model]
-    }_all_house_all`;
-    const spec_hash_senate = `${req.params.model}_${
-      model_to_latest_schema[req.params.model]
-    }_all_senate_all`;
+    const spec_hash_house = buildSpecHash(req.params.model, "house");
+    const spec_hash_senate = buildSpecHash(req.params.model, "senate");
+    if (!spec_hash_house || !spec_hash_senate) {
+      return res.status(400).json({ error: "Unknown model" });
+    }
     const db = getDB();
     const profile_collection = db.collection("legislator_profiles");
     let profile = null;
@@ -204,6 +196,7 @@ export const getLegislatorProfilesBySpecHash = async (req, res) => {
             state: 1,
             spec_hash: 1,
             primary_categories: 1,
+            axes: 1,
             official_full_name: "$legislator_data.name.official_full",
           },
         },

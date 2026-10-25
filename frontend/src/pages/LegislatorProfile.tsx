@@ -12,13 +12,17 @@ import {
   Flex,
   Select,
   createListCollection,
+  Tabs,
 } from "@chakra-ui/react";
 
 import LegislatorProfileHeader from "../components/Legislators/LegislatorProfileHeader";
 import LegislatorStatsOverview from "../components/Legislators/LegislatorStatsOverview";
 import MainCategoryGrid from "../components/Legislators/MainCategoriesGrid";
+import AxesGrid from "../components/Legislators/AxesGrid";
 import { IdeologyScoreReminder } from "../components/Legislators/IdeologyScoreReminder";
 import { Helmet } from "react-helmet-async";
+import { MODEL_SCHEMAS, DEFAULT_MODEL } from "../utils/specHash";
+import type { Axes } from "../types/axes";
 
 interface LegislatorData {
   member_id: string;
@@ -55,12 +59,27 @@ interface LegislatorData {
       category: string;
     }[];
   };
+  axes?: Axes;
+  terms?: {
+    type: string;
+    start: string;
+    end: string;
+    state: string;
+    district?: number;
+    class?: number;
+    party: string;
+  }[];
 }
+
+// Senate scraping has been blocked by senate.gov since this date (see data
+// pipeline handoff) — House data runs well past this. Update once the
+// scraper is fixed and the DB is re-synced.
+const SENATE_DATA_AS_OF = "March 9, 2026";
 
 export default function LegislatorProfile() {
   const { id } = useParams();
   const [data, setData] = useState<LegislatorData | null>(null);
-  const [model, setModel] = useState("gpt-5-mini");
+  const [model, setModel] = useState(DEFAULT_MODEL);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -97,6 +116,10 @@ export default function LegislatorProfile() {
     );
   }
 
+  const isSenate = data.terms && data.terms.length > 0
+    ? data.terms[data.terms.length - 1].type !== "rep"
+    : false;
+
   return (
     <Container maxW="7xl" py={8}>
       <Helmet>
@@ -131,6 +154,16 @@ export default function LegislatorProfile() {
         <IdeologyScoreReminder />
       </Box>
 
+      {/* Senate data staleness notice */}
+      {isSenate && (
+        <Box mb={4} px={4} py={2} bg="orange.subtle" rounded="md" borderWidth="1px" borderColor="orange.muted">
+          <Text fontSize="sm" color="orange.fg">
+            Senate voting data is current as of {SENATE_DATA_AS_OF}. House data is more
+            recent; Senate scores may not reflect the member's latest votes.
+          </Text>
+        </Box>
+      )}
+
       {/* Sidebar + main content */}
       <Box bg="bgLightShade" p={4} rounded="card" borderWidth="1px" borderColor="borderSubtle">
         <HStack align="flex-start" gap={4}>
@@ -139,7 +172,10 @@ export default function LegislatorProfile() {
             {/* Model selector */}
             <Select.Root
               collection={createListCollection({
-                items: [{ label: "GPT-5 Mini", value: "gpt-5-mini" }],
+                items: Object.entries(MODEL_SCHEMAS).map(([value, spec]) => ({
+                  label: spec.label,
+                  value,
+                })),
               })}
               value={[model]}
               onValueChange={(details) => setModel(details.value[0])}
@@ -151,9 +187,11 @@ export default function LegislatorProfile() {
                 <Select.ValueText placeholder="Select Model" />
               </Select.Trigger>
               <Select.Content>
-                <Select.Item item="gpt-5-mini">
-                  <Select.ItemText>GPT-5 Mini</Select.ItemText>
-                </Select.Item>
+                {Object.entries(MODEL_SCHEMAS).map(([value, spec]) => (
+                  <Select.Item key={value} item={value}>
+                    <Select.ItemText>{spec.label}</Select.ItemText>
+                  </Select.Item>
+                ))}
               </Select.Content>
             </Select.Root>
 
@@ -161,12 +199,32 @@ export default function LegislatorProfile() {
             <LegislatorStatsOverview data={data} />
           </VStack>
 
-          {/* Main content — category grid */}
+          {/* Main content — category/axes tabs */}
           <Box flex={1} minW={0}>
-            <MainCategoryGrid
-              categories={data.primary_categories}
-              recentVotes={data.recent_votes}
-            />
+            {data.axes && Object.keys(data.axes).length > 0 ? (
+              <Tabs.Root defaultValue="categories" variant="enclosed">
+                <Tabs.List mb={3}>
+                  <Tabs.Trigger value="categories">Policy Categories</Tabs.Trigger>
+                  <Tabs.Trigger value="axes">Ideological Axes</Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="categories">
+                  <MainCategoryGrid
+                    categories={data.primary_categories}
+                    recentVotes={data.recent_votes}
+                    model={model}
+                  />
+                </Tabs.Content>
+                <Tabs.Content value="axes">
+                  <AxesGrid axes={data.axes} />
+                </Tabs.Content>
+              </Tabs.Root>
+            ) : (
+              <MainCategoryGrid
+                categories={data.primary_categories}
+                recentVotes={data.recent_votes}
+                model={model}
+              />
+            )}
           </Box>
         </HStack>
       </Box>

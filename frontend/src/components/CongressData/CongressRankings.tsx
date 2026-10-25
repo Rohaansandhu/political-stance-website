@@ -13,10 +13,11 @@ import {
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import IdeologyViewsBar from "./IdeologyViewBar";
+import politicalAxes from "../../../data/politicalAxes.json";
 
 interface CongressRankingsProps {
   specHash: string;
-  field: "primary_categories" | "main_categories" | "detailed_spectrums";
+  field: "primary_categories" | "axes" | "main_categories" | "detailed_spectrums";
   subject: string;
   selectedMemberId?: string | null;
   isActive?: boolean;
@@ -173,6 +174,11 @@ export default function CongressRankings({
     }
   };
 
+  const displaySubject =
+    field === "axes"
+      ? politicalAxes.political_axes.find((a) => a.id === subject)?.name ?? subject
+      : subject;
+
   if (loading) {
     return (
       <Center py={20}>
@@ -192,7 +198,7 @@ export default function CongressRankings({
   if (rankings.length === 0) {
     return (
       <Center py={20}>
-        <Text color="text" fontSize="lg">No rankings available for {subject}</Text>
+        <Text color="text" fontSize="lg">No rankings available for {displaySubject}</Text>
       </Center>
     );
   }
@@ -213,12 +219,16 @@ export default function CongressRankings({
       {/* Header */}
       <HStack justify="space-between" align="center">
         <VStack align="flex-start" gap={0}>
-          <Heading size="xl" color="text" letterSpacing="tight">{subject}</Heading>
+          <Heading size="xl" color="text" letterSpacing="tight">{displaySubject}</Heading>
           <Text color="textMuted" fontSize="sm">{rankings.length} legislators ranked</Text>
         </VStack>
       </HStack>
 
-      <IdeologyViewsBar subject={subject} />
+      {field === "axes" ? (
+        <IdeologyViewsBar axisId={subject} />
+      ) : (
+        <IdeologyViewsBar subject={subject} />
+      )}
 
       {/* Two-column rankings */}
       <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>

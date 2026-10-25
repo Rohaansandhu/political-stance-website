@@ -17,6 +17,8 @@ import { ArrowLeft } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import BillVotes from "../components/Bills/BillVotes";
 import { Helmet } from "react-helmet-async";
+import politicalAxes from "../../data/politicalAxes.json";
+import { DEFAULT_MODEL } from "../utils/specHash";
 
 interface BillSummary {
   title: string;
@@ -67,6 +69,20 @@ interface BillAnalysis {
   last_modified?: string;
 }
 
+interface AxisScore {
+  axis: string;
+  position: number;
+  relevance: number;
+  reasoning: string;
+}
+
+interface BillAxisAnalysis {
+  bill_id: string;
+  model: string;
+  axis_schema_version: number;
+  axis_scores: AxisScore[];
+}
+
 function Card({
   children,
   ...props
@@ -88,17 +104,19 @@ function Card({
 
 export default function BillDetailPage() {
   const { bill_id } = useParams<{ bill_id: string }>();
-  const { model = "gpt-5-mini" } = useParams<{ model: string }>();
+  const { model = DEFAULT_MODEL } = useParams<{ model: string }>();
   const navigate = useNavigate();
   const [bill, setBill] = useState<BillAnalysis | null>(null);
+  const [axisAnalysis, setAxisAnalysis] = useState<BillAxisAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (bill_id) {
       fetchBill();
+      fetchAxisAnalysis();
     }
-  }, [bill_id]);
+  }, [bill_id, model]);
 
   const fetchBill = async () => {
     setLoading(true);
@@ -119,6 +137,24 @@ export default function BillDetailPage() {
       console.error("Error fetching bill:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Axis analyses only exist for schema v5+ models and may not be synced
+  // yet for a given bill — a 404 here is expected/normal, not an error.
+  const fetchAxisAnalysis = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/bill-analyses/${bill_id}/${model}/axes`,
+      );
+      if (!response.ok) {
+        setAxisAnalysis(null);
+        return;
+      }
+      const data = await response.json();
+      setAxisAnalysis(data);
+    } catch {
+      setAxisAnalysis(null);
     }
   };
 
@@ -537,6 +573,88 @@ export default function BillDetailPage() {
                 )}
             </VStack>
           </Card>
+
+          {/* Ideological Axes */}
+          {axisAnalysis && axisAnalysis.axis_scores.length > 0 && (
+            <Card>
+              <VStack align="stretch" gap={6}>
+                <Heading size="lg" color="text" letterSpacing="tight">
+                  Ideological Axes
+                </Heading>
+                <Text fontSize="sm" color="textMuted">
+                  How a YES vote on this bill moves along each viewpoint it engages.
+                  Relevance (0 to 1) indicates how central that axis is to the bill.
+                </Text>
+                <VStack align="stretch" gap={4}>
+                  {axisAnalysis.axis_scores.map((axisScore) => {
+                    const definition = politicalAxes.political_axes.find(
+                      (a) => a.id === axisScore.axis,
+                    );
+                    if (!definition) return null;
+                    return (
+                      <Box
+                        key={axisScore.axis}
+                        bg="bg"
+                        p={5}
+                        rounded="xl"
+                        borderWidth="1px"
+                        borderColor="borderSubtle"
+                      >
+                        <VStack align="stretch" gap={3}>
+                          <HStack justify="space-between">
+                            <Text fontSize="md" fontWeight="bold" color="text">
+                              {definition.name}
+                            </Text>
+                            <Badge variant="subtle" colorPalette="purple" fontSize="xs">
+                              Relevance: {axisScore.relevance.toFixed(2)}
+                            </Badge>
+                          </HStack>
+
+                          <Box>
+                            <HStack justify="space-between" mb={1.5}>
+                              <Text fontSize="xs" color="textMuted" fontWeight="medium">
+                                {definition.negative_pole.label} ↔ {definition.positive_pole.label}
+                              </Text>
+                              <Text
+                                fontSize="sm"
+                                fontWeight="bold"
+                                fontVariantNumeric="tabular-nums"
+                                color={getIdeologyColor(axisScore.position)}
+                              >
+                                {axisScore.position.toFixed(2)}
+                              </Text>
+                            </HStack>
+                            <Box position="relative" h="6px" bg="bgLightShade" rounded="full" overflow="hidden">
+                              <Box position="absolute" left="50%" top="0" bottom="0" w="1px" bg="border" />
+                              <Box
+                                position="absolute"
+                                top="0"
+                                bottom="0"
+                                left={
+                                  axisScore.position >= 0
+                                    ? "50%"
+                                    : `${((axisScore.position + 1) / 2) * 100}%`
+                                }
+                                width={`${(Math.abs(axisScore.position) / 2) * 100}%`}
+                                bg={getIdeologyColor(axisScore.position)}
+                                rounded="full"
+                              />
+                            </Box>
+                          </Box>
+
+                          <Box pt={2} borderTopWidth="1px" borderColor="borderSubtle">
+                            <Text fontSize="sm" color="textMuted" lineHeight="1.7">
+                              {axisScore.reasoning}
+                            </Text>
+                          </Box>
+                        </VStack>
+                      </Box>
+                    );
+                  })}
+                </VStack>
+              </VStack>
+            </Card>
+          )}
 
           {/* Voting Analysis */}
           <Card>

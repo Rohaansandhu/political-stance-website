@@ -16,10 +16,28 @@ import CongressRankings from "../components/CongressData/CongressRankings";
 import LegislatorSearch from "../components/CongressData/LegislatorSearch";
 import type { Legislator } from "../components/CongressData/histogramUtils";
 import { Helmet } from "react-helmet-async";
+import { MODEL_SCHEMAS, DEFAULT_MODEL, buildSpecHash } from "../utils/specHash";
+import { sortAxisIds } from "../utils/axisDisplay";
+import politicalAxes from "../../data/politicalAxes.json";
+
+const AXIS_SUBJECTS = sortAxisIds(politicalAxes.political_axes.map((a) => a.id)).map(
+  (id) => ({
+    value: id,
+    label: politicalAxes.political_axes.find((a) => a.id === id)!.name,
+  }),
+);
+
+// Senate scraping has been blocked by senate.gov since this date (see data
+// pipeline handoff) — House data runs well past this. Update once the
+// scraper is fixed and the DB is re-synced.
+const SENATE_DATA_AS_OF = "March 9, 2026";
 
 export default function CongressDataPage() {
-  const [chamber, setChamber] = useState("house");
-  const [model, setModel] = useState("gpt-5-mini");
+  const [chamber, setChamber] = useState<"house" | "senate">("house");
+  const [model, setModel] = useState(DEFAULT_MODEL);
+  const [dataType, setDataType] = useState<"primary_categories" | "axes">(
+    "primary_categories",
+  );
   const [subject, setSubject] = useState("Economy & Finance");
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [searchIndex, setSearchIndex] = useState<Legislator[]>([]);
@@ -33,6 +51,16 @@ export default function CongressDataPage() {
   useEffect(() => {
     setSelectedMemberId(null);
   }, [chamber]);
+
+  // Reset subject to a sensible default whenever the data type changes, so
+  // we don't carry a category name over into axes mode (or vice versa).
+  useEffect(() => {
+    if (dataType === "axes") {
+      setSubject(AXIS_SUBJECTS[0]?.value ?? "");
+    } else if (availableSubjects.length > 0) {
+      setSubject(availableSubjects[0]);
+    }
+  }, [dataType]);
 
   const handleLegislatorsLoaded = useCallback((legs: Legislator[]) => {
     setSearchIndex(legs);
@@ -51,7 +79,8 @@ export default function CongressDataPage() {
     }
   };
 
-  const specHash = `${model}_4_all_${chamber}_all`;
+  const specHash = buildSpecHash(model, chamber);
+  const subjectItems = dataType === "axes" ? AXIS_SUBJECTS : availableSubjects.map((s) => ({ label: s, value: s }));
 
   return (
     <Box minH="100vh" bg="bg">
@@ -83,6 +112,15 @@ export default function CongressDataPage() {
           </Box>
         </HStack>
 
+        {chamber === "senate" && (
+          <Box mb={6} px={4} py={2} bg="orange.subtle" rounded="md" borderWidth="1px" borderColor="orange.muted">
+            <Text fontSize="sm" color="orange.fg">
+              Senate voting data is current as of {SENATE_DATA_AS_OF}. House data is more
+              recent.
+            </Text>
+          </Box>
+        )}
+
         <Tabs.Root
           defaultValue="histogram"
           variant="enclosed"
@@ -101,7 +139,10 @@ export default function CongressDataPage() {
               >
                 <Select.Root
                   collection={createListCollection({
-                    items: [{ label: "GPT-5 Mini", value: "gpt-5-mini" }],
+                    items: Object.entries(MODEL_SCHEMAS).map(([value, spec]) => ({
+                      label: spec.label,
+                      value,
+                    })),
                   })}
                   value={[model]}
                   onValueChange={(details) => setModel(details.value[0])}
@@ -113,8 +154,38 @@ export default function CongressDataPage() {
                     <Select.ValueText placeholder="Select Model" />
                   </Select.Trigger>
                   <Select.Content>
-                    <Select.Item item="gpt-5-mini">
-                      <Select.ItemText>GPT-5 Mini</Select.ItemText>
+                    {Object.entries(MODEL_SCHEMAS).map(([value, spec]) => (
+                      <Select.Item key={value} item={value}>
+                        <Select.ItemText>{spec.label}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+
+                <Select.Root
+                  collection={createListCollection({
+                    items: [
+                      { label: "Categories", value: "primary_categories" },
+                      { label: "Axes", value: "axes" },
+                    ],
+                  })}
+                  value={[dataType]}
+                  onValueChange={(details) =>
+                    setDataType(details.value[0] as "primary_categories" | "axes")
+                  }
+                >
+                  <Select.Label fontSize="sm" fontWeight="600">
+                    Data Type
+                  </Select.Label>
+                  <Select.Trigger>
+                    <Select.ValueText placeholder="Select Data Type" />
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Item item="primary_categories">
+                      <Select.ItemText>Categories</Select.ItemText>
+                    </Select.Item>
+                    <Select.Item item="axes">
+                      <Select.ItemText>Axes</Select.ItemText>
                     </Select.Item>
                   </Select.Content>
                 </Select.Root>
@@ -127,7 +198,9 @@ export default function CongressDataPage() {
                     ],
                   })}
                   value={[chamber]}
-                  onValueChange={(details) => setChamber(details.value[0])}
+                  onValueChange={(details) =>
+                    setChamber(details.value[0] as "house" | "senate")
+                  }
                 >
                   <Select.Label fontSize="sm" fontWeight="600">
                     Chamber
@@ -147,24 +220,21 @@ export default function CongressDataPage() {
 
                 <Select.Root
                   collection={createListCollection({
-                    items: availableSubjects.map((s) => ({
-                      label: s,
-                      value: s,
-                    })),
+                    items: subjectItems,
                   })}
                   value={[subject]}
                   onValueChange={(details) => setSubject(details.value[0])}
                 >
                   <Select.Label fontSize="sm" fontWeight="600">
-                    Category
+                    {dataType === "axes" ? "Axis" : "Category"}
                   </Select.Label>
                   <Select.Trigger>
-                    <Select.ValueText placeholder="Select Category" />
+                    <Select.ValueText placeholder="Select Subject" />
                   </Select.Trigger>
                   <Select.Content>
-                    {availableSubjects.map((subj) => (
-                      <Select.Item key={subj} item={subj}>
-                        <Select.ItemText>{subj}</Select.ItemText>
+                    {subjectItems.map((item) => (
+                      <Select.Item key={item.value} item={item.value}>
+                        <Select.ItemText>{item.label}</Select.ItemText>
                       </Select.Item>
                     ))}
                   </Select.Content>
@@ -212,7 +282,7 @@ export default function CongressDataPage() {
                 <Tabs.Content value="histogram">
                   <CongressHistogram
                     specHash={specHash}
-                    field="primary_categories"
+                    field={dataType}
                     subject={subject}
                     current={true}
                     selectedMemberId={selectedMemberId}
@@ -223,7 +293,7 @@ export default function CongressDataPage() {
                 <Tabs.Content value="scatter">
                   <CongressScatter
                     specHash={specHash}
-                    field="primary_categories"
+                    field={dataType}
                     subject={subject}
                     current={true}
                     selectedMemberId={selectedMemberId}
@@ -233,7 +303,7 @@ export default function CongressDataPage() {
                 <Tabs.Content value="rankings">
                   <CongressRankings
                     specHash={specHash}
-                    field="primary_categories"
+                    field={dataType}
                     subject={subject}
                     selectedMemberId={selectedMemberId}
                     isActive={activeView === "rankings"}
