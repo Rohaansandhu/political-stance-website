@@ -158,6 +158,30 @@ export const getLegislatorProfileByMemberIdAndModel = async (req, res) => {
   }
 };
 
+// Trims the dynamic `axes` map down to just the fields the axis-compass /
+// fingerprint visualizations need, dropping `by_category` and other
+// per-axis breakdowns. `axes` is keyed by axis id, so a plain projection
+// can't drop nested fields on each entry — this needs $objectToArray /
+// $map / $arrayToObject instead.
+const LITE_AXES_EXPR = {
+  $arrayToObject: {
+    $map: {
+      input: { $objectToArray: "$axes" },
+      as: "a",
+      in: {
+        k: "$$a.k",
+        v: {
+          score: "$$a.v.score",
+          within_party_z: "$$a.v.within_party_z",
+          chamber_z: "$$a.v.chamber_z",
+          bill_count: "$$a.v.bill_count",
+          current_percentile_rank: "$$a.v.current_percentile_rank",
+        },
+      },
+    },
+  },
+};
+
 export const getLegislatorProfilesBySpecHash = async (req, res) => {
   try {
     if (!req.params.spec_hash) {
@@ -165,6 +189,39 @@ export const getLegislatorProfilesBySpecHash = async (req, res) => {
     }
     const db = getDB();
     const profile_collection = db.collection("legislator_profiles");
+
+    const isLite = req.query.lite === "true";
+
+    // lite=true drops primary_categories entirely and trims axes, since the
+    // full payload (primary_categories + full per-axis by_category) can run
+    // to ~25KB per member -- too large to fetch for an entire chamber roster
+    // (e.g. for the axis compass chart or a legislator's peer comparison).
+    const projectStage = isLite
+      ? {
+          $project: {
+            _id: 0,
+            member_id: 1,
+            party: 1,
+            state: 1,
+            current: "$legislator_data.current",
+            official_full_name: "$legislator_data.name.official_full",
+            axes: LITE_AXES_EXPR,
+          },
+        }
+      : {
+          $project: {
+            _id: 0,
+            member_id: 1,
+            name: 1,
+            party: 1,
+            state: 1,
+            spec_hash: 1,
+            primary_categories: 1,
+            axes: 1,
+            current: "$legislator_data.current",
+            official_full_name: "$legislator_data.name.official_full",
+          },
+        };
 
     // Aggregation pipeline, match (find) with spec_hash, lookup with legislators collection to add the member_id
     // unwind will join the array with individual documents, only project the official_full name field
@@ -187,19 +244,7 @@ export const getLegislatorProfilesBySpecHash = async (req, res) => {
             preserveNullAndEmptyArrays: true,
           },
         },
-        {
-          $project: {
-            _id: 0,
-            member_id: 1,
-            name: 1,
-            party: 1,
-            state: 1,
-            spec_hash: 1,
-            primary_categories: 1,
-            axes: 1,
-            official_full_name: "$legislator_data.name.official_full",
-          },
-        },
+        projectStage,
       ])
       .toArray();
 

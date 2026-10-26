@@ -8,4 +8,6 @@ router.get('/:spec_hash/histogram/:field/:subject/:current', CongressController.
 
 router.get('/:spec_hash/scatter/:field/:subject/:current', CongressController.getScatterSubject);
 
+router.get('/:spec_hash/axis-stats/:current', CongressController.getAxisStats);
+
 export default router;

@@ -19,7 +19,8 @@ import LegislatorStatsOverview from "../components/Legislators/LegislatorStatsOv
 import MainCategoryGrid from "../components/Legislators/MainCategoriesGrid";
 import AxesGrid from "../components/Legislators/AxesGrid";
 import { IdeologyScoreReminder } from "../components/Legislators/IdeologyScoreReminder";
-import { modelLabel, DEFAULT_MODEL } from "../components/CongressData/modelLabels";
+import { modelLabel, DEFAULT_MODEL, buildSpecHash } from "../components/CongressData/modelLabels";
+import { useAxisRoster } from "../components/CongressData/useAxisRoster";
 import { Helmet } from "react-helmet-async";
 
 interface AxisInfo {
@@ -118,6 +119,11 @@ export default function LegislatorProfile() {
     loadLegislator();
   }, [id, model]);
 
+  // Same chamber-inference convention already used in LegislatorStatsOverview.tsx.
+  const chamber = data?.member_id?.startsWith("S") ? "senate" : "house";
+  const rosterSpecHash = data ? buildSpecHash(model, chamber) : null;
+  const { roster } = useAxisRoster(rosterSpecHash);
+
   if (loading) {
     return (
       <Center minH="60vh">
@@ -212,7 +218,7 @@ export default function LegislatorProfile() {
             />
             {data.axes && (
               <Box mt={6}>
-                <AxesGrid axes={data.axes} />
+                <AxesGrid axes={data.axes} roster={roster} memberId={data.member_id} />
               </Box>
             )}
           </Box>

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Box, Heading, Text, HStack, VStack, Badge } from "@chakra-ui/react";
 import IdeologyAxisBar from "../CongressData/IdeologyAxisBar";
+import AxisFingerprint from "./AxisFingerprint";
+import ScaleModeToggle from "../CongressData/ScaleModeToggle";
+import type { RosterMember, ScaleMode } from "../CongressData/axisStats";
 import politicalAxes from "../../../data/politicalAxes.json";
 
 interface AxisInfo {
@@ -41,44 +44,20 @@ function axisName(axisId: string): string {
   return politicalAxes.political_axes.find((a) => a.id === axisId)?.name ?? axisId;
 }
 
-function axisPoles(axisId: string) {
-  const axis = politicalAxes.political_axes.find((a) => a.id === axisId);
-  return {
-    negative: axis?.negative_pole.label ?? "−1",
-    positive: axis?.positive_pole.label ?? "+1",
-  };
-}
-
-function ScoreBar({ value, color }: { value: number; color: string }) {
-  const pct = ((value + 1) / 2) * 100;
-  return (
-    <Box position="relative" h="8px" bg="bgLightShade" rounded="full">
-      <Box
-        position="absolute"
-        left={`${Math.min(100, Math.max(0, pct))}%`}
-        top="50%"
-        transform="translate(-50%, -50%)"
-        w="12px"
-        h="12px"
-        bg={color}
-        rounded="full"
-        borderWidth="2px"
-        borderColor="surface"
-        boxShadow="sm"
-      />
-    </Box>
-  );
-}
-
 function AxisRow({
   axisId,
   info,
+  roster,
+  memberId,
+  scaleMode,
 }: {
   axisId: string;
   info: AxisInfo;
+  roster: RosterMember[];
+  memberId: string;
+  scaleMode: ScaleMode;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const poles = axisPoles(axisId);
   const isInstitutional = axisId === "institutional";
   const hasSufficientData = info.bill_count > 0 && info.rank !== -1;
   const isSparse = !isInstitutional && info.bill_count < SPARSE_BILL_COUNT_THRESHOLD;
@@ -203,15 +182,16 @@ function AxisRow({
               </HStack>
 
               <Box>
-                <ScoreBar value={info.score} color={scoreColor} />
-                <HStack justify="space-between" mt={1}>
-                  <Text fontSize="xs" color="cyan.fg">
-                    {poles.negative} (−1)
-                  </Text>
-                  <Text fontSize="xs" color="orange.fg">
-                    {poles.positive} (+1)
-                  </Text>
-                </HStack>
+                <Text fontSize="xs" color="textMuted" fontWeight="600" textTransform="uppercase" mb={1}>
+                  Vs. {scaleMode === "chamber" ? "Chamber" : scaleMode === "party" ? "Own Party" : "Raw Score"}
+                </Text>
+                <AxisFingerprint
+                  axisId={axisId}
+                  memberId={memberId}
+                  roster={roster}
+                  scaleMode={scaleMode}
+                  highlightColor={scoreColor}
+                />
               </Box>
 
               {Object.keys(info.by_category).length > 0 && (
@@ -245,7 +225,16 @@ function AxisRow({
   );
 }
 
-export default function AxesGrid({ axes }: { axes: Record<string, AxisInfo> }) {
+export default function AxesGrid({
+  axes,
+  roster,
+  memberId,
+}: {
+  axes: Record<string, AxisInfo>;
+  roster: RosterMember[];
+  memberId: string;
+}) {
+  const [scaleMode, setScaleMode] = useState<ScaleMode>("chamber");
   const ordered = AXIS_ORDER.filter((id) => axes[id]);
   const rest = Object.keys(axes).filter((id) => !AXIS_ORDER.includes(id));
 
@@ -253,15 +242,23 @@ export default function AxesGrid({ axes }: { axes: Record<string, AxisInfo> }) {
 
   return (
     <Box w="100%">
-      <HStack justify="space-between" mb={3} flexWrap="wrap">
+      <HStack justify="space-between" mb={3} flexWrap="wrap" gap={2}>
         <Heading size="md" color="text">
           Ideological Axes
         </Heading>
+        <ScaleModeToggle value={scaleMode} onChange={setScaleMode} />
       </HStack>
 
       <VStack align="stretch" gap={3}>
         {[...ordered, ...rest].map((id) => (
-          <AxisRow key={id} axisId={id} info={axes[id]} />
+          <AxisRow
+            key={id}
+            axisId={id}
+            info={axes[id]}
+            roster={roster}
+            memberId={memberId}
+            scaleMode={scaleMode}
+          />
         ))}
       </VStack>
     </Box>
