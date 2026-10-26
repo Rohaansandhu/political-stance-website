@@ -22,7 +22,9 @@ import {
   CartesianGrid,
 } from "recharts";
 import IdeologyViewsBar from "./IdeologyViewBar";
+import IdeologyAxisBar from "./IdeologyAxisBar";
 import { useChartTheme } from "./chartTheme";
+import { subjectDisplayName, subjectPoles } from "./subjectDisplayName";
 import {
   computeBinnedData,
   computePartyStats,
@@ -202,11 +204,11 @@ export default function CongressHistogram({
       <HStack justify="space-between" align="center">
         <VStack align="flex-start" gap={1}>
           <Heading size="xl" color="text" letterSpacing="tight">
-            {subject}
+            {subjectDisplayName(field, subject)}
           </Heading>
           <HStack gap={2}>
             <Badge colorPalette="blue" variant="subtle" rounded="full">{chamber}</Badge>
-            <Badge colorPalette="purple" variant="subtle" rounded="full">{field.replace("_", " ")}</Badge>
+            <Badge colorPalette="purple" variant="subtle" rounded="full">{field === "axes" ? "axis" : "category"}</Badge>
             <Text color="textMuted" fontSize="sm">
               {data.metadata.total_count} legislators
             </Text>
@@ -295,8 +297,8 @@ export default function CongressHistogram({
       {/* Additional Stats */}
       <HStack gap={4} fontSize="sm" color="textMuted" justify="center">
         <Text>
-          Ideology Score Range: {domain[0].toFixed(2)} (Liberal) to{" "}
-          {domain[1].toFixed(2)} (Conservative) • Data based on voting records
+          Score Range: {domain[0].toFixed(2)} ({subjectPoles(field, subject).negative}) to{" "}
+          {domain[1].toFixed(2)} ({subjectPoles(field, subject).positive}) • Data based on voting records
         </Text>
       </HStack>
 
@@ -347,7 +349,11 @@ export default function CongressHistogram({
         })}
       </HStack>
 
-      <IdeologyViewsBar subject={subject} />
+      {field === "axes" ? (
+        <IdeologyAxisBar axisId={subject} />
+      ) : (
+        <IdeologyViewsBar subject={subject} />
+      )}
     </VStack>
   );
 }

@@ -19,7 +19,10 @@ router.get("/votes/:bill_id", BillAnalysisController.getBillVotesByBillId);
 router.get("/", BillAnalysisController.getBillAnalyses);
 // Query params: ?model=...&bill_type=...&chamber=...&congress=...&category=...&ideology=...&page=...&limit=...&search=...
 
-// Get single bill analysis by bill_id 
+// Get single bill analysis by bill_id
 router.get("/:bill_id/:model", BillAnalysisController.getBillAnalysisByIdAndModel);
+
+// Get a bill's ideological axis scores by bill_id and model
+router.get("/:bill_id/:model/axes", BillAnalysisController.getBillAxisAnalysisByIdAndModel);
 
 export default router;

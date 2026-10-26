@@ -488,7 +488,7 @@ function CategoryRow({
 export default function MainCategoryGrid({
   categories,
   recentVotes,
-  model = "gpt-5-mini",
+  model = "gpt-6-luna",
 }: {
   categories: Categories;
   recentVotes?: {

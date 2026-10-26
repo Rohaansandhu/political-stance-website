@@ -15,19 +15,49 @@ import CongressScatter from "../components/CongressData/CongressScatter";
 import CongressRankings from "../components/CongressData/CongressRankings";
 import LegislatorSearch from "../components/CongressData/LegislatorSearch";
 import type { Legislator } from "../components/CongressData/histogramUtils";
+import { modelLabel, DEFAULT_MODEL, buildSpecHash } from "../components/CongressData/modelLabels";
+import politicalAxes from "../../data/politicalAxes.json";
 import { Helmet } from "react-helmet-async";
+
+type FieldMode = "primary_categories" | "axes";
+
+// Display order for axes: headline left-right, then the more independent
+// signals, then the rest.
+const AXIS_ORDER = [
+  "left_right",
+  "state_power",
+  "fiscal",
+  "security",
+  "trade",
+  "federalism",
+  "institutional",
+  "economic",
+  "social",
+  "global",
+  "executive_power",
+];
+const AXIS_OPTIONS = AXIS_ORDER
+  .map((id) => politicalAxes.political_axes.find((a) => a.id === id))
+  .filter((a): a is (typeof politicalAxes.political_axes)[number] => !!a)
+  .map((a) => ({ label: a.name, value: a.id }));
+
+const DEFAULT_CATEGORY = "Economy & Finance";
+const DEFAULT_AXIS = "left_right";
 
 export default function CongressDataPage() {
   const [chamber, setChamber] = useState("house");
-  const [model, setModel] = useState("gpt-5-mini");
-  const [subject, setSubject] = useState("Economy & Finance");
-  const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [model, setModel] = useState(DEFAULT_MODEL);
+  const [availableModels, setAvailableModels] = useState<string[]>([DEFAULT_MODEL]);
+  const [fieldMode, setFieldMode] = useState<FieldMode>("primary_categories");
+  const [subject, setSubject] = useState(DEFAULT_CATEGORY);
+  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
   const [searchIndex, setSearchIndex] = useState<Legislator[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [activeView, setActiveView] = useState("histogram");
 
   useEffect(() => {
     fetchCategories();
+    fetchModels();
   }, []);
 
   useEffect(() => {
@@ -51,7 +81,28 @@ export default function CongressDataPage() {
     }
   };
 
-  const specHash = `${model}_4_all_${chamber}_all`;
+  const fetchModels = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/bill-analyses/filters`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch model list");
+      const json = await response.json();
+      if (Array.isArray(json.models) && json.models.length > 0) {
+        setAvailableModels(json.models);
+      }
+    } catch (err) {
+      console.error("Error fetching models:", err);
+    }
+  };
+
+  const handleFieldModeChange = (mode: FieldMode) => {
+    setFieldMode(mode);
+    setSubject(mode === "axes" ? DEFAULT_AXIS : DEFAULT_CATEGORY);
+  };
+
+  const specHash = buildSpecHash(model, chamber) ?? `${model}_4_all_${chamber}_all`;
+  const subjectOptions = fieldMode === "axes" ? AXIS_OPTIONS : availableSubjects.map((s) => ({ label: s, value: s }));
 
   return (
     <Box minH="100vh" bg="bg">
@@ -59,7 +110,7 @@ export default function CongressDataPage() {
         <title>{`Congress Data | US PoliTrack`}</title>
         <meta
           name="description"
-          content={`Congress Data page for US PoliTrack. Contains histogram, scatterplot, and rankings of legislators based on ideological scores for many political categories and models. Filter by House of Representatives or Senate.`}
+          content={`Congress Data page for US PoliTrack. Contains histogram, scatterplot, and rankings of legislators based on ideological scores and axes for many political categories and models. Filter by House of Representatives or Senate.`}
         />
       </Helmet>
       <Container maxW="7xl" py={8}>
@@ -101,7 +152,10 @@ export default function CongressDataPage() {
               >
                 <Select.Root
                   collection={createListCollection({
-                    items: [{ label: "GPT-5 Mini", value: "gpt-5-mini" }],
+                    items: availableModels.map((m) => ({
+                      label: modelLabel(m),
+                      value: m,
+                    })),
                   })}
                   value={[model]}
                   onValueChange={(details) => setModel(details.value[0])}
@@ -113,9 +167,11 @@ export default function CongressDataPage() {
                     <Select.ValueText placeholder="Select Model" />
                   </Select.Trigger>
                   <Select.Content>
-                    <Select.Item item="gpt-5-mini">
-                      <Select.ItemText>GPT-5 Mini</Select.ItemText>
-                    </Select.Item>
+                    {availableModels.map((m) => (
+                      <Select.Item key={m} item={m}>
+                        <Select.ItemText>{modelLabel(m)}</Select.ItemText>
+                      </Select.Item>
+                    ))}
                   </Select.Content>
                 </Select.Root>
 
@@ -147,24 +203,47 @@ export default function CongressDataPage() {
 
                 <Select.Root
                   collection={createListCollection({
-                    items: availableSubjects.map((s) => ({
-                      label: s,
-                      value: s,
-                    })),
+                    items: [
+                      { label: "Policy Categories", value: "primary_categories" },
+                      { label: "Ideological Axes", value: "axes" },
+                    ],
+                  })}
+                  value={[fieldMode]}
+                  onValueChange={(details) => handleFieldModeChange(details.value[0] as FieldMode)}
+                >
+                  <Select.Label fontSize="sm" fontWeight="600">
+                    Dimension
+                  </Select.Label>
+                  <Select.Trigger>
+                    <Select.ValueText placeholder="Select Dimension" />
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Item item="primary_categories">
+                      <Select.ItemText>Policy Categories</Select.ItemText>
+                    </Select.Item>
+                    <Select.Item item="axes">
+                      <Select.ItemText>Ideological Axes</Select.ItemText>
+                    </Select.Item>
+                  </Select.Content>
+                </Select.Root>
+
+                <Select.Root
+                  collection={createListCollection({
+                    items: subjectOptions,
                   })}
                   value={[subject]}
                   onValueChange={(details) => setSubject(details.value[0])}
                 >
                   <Select.Label fontSize="sm" fontWeight="600">
-                    Category
+                    {fieldMode === "axes" ? "Axis" : "Category"}
                   </Select.Label>
                   <Select.Trigger>
-                    <Select.ValueText placeholder="Select Category" />
+                    <Select.ValueText placeholder={fieldMode === "axes" ? "Select Axis" : "Select Category"} />
                   </Select.Trigger>
                   <Select.Content>
-                    {availableSubjects.map((subj) => (
-                      <Select.Item key={subj} item={subj}>
-                        <Select.ItemText>{subj}</Select.ItemText>
+                    {subjectOptions.map((opt) => (
+                      <Select.Item key={opt.value} item={opt.value}>
+                        <Select.ItemText>{opt.label}</Select.ItemText>
                       </Select.Item>
                     ))}
                   </Select.Content>
@@ -212,7 +291,7 @@ export default function CongressDataPage() {
                 <Tabs.Content value="histogram">
                   <CongressHistogram
                     specHash={specHash}
-                    field="primary_categories"
+                    field={fieldMode}
                     subject={subject}
                     current={true}
                     selectedMemberId={selectedMemberId}
@@ -223,7 +302,7 @@ export default function CongressDataPage() {
                 <Tabs.Content value="scatter">
                   <CongressScatter
                     specHash={specHash}
-                    field="primary_categories"
+                    field={fieldMode}
                     subject={subject}
                     current={true}
                     selectedMemberId={selectedMemberId}
@@ -233,7 +312,7 @@ export default function CongressDataPage() {
                 <Tabs.Content value="rankings">
                   <CongressRankings
                     specHash={specHash}
-                    field="primary_categories"
+                    field={fieldMode}
                     subject={subject}
                     selectedMemberId={selectedMemberId}
                     isActive={activeView === "rankings"}

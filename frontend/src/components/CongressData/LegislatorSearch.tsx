@@ -30,7 +30,7 @@ export default function LegislatorSearch({
   );
 
   useEffect(() => {
-    setInputValue(selectedLegislator ? selectedLegislator.official_full_name : "");
+    setInputValue(selectedLegislator?.official_full_name ?? "");
   }, [selectedLegislator]);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function LegislatorSearch({
     const query = inputValue.trim().toLowerCase();
     if (!query) return [];
     return legislators
-      .filter((l) => l.official_full_name.toLowerCase().includes(query))
+      .filter((l) => l.official_full_name?.toLowerCase().includes(query))
       .slice(0, 8);
   }, [legislators, inputValue]);
 

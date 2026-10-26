@@ -17,8 +17,25 @@ import {
 import LegislatorProfileHeader from "../components/Legislators/LegislatorProfileHeader";
 import LegislatorStatsOverview from "../components/Legislators/LegislatorStatsOverview";
 import MainCategoryGrid from "../components/Legislators/MainCategoriesGrid";
+import AxesGrid from "../components/Legislators/AxesGrid";
 import { IdeologyScoreReminder } from "../components/Legislators/IdeologyScoreReminder";
+import { modelLabel, DEFAULT_MODEL } from "../components/CongressData/modelLabels";
 import { Helmet } from "react-helmet-async";
+
+interface AxisInfo {
+  score: number;
+  raw_score: number;
+  bill_count: number;
+  within_party_z: number | null;
+  by_category: Record<string, { score: number; bill_count: number }>;
+  rank: number;
+  percentile_rank: number;
+  total_members: number;
+  current_rank: number;
+  current_percentile_rank: number;
+  total_current_members: number;
+  defection_rate?: number;
+}
 
 interface LegislatorData {
   member_id: string;
@@ -39,6 +56,7 @@ interface LegislatorData {
       current_percentile_rank: number;
     }
   >;
+  axes?: Record<string, AxisInfo>;
   recent_votes?: {
     conservative: {
       bill_id: string;
@@ -60,8 +78,27 @@ interface LegislatorData {
 export default function LegislatorProfile() {
   const { id } = useParams();
   const [data, setData] = useState<LegislatorData | null>(null);
-  const [model, setModel] = useState("gpt-5-mini");
+  const [model, setModel] = useState(DEFAULT_MODEL);
+  const [availableModels, setAvailableModels] = useState<string[]>([DEFAULT_MODEL]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadModels() {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/bill-analyses/filters`,
+        );
+        const json = await res.json();
+        if (Array.isArray(json.models) && json.models.length > 0) {
+          setAvailableModels(json.models);
+        }
+      } catch (err) {
+        console.error("Error loading models:", err);
+      }
+    }
+
+    loadModels();
+  }, []);
 
   useEffect(() => {
     async function loadLegislator() {
@@ -139,7 +176,10 @@ export default function LegislatorProfile() {
             {/* Model selector */}
             <Select.Root
               collection={createListCollection({
-                items: [{ label: "GPT-5 Mini", value: "gpt-5-mini" }],
+                items: availableModels.map((m) => ({
+                  label: modelLabel(m),
+                  value: m,
+                })),
               })}
               value={[model]}
               onValueChange={(details) => setModel(details.value[0])}
@@ -151,9 +191,11 @@ export default function LegislatorProfile() {
                 <Select.ValueText placeholder="Select Model" />
               </Select.Trigger>
               <Select.Content>
-                <Select.Item item="gpt-5-mini">
-                  <Select.ItemText>GPT-5 Mini</Select.ItemText>
-                </Select.Item>
+                {availableModels.map((m) => (
+                  <Select.Item key={m} item={m}>
+                    <Select.ItemText>{modelLabel(m)}</Select.ItemText>
+                  </Select.Item>
+                ))}
               </Select.Content>
             </Select.Root>
 
@@ -161,12 +203,18 @@ export default function LegislatorProfile() {
             <LegislatorStatsOverview data={data} />
           </VStack>
 
-          {/* Main content — category grid */}
+          {/* Main content — category grid + axes */}
           <Box flex={1} minW={0}>
             <MainCategoryGrid
               categories={data.primary_categories}
               recentVotes={data.recent_votes}
+              model={model}
             />
+            {data.axes && (
+              <Box mt={6}>
+                <AxesGrid axes={data.axes} />
+              </Box>
+            )}
           </Box>
         </HStack>
       </Box>

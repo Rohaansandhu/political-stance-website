@@ -17,6 +17,25 @@ import { ArrowLeft } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import BillVotes from "../components/Bills/BillVotes";
 import { Helmet } from "react-helmet-async";
+import politicalAxes from "../../data/politicalAxes.json";
+
+interface AxisScore {
+  axis: string;
+  position: number;
+  relevance: number;
+  reasoning: string;
+}
+
+interface BillAxisAnalysis {
+  bill_id: string;
+  model: string;
+  axis_schema_version: number;
+  axis_scores: AxisScore[];
+}
+
+function axisInfo(axisId: string) {
+  return politicalAxes.political_axes.find((a) => a.id === axisId);
+}
 
 interface BillSummary {
   title: string;
@@ -91,12 +110,14 @@ export default function BillDetailPage() {
   const { model = "gpt-5-mini" } = useParams<{ model: string }>();
   const navigate = useNavigate();
   const [bill, setBill] = useState<BillAnalysis | null>(null);
+  const [axisAnalysis, setAxisAnalysis] = useState<BillAxisAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (bill_id) {
       fetchBill();
+      fetchAxisAnalysis();
     }
   }, [bill_id]);
 
@@ -119,6 +140,23 @@ export default function BillDetailPage() {
       console.error("Error fetching bill:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAxisAnalysis = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/bill-analyses/${bill_id}/${model}/axes`,
+      );
+      if (!response.ok) {
+        setAxisAnalysis(null);
+        return;
+      }
+      const data = await response.json();
+      setAxisAnalysis(data);
+    } catch (err) {
+      setAxisAnalysis(null);
+      console.error("Error fetching bill axis analysis:", err);
     }
   };
 
@@ -537,6 +575,139 @@ export default function BillDetailPage() {
                 )}
             </VStack>
           </Card>
+
+          {/* Political Axes */}
+          {axisAnalysis && axisAnalysis.axis_scores.length > 0 && (
+            <Card>
+              <VStack align="stretch" gap={6}>
+                <VStack align="flex-start" gap={1}>
+                  <Heading size="lg" color="text" letterSpacing="tight">
+                    Political Axes
+                  </Heading>
+                  <Text fontSize="sm" color="textMuted">
+                    Ideological axes this bill engages, beyond the left-right category scores above.
+                  </Text>
+                </VStack>
+
+                <VStack align="stretch" gap={4}>
+                  {axisAnalysis.axis_scores.map((axisScore) => {
+                    const axis = axisInfo(axisScore.axis);
+                    const negativeLabel = axis?.negative_pole.label ?? "−1";
+                    const positiveLabel = axis?.positive_pole.label ?? "+1";
+                    const positionColor =
+                      axisScore.position < -0.05
+                        ? "#06b6d4"
+                        : axisScore.position > 0.05
+                          ? "#f97316"
+                          : "#8b5cf6";
+
+                    return (
+                      <Box
+                        key={axisScore.axis}
+                        bg="bg"
+                        p={5}
+                        rounded="xl"
+                        borderWidth="1px"
+                        borderColor="borderSubtle"
+                      >
+                        <VStack align="stretch" gap={4}>
+                          <Text fontSize="md" fontWeight="bold" color="text">
+                            {axis?.name ?? axisScore.axis}
+                          </Text>
+
+                          {/* Position */}
+                          <Box>
+                            <HStack justify="space-between" mb={1.5}>
+                              <Text fontSize="xs" color="textMuted" fontWeight="medium">
+                                Position (YES vote)
+                              </Text>
+                              <Text
+                                fontSize="sm"
+                                fontWeight="bold"
+                                fontVariantNumeric="tabular-nums"
+                                color={positionColor}
+                              >
+                                {axisScore.position.toFixed(2)}
+                              </Text>
+                            </HStack>
+                            <Box
+                              position="relative"
+                              h="6px"
+                              bg="bgLightShade"
+                              rounded="full"
+                              overflow="hidden"
+                            >
+                              <Box
+                                position="absolute"
+                                left="50%"
+                                top="0"
+                                bottom="0"
+                                w="1px"
+                                bg="border"
+                              />
+                              <Box
+                                position="absolute"
+                                top="0"
+                                bottom="0"
+                                left={
+                                  axisScore.position >= 0
+                                    ? "50%"
+                                    : `${((axisScore.position + 1) / 2) * 100}%`
+                                }
+                                width={`${(Math.abs(axisScore.position) / 2) * 100}%`}
+                                bg={positionColor}
+                                rounded="full"
+                              />
+                            </Box>
+                            <HStack justify="space-between" mt={1}>
+                              <Text fontSize="2xs" color="cyan.fg">
+                                {negativeLabel}
+                              </Text>
+                              <Text fontSize="2xs" color="orange.fg">
+                                {positiveLabel}
+                              </Text>
+                            </HStack>
+                          </Box>
+
+                          {/* Relevance */}
+                          <Box>
+                            <HStack justify="space-between" mb={1.5}>
+                              <Text fontSize="xs" color="textMuted" fontWeight="medium">
+                                Relevance
+                              </Text>
+                              <Text
+                                fontSize="sm"
+                                fontWeight="bold"
+                                color="primary"
+                                fontVariantNumeric="tabular-nums"
+                              >
+                                {axisScore.relevance.toFixed(2)}
+                              </Text>
+                            </HStack>
+                            <Box h="6px" bg="bgLightShade" rounded="full" overflow="hidden">
+                              <Box
+                                w={`${axisScore.relevance * 100}%`}
+                                h="100%"
+                                bg="primary"
+                                rounded="full"
+                              />
+                            </Box>
+                          </Box>
+
+                          {/* Reasoning */}
+                          <Box pt={3} borderTopWidth="1px" borderColor="borderSubtle">
+                            <Text fontSize="sm" color="textMuted" lineHeight="1.7">
+                              {axisScore.reasoning}
+                            </Text>
+                          </Box>
+                        </VStack>
+                      </Box>
+                    );
+                  })}
+                </VStack>
+              </VStack>
+            </Card>
+          )}
 
           {/* Voting Analysis */}
           <Card>

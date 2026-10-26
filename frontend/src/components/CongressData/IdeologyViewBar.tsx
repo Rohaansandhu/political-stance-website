@@ -149,7 +149,7 @@ export default function IdeologyViewsBar({
                     {sub.name}
                   </Text>
                   <Text fontSize="xs" color="textMuted">
-                    {sub.description}
+                    {sub.scope}
                   </Text>
                 </Box>
                 <HStack gap={0} align="stretch">

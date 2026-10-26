@@ -13,10 +13,12 @@ import {
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import IdeologyViewsBar from "./IdeologyViewBar";
+import IdeologyAxisBar from "./IdeologyAxisBar";
+import { subjectDisplayName, subjectPoles } from "./subjectDisplayName";
 
 interface CongressRankingsProps {
   specHash: string;
-  field: "primary_categories" | "main_categories" | "detailed_spectrums";
+  field: "primary_categories" | "axes";
   subject: string;
   selectedMemberId?: string | null;
   isActive?: boolean;
@@ -213,12 +215,16 @@ export default function CongressRankings({
       {/* Header */}
       <HStack justify="space-between" align="center">
         <VStack align="flex-start" gap={0}>
-          <Heading size="xl" color="text" letterSpacing="tight">{subject}</Heading>
+          <Heading size="xl" color="text" letterSpacing="tight">{subjectDisplayName(field, subject)}</Heading>
           <Text color="textMuted" fontSize="sm">{rankings.length} legislators ranked</Text>
         </VStack>
       </HStack>
 
-      <IdeologyViewsBar subject={subject} />
+      {field === "axes" ? (
+        <IdeologyAxisBar axisId={subject} />
+      ) : (
+        <IdeologyViewsBar subject={subject} />
+      )}
 
       {/* Two-column rankings */}
       <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
@@ -229,7 +235,7 @@ export default function CongressRankings({
             <HStack gap={2} pb={1} borderBottom="2px solid" borderColor="partyDem">
               <Box w="10px" h="10px" borderRadius="full" bg="partyDem" />
               <Text fontWeight="700" fontSize="sm" color="partyDem" textTransform="uppercase" letterSpacing="0.05em">
-                Most Liberal
+                Most {subjectPoles(field, subject).negative}
               </Text>
               <Text fontSize="xs" color="textMuted">({liberalRankings.length})</Text>
             </HStack>
@@ -254,7 +260,7 @@ export default function CongressRankings({
             <HStack gap={2} pb={1} borderBottom="2px solid" borderColor="partyRep">
               <Box w="10px" h="10px" borderRadius="full" bg="partyRep" />
               <Text fontWeight="700" fontSize="sm" color="partyRep" textTransform="uppercase" letterSpacing="0.05em">
-                Most Conservative
+                Most {subjectPoles(field, subject).positive}
               </Text>
               <Text fontSize="xs" color="textMuted">({conservativeRankings.length})</Text>
             </HStack>
@@ -285,7 +291,9 @@ export default function CongressRankings({
         borderTopWidth="1px"
         borderColor="borderSubtle"
       >
-        <Text>Score Range: -1.0 (Liberal) to 1.0 (Conservative)</Text>
+        <Text>
+          Score Range: -1.0 ({subjectPoles(field, subject).negative}) to 1.0 ({subjectPoles(field, subject).positive})
+        </Text>
         <Text>•</Text>
         <Text>Rankings based on voting record analysis</Text>
       </HStack>

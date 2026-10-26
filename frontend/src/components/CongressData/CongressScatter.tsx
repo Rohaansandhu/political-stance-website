@@ -20,8 +20,10 @@ import {
   CartesianGrid,
 } from "recharts";
 import IdeologyViewsBar from "./IdeologyViewBar";
+import IdeologyAxisBar from "./IdeologyAxisBar";
 import { useChartTheme } from "./chartTheme";
 import { computeDomain, type Legislator, type ScatterData } from "./histogramUtils";
+import { subjectDisplayName } from "./subjectDisplayName";
 
 interface ScatterProps {
   specHash: string;
@@ -190,11 +192,11 @@ export default function CongressScatter({
       <HStack justify="space-between" align="center">
         <VStack align="flex-start" gap={1}>
           <Heading size="xl" color="text" letterSpacing="tight">
-            {subject}
+            {subjectDisplayName(field, subject)}
           </Heading>
           <HStack gap={2}>
             <Badge colorPalette="blue" variant="subtle" rounded="full">{chamber}</Badge>
-            <Badge colorPalette="purple" variant="subtle" rounded="full">{field.replace("_", " ")}</Badge>
+            <Badge colorPalette="purple" variant="subtle" rounded="full">{field === "axes" ? "axis" : "category"}</Badge>
             <Text color="textMuted" fontSize="sm">
               {data.metadata.total_count} legislators
             </Text>
@@ -367,7 +369,11 @@ export default function CongressScatter({
         })}
       </HStack>
 
-      <IdeologyViewsBar subject={subject} />
+      {field === "axes" ? (
+        <IdeologyAxisBar axisId={subject} />
+      ) : (
+        <IdeologyViewsBar subject={subject} />
+      )}
     </VStack>
   );
 }

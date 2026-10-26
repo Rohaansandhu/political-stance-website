@@ -1,4 +1,5 @@
 import { getDB } from "../config/db.js";
+import { MODEL_SCHEMA_CONFIG, buildModelSchemaOrClause } from "../config/models.js";
 
 export const getBillAnalyses = async (req, res) => {
   try {
@@ -20,20 +21,36 @@ export const getBillAnalyses = async (req, res) => {
     } = req.query;
 
     // Build query object
-    const query = { schema_version: 4 }; // Only get v4 schema
+    const query = {};
+    const andClauses = [];
 
-    if (model) query.model = model;
+    if (model) {
+      const config = MODEL_SCHEMA_CONFIG[model];
+      query.model = model;
+      // Unknown model -> schema_version -1 never matches, so results stay empty.
+      query.schema_version = config ? config.schema_version : -1;
+    } else {
+      // No model filter: match each configured model against its own
+      // canonical schema_version, so bills aren't duplicated across versions.
+      andClauses.push(buildModelSchemaOrClause());
+    }
+
     if (bill_type) query.bill_type = bill_type;
     if (chamber) query.chamber = chamber;
     if (congress) query.congress = congress;
     if (search) {
-      query.$or = [
-        { bill_id: { $regex: search, $options: "i" } },
-        { "bill_summary.title": { $regex: search, $options: "i" } },
-      ];
+      andClauses.push({
+        $or: [
+          { bill_id: { $regex: search, $options: "i" } },
+          { "bill_summary.title": { $regex: search, $options: "i" } },
+        ],
+      });
     }
     if (category) {
       query["political_categories.primary_categories.name"] = category;
+    }
+    if (andClauses.length > 0) {
+      query.$and = andClauses;
     }
 
     // Pagination
@@ -143,7 +160,7 @@ export const getFeaturedBills = async (req, res) => {
 
     const featuredBills = await collection
       .aggregate([
-        { $match: { schema_version: 4 } },
+        { $match: buildModelSchemaOrClause() },
 
         // Ensure avg_partisan_score exists
         {
@@ -231,11 +248,12 @@ export const getFilterOptions = async (req, res) => {
     const db = getDB();
     const collection = db.collection("bill_analyses");
 
+    const modelSchemaOrClause = buildModelSchemaOrClause();
     const [models, billTypes, chambers, congresses] = await Promise.all([
-      collection.distinct("model", { schema_version: 4 }),
-      collection.distinct("bill_type", { schema_version: 4 }),
-      collection.distinct("chamber", { schema_version: 4 }),
-      collection.distinct("congress", { schema_version: 4 }),
+      collection.distinct("model", modelSchemaOrClause),
+      collection.distinct("bill_type", modelSchemaOrClause),
+      collection.distinct("chamber", modelSchemaOrClause),
+      collection.distinct("congress", modelSchemaOrClause),
     ]);
 
     // For categories, need to extract from nested array
@@ -264,11 +282,15 @@ export const getBillAnalysisByIdAndModel = async (req, res) => {
     const db = getDB();
     const collection = db.collection("bill_analyses");
     const { bill_id, model } = req.params;
+    const config = MODEL_SCHEMA_CONFIG[model];
+    if (!config) {
+      return res.status(404).json({ error: "Unknown model" });
+    }
 
     const bill = await collection.findOne({
       bill_id,
       model,
-      schema_version: 4,
+      schema_version: config.schema_version,
     });
 
     if (!bill) {
@@ -282,6 +304,33 @@ export const getBillAnalysisByIdAndModel = async (req, res) => {
   }
 };
 
+export const getBillAxisAnalysisByIdAndModel = async (req, res) => {
+  try {
+    const db = getDB();
+    const collection = db.collection("bill_axis_analyses");
+    const { bill_id, model } = req.params;
+    const config = MODEL_SCHEMA_CONFIG[model];
+    if (!config || !config.axis_schema_version) {
+      return res.status(404).json({ error: "Model has no axis analyses" });
+    }
+
+    const axisAnalysis = await collection.findOne({
+      bill_id,
+      model,
+      axis_schema_version: config.axis_schema_version,
+    });
+
+    if (!axisAnalysis) {
+      return res.status(404).json({ error: "Axis analysis not found" });
+    }
+
+    res.json(axisAnalysis);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch bill axis analysis" });
+  }
+};
+
 export const getIdeologyDistribution = async (req, res) => {
   try {
     const db = getDB();
@@ -289,7 +338,7 @@ export const getIdeologyDistribution = async (req, res) => {
 
     const distribution = await collection
       .aggregate([
-        { $match: { schema_version: 4 } },
+        { $match: buildModelSchemaOrClause() },
         {
           $addFields: {
             avg_partisan_score: {
