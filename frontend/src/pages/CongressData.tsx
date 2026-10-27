@@ -13,12 +13,9 @@ import {
 import CongressHistogram from "../components/CongressData/CongressHistogram";
 import CongressScatter from "../components/CongressData/CongressScatter";
 import CongressRankings from "../components/CongressData/CongressRankings";
-import CongressCompass from "../components/CongressData/CongressCompass";
 import LegislatorSearch from "../components/CongressData/LegislatorSearch";
 import type { Legislator } from "../components/CongressData/histogramUtils";
 import { modelLabel, DEFAULT_MODEL, buildSpecHash } from "../components/CongressData/modelLabels";
-import { findMatchingPreset, COMPASS_PRESETS } from "../components/CongressData/compassPresets";
-import type { ScaleMode } from "../components/CongressData/axisStats";
 import politicalAxes from "../../data/politicalAxes.json";
 import { Helmet } from "react-helmet-async";
 
@@ -57,10 +54,6 @@ export default function CongressDataPage() {
   const [searchIndex, setSearchIndex] = useState<Legislator[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [activeView, setActiveView] = useState("histogram");
-  const [compassX, setCompassX] = useState("economic");
-  const [compassY, setCompassY] = useState("state_power");
-  const [compassPresetId, setCompassPresetId] = useState<string | null>("political_compass");
-  const [compassScale, setCompassScale] = useState<ScaleMode>("chamber");
 
   useEffect(() => {
     fetchCategories();
@@ -70,16 +63,6 @@ export default function CongressDataPage() {
   useEffect(() => {
     setSelectedMemberId(null);
   }, [chamber]);
-
-  // The compass only makes sense in axis mode (its tab is disabled otherwise)
-  // -- if the user switches dimension away from axes while viewing it, fall
-  // back to a tab that's still valid.
-  useEffect(() => {
-    if (fieldMode !== "axes" && activeView === "compass") {
-      setActiveView("histogram");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fieldMode]);
 
   const handleLegislatorsLoaded = useCallback((legs: Legislator[]) => {
     setSearchIndex(legs);
@@ -116,24 +99,6 @@ export default function CongressDataPage() {
   const handleFieldModeChange = (mode: FieldMode) => {
     setFieldMode(mode);
     setSubject(mode === "axes" ? DEFAULT_AXIS : DEFAULT_CATEGORY);
-  };
-
-  const handlePresetChange = (id: string) => {
-    const preset = COMPASS_PRESETS.find((p) => p.id === id);
-    if (!preset) return;
-    setCompassPresetId(preset.id);
-    setCompassX(preset.x);
-    setCompassY(preset.y);
-  };
-
-  const handleCompassXChange = (value: string) => {
-    setCompassX(value);
-    setCompassPresetId(findMatchingPreset(value, compassY)?.id ?? null);
-  };
-
-  const handleCompassYChange = (value: string) => {
-    setCompassY(value);
-    setCompassPresetId(findMatchingPreset(compassX, value)?.id ?? null);
   };
 
   const specHash = buildSpecHash(model, chamber) ?? `${model}_4_all_${chamber}_all`;
@@ -262,125 +227,27 @@ export default function CongressDataPage() {
                   </Select.Content>
                 </Select.Root>
 
-                {activeView === "compass" ? (
-                  <>
-                    <Select.Root
-                      collection={createListCollection({
-                        items: [
-                          ...COMPASS_PRESETS.map((p) => ({ label: p.label, value: p.id })),
-                        ],
-                      })}
-                      value={compassPresetId ? [compassPresetId] : []}
-                      onValueChange={(details) => handlePresetChange(details.value[0])}
-                    >
-                      <Select.Label fontSize="sm" fontWeight="600">
-                        Preset
-                      </Select.Label>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="Custom" />
-                      </Select.Trigger>
-                      <Select.Content>
-                        {COMPASS_PRESETS.map((p) => (
-                          <Select.Item key={p.id} item={p.id}>
-                            <Select.ItemText>{p.label}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
-
-                    <Select.Root
-                      collection={createListCollection({ items: AXIS_OPTIONS })}
-                      value={[compassX]}
-                      onValueChange={(details) => handleCompassXChange(details.value[0])}
-                    >
-                      <Select.Label fontSize="sm" fontWeight="600">
-                        X Axis
-                      </Select.Label>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="Select Axis" />
-                      </Select.Trigger>
-                      <Select.Content>
-                        {AXIS_OPTIONS.map((opt) => (
-                          <Select.Item key={opt.value} item={opt.value}>
-                            <Select.ItemText>{opt.label}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
-
-                    <Select.Root
-                      collection={createListCollection({ items: AXIS_OPTIONS })}
-                      value={[compassY]}
-                      onValueChange={(details) => handleCompassYChange(details.value[0])}
-                    >
-                      <Select.Label fontSize="sm" fontWeight="600">
-                        Y Axis
-                      </Select.Label>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="Select Axis" />
-                      </Select.Trigger>
-                      <Select.Content>
-                        {AXIS_OPTIONS.map((opt) => (
-                          <Select.Item key={opt.value} item={opt.value}>
-                            <Select.ItemText>{opt.label}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
-
-                    <Select.Root
-                      collection={createListCollection({
-                        items: [
-                          { label: "Vs. chamber", value: "chamber" },
-                          { label: "Vs. own party", value: "party" },
-                          { label: "Raw", value: "raw" },
-                        ],
-                      })}
-                      value={[compassScale]}
-                      onValueChange={(details) => setCompassScale(details.value[0] as ScaleMode)}
-                    >
-                      <Select.Label fontSize="sm" fontWeight="600">
-                        Scale
-                      </Select.Label>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="Select Scale" />
-                      </Select.Trigger>
-                      <Select.Content>
-                        <Select.Item item="chamber">
-                          <Select.ItemText>Vs. chamber</Select.ItemText>
-                        </Select.Item>
-                        <Select.Item item="party">
-                          <Select.ItemText>Vs. own party</Select.ItemText>
-                        </Select.Item>
-                        <Select.Item item="raw">
-                          <Select.ItemText>Raw</Select.ItemText>
-                        </Select.Item>
-                      </Select.Content>
-                    </Select.Root>
-                  </>
-                ) : (
-                  <Select.Root
-                    collection={createListCollection({
-                      items: subjectOptions,
-                    })}
-                    value={[subject]}
-                    onValueChange={(details) => setSubject(details.value[0])}
-                  >
-                    <Select.Label fontSize="sm" fontWeight="600">
-                      {fieldMode === "axes" ? "Axis" : "Category"}
-                    </Select.Label>
-                    <Select.Trigger>
-                      <Select.ValueText placeholder={fieldMode === "axes" ? "Select Axis" : "Select Category"} />
-                    </Select.Trigger>
-                    <Select.Content>
-                      {subjectOptions.map((opt) => (
-                        <Select.Item key={opt.value} item={opt.value}>
-                          <Select.ItemText>{opt.label}</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
-                )}
+                <Select.Root
+                  collection={createListCollection({
+                    items: subjectOptions,
+                  })}
+                  value={[subject]}
+                  onValueChange={(details) => setSubject(details.value[0])}
+                >
+                  <Select.Label fontSize="sm" fontWeight="600">
+                    {fieldMode === "axes" ? "Axis" : "Category"}
+                  </Select.Label>
+                  <Select.Trigger>
+                    <Select.ValueText placeholder={fieldMode === "axes" ? "Select Axis" : "Select Category"} />
+                  </Select.Trigger>
+                  <Select.Content>
+                    {subjectOptions.map((opt) => (
+                      <Select.Item key={opt.value} item={opt.value}>
+                        <Select.ItemText>{opt.label}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
 
                 {/* Divider + View tab triggers */}
                 <Box borderTopWidth="1px" borderColor="border" pt={3}>
@@ -414,17 +281,6 @@ export default function CongressDataPage() {
                       justifyContent="flex-start"
                     >
                       Rankings
-                    </Tabs.Trigger>
-                    <Tabs.Trigger
-                      value="compass"
-                      fontSize="sm"
-                      px={3}
-                      py={2}
-                      justifyContent="flex-start"
-                      disabled={fieldMode !== "axes"}
-                      title={fieldMode !== "axes" ? "Switch to Ideological Axes to use Compass" : undefined}
-                    >
-                      Compass
                     </Tabs.Trigger>
                   </Tabs.List>
                 </Box>
@@ -460,18 +316,6 @@ export default function CongressDataPage() {
                     subject={subject}
                     selectedMemberId={selectedMemberId}
                     isActive={activeView === "rankings"}
-                  />
-                </Tabs.Content>
-
-                <Tabs.Content value="compass">
-                  <CongressCompass
-                    specHash={specHash}
-                    xAxis={compassX}
-                    yAxis={compassY}
-                    scaleMode={compassScale}
-                    selectedMemberId={selectedMemberId}
-                    onSelect={setSelectedMemberId}
-                    onRosterLoaded={handleLegislatorsLoaded}
                   />
                 </Tabs.Content>
               </Box>

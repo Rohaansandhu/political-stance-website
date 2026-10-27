@@ -20,6 +20,7 @@ function Navbar() {
     { label: "Home", to: "/" },
     { label: "Legislators", to: "/explore-legislators" },
     { label: "Congress Data", to: "/congress-data" },
+    { label: "Political Compass", to: "/political-compass" },
     { label: "Bill Analyses", to: "/bill-analyses" },
     { label: "About", to: "/about" },
   ];

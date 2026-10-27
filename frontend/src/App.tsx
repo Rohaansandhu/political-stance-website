@@ -14,6 +14,7 @@ import system from "./theme";
 import Navbar from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import CongressDataPage from "./pages/CongressData";
+import PoliticalCompassPage from "./pages/PoliticalCompass";
 import { About } from "./pages/About";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -33,6 +34,7 @@ function App() {
               />
               <Route path="/legislators/:id" element={<LegislatorProfile />} />
               <Route path="/congress-data" element={<CongressDataPage />} />
+              <Route path="/political-compass" element={<PoliticalCompassPage />} />
               <Route path="/bill-analyses" element={<BillAnalysesPage />} />
               <Route
                 path="/bill-analyses/:bill_id/:model"
