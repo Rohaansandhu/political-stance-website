@@ -67,6 +67,33 @@ export function About() {
           content={`About page for US PoliTrack - United States Political Stance Tracker. Explains key terms and methodology.`}
         />
       </Helmet>
+      <Box
+        as="aside"
+        mb={8}
+        p={5}
+        bg="bgAltGreen"
+        borderLeftWidth="3px"
+        borderColor="primary"
+        rounded="lg"
+      >
+        <Text
+          fontSize="xs"
+          fontWeight="semibold"
+          color="primary"
+          textTransform="uppercase"
+          letterSpacing="wide"
+          mb={1}
+        >
+          Author's Note
+        </Text>
+        <Text>
+          Be involved in the political process! Vote, contact your
+          representatives, and stay informed. Democracy thrives when citizens
+          actively participate and hold their leaders accountable. So please,
+          let your voice be heard.
+        </Text>
+      </Box>
+
       <Tabs.Root
         value={activeTab}
         onValueChange={(e) => setActiveTab(e.value)}
@@ -545,20 +572,6 @@ export function About() {
                 positions of the legislators who represent you.
               </Text>
             </VStack>
-
-            <Separator />
-
-            <Heading as="h2" size="lg">
-              A Final Note
-            </Heading>
-            <Text>
-              <strong>
-                Be involved in the political process! Vote, contact your
-                representatives, and stay informed. Democracy thrives when
-                citizens actively participate and hold their leaders
-                accountable. So please, let your voice be heard.
-              </strong>
-            </Text>
           </VStack>
         </Tabs.Content>
 
