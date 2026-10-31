@@ -44,7 +44,7 @@ export function Hero() {
                 AI-assisted analysis.
               </Text>
 
-              <Box display="flex" flexWrap="wrap" gap={3}>
+              <Box display="flex" flexWrap="wrap" gap={3} maxW="440px">
                 <Link to="/explore-legislators">
                   <Button
                     size="lg"
@@ -86,6 +86,21 @@ export function Hero() {
                     transition="all 0.2s ease"
                   >
                     View Congress Data
+                  </Button>
+                </Link>
+                <Link to="/political-compass">
+                  <Button
+                    size="lg"
+                    px={7}
+                    variant="outline"
+                    borderColor="border"
+                    bg="surface"
+                    color="text"
+                    rounded="md"
+                    _hover={{ bg: "bgAltGray" }}
+                    transition="all 0.2s ease"
+                  >
+                    Political Compass
                   </Button>
                 </Link>
               </Box>

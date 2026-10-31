@@ -1,124 +1,80 @@
-import { Box, Grid, GridItem, Heading, Image, Text, VStack } from "@chakra-ui/react";
-import billAnalysisImage from "../../assets/how_we_analyze_bill.avif";
-import { Reveal } from "../motion/Reveal";
+import { Box, Grid, HStack, Text } from "@chakra-ui/react";
+import { MethodPanel } from "./MethodPanel";
+import { MockCard, MockChip, ScoreTrack } from "./landingParts";
+import { scoreColor, signedScore } from "./showcaseUtils";
 
 const steps = [
   {
-    number: "01",
-    title: "AI-Powered Analysis",
-    description: "Advanced language models read and interpret legislative text",
-  },
-  {
-    number: "02",
-    title: "Category Identification",
-    description: "Automatically tags bills with relevant political topics",
-  },
-  {
-    number: "03",
-    title: "Partisan Impact",
+    title: "Official summaries go in",
     description:
-      "Estimates the ideological direction and significance of each bill",
+      "Models read the Library of Congress summary and legislative subjects, which carry less noise than raw bill text.",
   },
+  {
+    title: "Categories come out",
+    description: "Each bill is tagged with the political categories it touches.",
+  },
+  {
+    title: "Each category gets two scores",
+    description:
+      "Partisan lean from -1 to +1 and impact from 0 to 1, with the model's written reasoning for both.",
+  },
+];
+
+// Real gpt-6-luna output for hr5376-117.
+const exampleCategories = [
+  { name: "Environment & Energy", partisan: -0.8, impact: 1 },
+  { name: "Economy & Finance", partisan: -0.7, impact: 0.9 },
+  { name: "Healthcare", partisan: -0.85, impact: 0.85 },
 ];
 
 export function BillAnalysisExplainer() {
   return (
-    <Box as="section" bg="bgAltGray" overflow="hidden">
-      <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} minH={{ lg: "680px" }}>
-        <GridItem
-          display="flex"
-          flexDirection="column"
-          justifyContent="center"
-          px={{ base: 6, md: 12, lg: 16 }}
-          py={{ base: 14, lg: 12 }}
-        >
-          <Reveal direction="up">
-            <Box maxW="lg">
-              <Text
-                fontSize="xs"
-                fontWeight="medium"
-                letterSpacing="0.14em"
-                textTransform="uppercase"
-                color="primary"
-                mb={5}
-              >
-                AI-Assisted Analysis
+    <MethodPanel
+      bg="bgAltGray"
+      eyebrow="AI-assisted analysis"
+      title="How We Analyze Each Bill"
+      description="Large language models identify the political categories in each bill, then estimate the partisan lean and impact of each one. Scores vary by model, so you can compare them."
+      steps={steps}
+    >
+      <MockCard>
+        <HStack gap={1.5} wrap="wrap" mb={3}>
+          <MockChip>Summary</MockChip>
+          <MockChip>Subjects</MockChip>
+          <MockChip>Top subject area</MockChip>
+          <Text fontSize="xs" color="textMuted">
+            →
+          </Text>
+          <MockChip active>GPT-6 Luna</MockChip>
+        </HStack>
+        <Text fontSize="sm" fontWeight="semibold" color="text" pb={2} borderBottomWidth="1px" borderColor="border">
+          Inflation Reduction Act of 2022
+        </Text>
+        {exampleCategories.map((category) => (
+          <Grid
+            key={category.name}
+            templateColumns="minmax(0, 1fr) 48px 80px"
+            columnGap={3}
+            alignItems="center"
+            py={2}
+            borderBottomWidth="1px"
+            borderColor="borderSubtle"
+            _last={{ borderBottomWidth: 0, pb: 0 }}
+          >
+            <Box minW={0}>
+              <Text fontSize="sm" color="text" lineHeight="1.3">
+                {category.name}
               </Text>
-
-              <Heading
-                as="h2"
-                fontFamily="'Fraunces', serif"
-                fontWeight="400"
-                fontSize={{ base: "3xl", md: "4xl" }}
-                lineHeight="1.2"
-                color="text"
-                mb={6}
-              >
-                How We Analyze Each Bill
-              </Heading>
-
-              <Text color="textMuted" fontSize="md" lineHeight="1.6" mb={10}>
-                Large language models are used to analyze each bill, identify
-                relevant political categories, and estimate the partisan
-                leaning and impact of each category within the bill.
-              </Text>
-
-              <VStack align="stretch" gap={7}>
-                {steps.map((step) => (
-                  <Box key={step.number} display="flex" gap={5} alignItems="flex-start">
-                    <Text
-                      fontFamily="'Fraunces', serif"
-                      fontSize="xl"
-                      color="primary"
-                      pt={0.5}
-                    >
-                      {step.number}
-                    </Text>
-                    <Box>
-                      <Text fontWeight="semibold" color="text" mb={1}>
-                        {step.title}
-                      </Text>
-                      <Text color="textMuted" fontSize="sm" lineHeight="1.5">
-                        {step.description}
-                      </Text>
-                    </Box>
-                  </Box>
-                ))}
-              </VStack>
-
-              <Text color="textMuted" fontSize="sm" mt={10}>
-                Find more complete analyses under the{" "}
-                <Text as="strong" color="text">
-                  Bill Analyses
-                </Text>{" "}
-                tab.
+              <Text fontSize="xs" color="textMuted">
+                Impact {category.impact.toFixed(2)}
               </Text>
             </Box>
-          </Reveal>
-        </GridItem>
-
-        <GridItem position="relative" overflow="hidden" minH={{ base: "320px", lg: "auto" }}>
-          <Reveal direction="right" delay={0.15} distance={30} duration={0.65} position="relative" h="full" w="full">
-            <Image
-              src={billAnalysisImage}
-              alt="United States Capitol building"
-              position="absolute"
-              inset={0}
-              w="full"
-              h="full"
-              objectFit="cover"
-              objectPosition="50% 30%"
-            />
-            <Box
-              position="absolute"
-              inset={0}
-              display={{ base: "none", lg: "block" }}
-              bg="linear-gradient(90deg, rgba(240,244,242,1) 0%, rgba(240,244,242,0) 8%)"
-              _dark={{ bg: "linear-gradient(90deg, rgba(7,10,9,1) 0%, rgba(7,10,9,0) 8%)" }}
-            />
-          </Reveal>
-        </GridItem>
-      </Grid>
-    </Box>
+            <Text fontSize="xs" color="text" fontVariantNumeric="tabular-nums" textAlign="right">
+              {signedScore(category.partisan)}
+            </Text>
+            <ScoreTrack markers={[{ key: "score", score: category.partisan, color: scoreColor(category.partisan) }]} />
+          </Grid>
+        ))}
+      </MockCard>
+    </MethodPanel>
   );
 }

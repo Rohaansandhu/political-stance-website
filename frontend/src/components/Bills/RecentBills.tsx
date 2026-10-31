@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Box, Heading, Text, VStack } from "@chakra-ui/react";
+import { Box, Container, Flex } from "@chakra-ui/react";
 import BillGrid from "./BillGrid";
-import { Reveal } from "../motion/Reveal";
+import { ArrowLink, Eyebrow, TwoToneHeading } from "../Landing/landingParts";
 
 interface RecentBillsProps {
   limit?: number;
@@ -32,27 +32,37 @@ export function RecentBills({ limit = 6 }: RecentBillsProps) {
   if (!bills.length && !loading) return null;
 
   return (
-    <Box as="section" py={20} bg="bgAltGray">
-      <Box maxW="6xl" mx="auto" px={4}>
-        <Reveal direction="up">
-          <VStack spaceX={4} mb={12} textAlign="center">
-            <Heading mb={4} fontSize={{ base: "3xl", md: "4xl" }} color="primary">
-              Recent Bills
-            </Heading>
-            <Text color="textMuted" maxW="2xl" mx="auto" fontSize={{ base: "md", md: "lg" }}>
-              The most recently analyzed bills, with AI-generated partisan and
-              category breakdowns.
-            </Text>
-          </VStack>
-        </Reveal>
-        <Reveal direction="up" delay={0.12}>
-          <BillGrid
-            bills={bills}
-            loading={loading}
-            emptyMessage="No recent bills available"
-          />
-        </Reveal>
-      </Box>
+    <Box as="section" bg="bg">
+      <Container maxW="7xl" px={4} pb={{ base: 16, md: 24 }}>
+        <Flex
+          justify="space-between"
+          align={{ base: "flex-start", md: "flex-end" }}
+          direction={{ base: "column", md: "row" }}
+          gap={5}
+          pt={{ base: 10, md: 14 }}
+          mb={{ base: 8, md: 12 }}
+          borderTopWidth="1px"
+          borderColor="border"
+        >
+          <Box maxW="3xl">
+            <Eyebrow>Recent bills</Eyebrow>
+            <TwoToneHeading
+              as="h2"
+              size="section"
+              lead="Fresh from the floor."
+              rest="The latest bills we've analyzed."
+            />
+          </Box>
+          <Box flexShrink={0}>
+            <ArrowLink to="/bill-analyses">See all bill analyses</ArrowLink>
+          </Box>
+        </Flex>
+        <BillGrid
+          bills={bills}
+          loading={loading}
+          emptyMessage="No recent bills available"
+        />
+      </Container>
     </Box>
   );
 }

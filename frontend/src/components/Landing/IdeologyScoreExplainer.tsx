@@ -1,149 +1,92 @@
-import { Box, Grid, GridItem, Heading, Image, Text, VStack } from "@chakra-ui/react";
-import legislatorScoreImage from "../../assets/how_we_score_legislator.avif";
-import { Reveal } from "../motion/Reveal";
+import { Box, Grid, HStack, Text } from "@chakra-ui/react";
+import { MethodPanel } from "./MethodPanel";
+import { LegendDot, MockCard, ScoreTrack } from "./landingParts";
+import { signedScore } from "./showcaseUtils";
 
 const steps = [
   {
-    number: "01",
-    title: "Roll-Call Votes",
-    description: "Calculated directly from actual voting records on legislation",
+    title: "Recorded votes only",
+    description: "Scores come from roll-call votes. A vote a legislator missed doesn't count for or against them.",
   },
   {
-    number: "02",
-    title: "Weighted Analysis",
-    description: "Accounts for bill importance and partisan significance",
+    title: "Weighted by the bill",
+    description: "Vote direction × partisan score × impact score, so a major partisan bill counts for more than a minor one.",
   },
   {
-    number: "03",
-    title: "Issue-Specific",
-    description:
-      "Separate scores for different political categories and topics",
+    title: "Issue by issue",
+    description: "Those weighted votes are averaged into separate scores for each policy category.",
   },
+];
+
+// Real recorded votes and gpt-6-luna scores for hr1-119, Budget & Appropriations.
+const PARTISAN = 0.8;
+const IMPACT = 1;
+const exampleVotes = [
+  { name: "Mike Johnson", vote: "Yea", direction: 1, color: "partyRep" },
+  { name: "Hakeem Jeffries", vote: "Nay", direction: -1, color: "partyDem" },
 ];
 
 export function IdeologyScoreExplainer() {
   return (
-    <Box as="section" bg="bgAltGreen" overflow="hidden">
-      <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} minH={{ lg: "680px" }}>
-        <GridItem
-          order={{ base: 2, lg: 1 }}
-          position="relative"
-          overflow="hidden"
-          minH={{ base: "320px", lg: "auto" }}
-        >
-          <Reveal direction="left" delay={0.15} distance={30} duration={0.65} position="relative" h="full" w="full">
-            <Image
-              src={legislatorScoreImage}
-              alt="United States Capitol building"
-              position="absolute"
-              inset={0}
-              w="full"
-              h="full"
-              objectFit="cover"
-              objectPosition="center 25%"
-            />
-            <Box
-              position="absolute"
-              inset={0}
-              display={{ base: "none", lg: "block" }}
-              bg="linear-gradient(270deg, rgba(233,244,238,1) 0%, rgba(233,244,238,0) 8%)"
-              _dark={{ bg: "linear-gradient(270deg, rgba(16,27,21,1) 0%, rgba(16,27,21,0) 8%)" }}
-            />
-          </Reveal>
-        </GridItem>
-
-        <GridItem
-          order={{ base: 1, lg: 2 }}
-          display="flex"
-          flexDirection="column"
-          justifyContent="center"
-          px={{ base: 6, md: 12, lg: 16 }}
-          py={{ base: 14, lg: 12 }}
-        >
-          <Reveal direction="up">
-            <Box maxW="lg">
-              <Text
-                fontSize="xs"
-                fontWeight="medium"
-                letterSpacing="0.14em"
-                textTransform="uppercase"
-                color="primary"
-                mb={5}
-              >
-                Ideology Score
+    <MethodPanel
+      bg="bgAltGreen"
+      eyebrow="Ideology score"
+      title="How We Score Each Legislator"
+      description="An ideology score shows where a legislator falls from -1 (liberal) to +1 (conservative) on a specific issue, based on the direction, importance, and partisan nature of the bills they voted on."
+      steps={steps}
+    >
+      <MockCard>
+        <Text fontSize="xs" fontWeight="semibold" color="textMuted">
+          One bill, two votes
+        </Text>
+        <Text fontSize="sm" fontWeight="semibold" color="text" mt={0.5} pb={2} borderBottomWidth="1px" borderColor="border">
+          HR1-119 · Budget & Appropriations
+        </Text>
+        {exampleVotes.map((row) => (
+          <Grid
+            key={row.name}
+            templateColumns="minmax(0, 1fr) auto"
+            columnGap={3}
+            alignItems="center"
+            py={2}
+            borderBottomWidth="1px"
+            borderColor="borderSubtle"
+          >
+            <Box minW={0}>
+              <Text fontSize="sm" color="text" truncate>
+                {row.name}
               </Text>
-
-              <Heading
-                as="h2"
-                fontFamily="'Fraunces', serif"
-                fontWeight="400"
-                fontSize={{ base: "3xl", md: "4xl" }}
-                lineHeight="1.2"
-                color="text"
-                mb={6}
-              >
-                How We Score Each Legislator
-              </Heading>
-
-              <Text color="textMuted" fontSize="md" lineHeight="1.6" mb={7}>
-                Ideology Score shows where a legislator falls on the political
-                spectrum for a specific issue based on how they actually vote.
-                Each score reflects the direction, importance, and partisan
-                nature of the bills they supported or opposed.
+              <Text fontSize="xs" color="textMuted" fontVariantNumeric="tabular-nums">
+                {row.vote} ({signedScore(row.direction, 0)}) × {signedScore(PARTISAN)} × {IMPACT.toFixed(2)}
               </Text>
-
-              <Box display="flex" alignItems="center" gap={4} mb={9} flexWrap="wrap">
-                <Box
-                  px={4}
-                  py={2}
-                  rounded="full"
-                  bg="partyDem"
-                  color="bg"
-                  fontWeight="semibold"
-                  fontSize="sm"
-                >
-                  -1 Liberal
-                </Box>
-                <Text color="textMuted">&larr;&rarr;</Text>
-                <Box
-                  px={4}
-                  py={2}
-                  rounded="full"
-                  bg="partyRep"
-                  color="bg"
-                  fontWeight="semibold"
-                  fontSize="sm"
-                >
-                  +1 Conservative
-                </Box>
-              </Box>
-
-              <VStack align="stretch" gap={7}>
-                {steps.map((step) => (
-                  <Box key={step.number} display="flex" gap={5} alignItems="flex-start">
-                    <Text
-                      fontFamily="'Fraunces', serif"
-                      fontSize="xl"
-                      color="primary"
-                      pt={0.5}
-                    >
-                      {step.number}
-                    </Text>
-                    <Box>
-                      <Text fontWeight="semibold" color="text" mb={1}>
-                        {step.title}
-                      </Text>
-                      <Text color="textMuted" fontSize="sm" lineHeight="1.5">
-                        {step.description}
-                      </Text>
-                    </Box>
-                  </Box>
-                ))}
-              </VStack>
             </Box>
-          </Reveal>
-        </GridItem>
-      </Grid>
-    </Box>
+            <Text fontSize="md" fontWeight="semibold" color={row.color} fontVariantNumeric="tabular-nums">
+              {signedScore(row.direction * PARTISAN * IMPACT)}
+            </Text>
+          </Grid>
+        ))}
+        <Text fontSize="xs" fontWeight="semibold" color="textMuted" mt={3} mb={2}>
+          Averaged across every Budget & Appropriations vote
+        </Text>
+        <ScoreTrack
+          markers={[
+            { key: "jeffries", score: -0.12, color: "partyDem" },
+            { key: "johnson", score: 0.094, color: "partyRep" },
+          ]}
+        />
+        <HStack justify="space-between" mt={2} gap={3}>
+          <Text fontSize="xs" color="textMuted">
+            -1 Liberal
+          </Text>
+          <Text fontSize="xs" color="textMuted">
+            +1 Conservative
+          </Text>
+        </HStack>
+        <HStack justify="center" gap={4} mt={1.5} wrap="wrap">
+          <LegendDot color="partyDem">Jeffries {signedScore(-0.12)}</LegendDot>
+          <LegendDot color="partyRep">Johnson {signedScore(0.094)}</LegendDot>
+        </HStack>
+      </MockCard>
+    </MethodPanel>
   );
 }
