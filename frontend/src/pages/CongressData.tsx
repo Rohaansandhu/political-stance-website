@@ -148,7 +148,7 @@ export default function CongressDataPage() {
                 p={4}
                 rounded="lg"
                 flexShrink={0}
-                w="180px"
+                w="280px"
               >
                 <Select.Root
                   collection={createListCollection({
@@ -164,7 +164,7 @@ export default function CongressDataPage() {
                     Model
                   </Select.Label>
                   <Select.Trigger>
-                    <Select.ValueText placeholder="Select Model" />
+                    <Select.ValueText placeholder="Select Model" maxW="100%" />
                   </Select.Trigger>
                   <Select.Content>
                     {availableModels.map((m) => (
@@ -189,7 +189,7 @@ export default function CongressDataPage() {
                     Chamber
                   </Select.Label>
                   <Select.Trigger>
-                    <Select.ValueText placeholder="Select Chamber" />
+                    <Select.ValueText placeholder="Select Chamber" maxW="100%" />
                   </Select.Trigger>
                   <Select.Content>
                     <Select.Item item="senate">
@@ -215,7 +215,7 @@ export default function CongressDataPage() {
                     Dimension
                   </Select.Label>
                   <Select.Trigger>
-                    <Select.ValueText placeholder="Select Dimension" />
+                    <Select.ValueText placeholder="Select Dimension" maxW="100%" />
                   </Select.Trigger>
                   <Select.Content>
                     <Select.Item item="primary_categories">
@@ -238,7 +238,7 @@ export default function CongressDataPage() {
                     {fieldMode === "axes" ? "Axis" : "Category"}
                   </Select.Label>
                   <Select.Trigger>
-                    <Select.ValueText placeholder={fieldMode === "axes" ? "Select Axis" : "Select Category"} />
+                    <Select.ValueText placeholder={fieldMode === "axes" ? "Select Axis" : "Select Category"} maxW="100%" />
                   </Select.Trigger>
                   <Select.Content>
                     {subjectOptions.map((opt) => (
@@ -254,12 +254,13 @@ export default function CongressDataPage() {
                   <Text fontSize="sm" fontWeight="600" color="textMuted" mb={2}>
                     View
                   </Text>
-                  <Tabs.List flexDirection="column" gap={1}>
+                  <Tabs.List flexDirection="column" gap={1} w="full">
                     <Tabs.Trigger
                       value="histogram"
                       fontSize="sm"
                       px={3}
                       py={2}
+                      w="full"
                       justifyContent="flex-start"
                     >
                       Histogram
@@ -269,6 +270,7 @@ export default function CongressDataPage() {
                       fontSize="sm"
                       px={3}
                       py={2}
+                      w="full"
                       justifyContent="flex-start"
                     >
                       Scatter Plot
@@ -278,6 +280,7 @@ export default function CongressDataPage() {
                       fontSize="sm"
                       px={3}
                       py={2}
+                      w="full"
                       justifyContent="flex-start"
                     >
                       Rankings

@@ -135,7 +135,7 @@ export default function PoliticalCompassPage() {
               p={4}
               rounded="lg"
               flexShrink={0}
-              w="180px"
+              w="280px"
             >
               <Select.Root
                 collection={createListCollection({
@@ -151,7 +151,7 @@ export default function PoliticalCompassPage() {
                   Model
                 </Select.Label>
                 <Select.Trigger>
-                  <Select.ValueText placeholder="Select Model" />
+                  <Select.ValueText placeholder="Select Model" maxW="100%" />
                 </Select.Trigger>
                 <Select.Content>
                   {availableModels.map((m) => (
@@ -176,7 +176,7 @@ export default function PoliticalCompassPage() {
                   Chamber
                 </Select.Label>
                 <Select.Trigger>
-                  <Select.ValueText placeholder="Select Chamber" />
+                  <Select.ValueText placeholder="Select Chamber" maxW="100%" />
                 </Select.Trigger>
                 <Select.Content>
                   <Select.Item item="senate">
@@ -201,7 +201,7 @@ export default function PoliticalCompassPage() {
                   Preset
                 </Select.Label>
                 <Select.Trigger>
-                  <Select.ValueText placeholder="Custom" />
+                  <Select.ValueText placeholder="Custom" maxW="100%" />
                 </Select.Trigger>
                 <Select.Content>
                   {COMPASS_PRESETS.map((p) => (
@@ -221,7 +221,7 @@ export default function PoliticalCompassPage() {
                   X Axis
                 </Select.Label>
                 <Select.Trigger>
-                  <Select.ValueText placeholder="Select Axis" />
+                  <Select.ValueText placeholder="Select Axis" maxW="100%" />
                 </Select.Trigger>
                 <Select.Content>
                   {AXIS_OPTIONS.map((opt) => (
@@ -241,7 +241,7 @@ export default function PoliticalCompassPage() {
                   Y Axis
                 </Select.Label>
                 <Select.Trigger>
-                  <Select.ValueText placeholder="Select Axis" />
+                  <Select.ValueText placeholder="Select Axis" maxW="100%" />
                 </Select.Trigger>
                 <Select.Content>
                   {AXIS_OPTIONS.map((opt) => (
@@ -267,7 +267,7 @@ export default function PoliticalCompassPage() {
                   Scale
                 </Select.Label>
                 <Select.Trigger>
-                  <Select.ValueText placeholder="Select Scale" />
+                  <Select.ValueText placeholder="Select Scale" maxW="100%" />
                 </Select.Trigger>
                 <Select.Content>
                   <Select.Item item="chamber">
