@@ -4,8 +4,12 @@ import type { RosterMember } from "./axisStats";
 // Shared fetch for the lean per-axis roster (score/within_party_z/bill_count/
 // current_percentile_rank only, no by_category or primary_categories) used
 // by both the Congress Data compass chart and the legislator profile page's
-// axis fingerprint -- one fetch, reused for every axis.
-export function useAxisRoster(specHash: string | null): {
+// axis fingerprint -- one fetch, reused for every axis. The legislator profile
+// also passes includeCategories for its within-party category percentiles.
+export function useAxisRoster(
+  specHash: string | null,
+  includeCategories = false,
+): {
   roster: RosterMember[];
   loading: boolean;
   error: string | null;
@@ -24,7 +28,8 @@ export function useAxisRoster(specHash: string | null): {
     setLoading(true);
     setError(null);
 
-    fetch(`${import.meta.env.VITE_API_URL}/api/legislators/profiles/${specHash}?lite=true`)
+    const query = includeCategories ? "lite=true&categories=true" : "lite=true";
+    fetch(`${import.meta.env.VITE_API_URL}/api/legislators/profiles/${specHash}?${query}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch roster");
         return res.json();
@@ -45,7 +50,7 @@ export function useAxisRoster(specHash: string | null): {
     return () => {
       cancelled = true;
     };
-  }, [specHash]);
+  }, [specHash, includeCategories]);
 
   return { roster, loading, error };
 }

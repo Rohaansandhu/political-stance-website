@@ -1,80 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   Box,
+  Button,
   Container,
   Spinner,
   Center,
   Text,
   VStack,
-  HStack,
   Breadcrumb,
   Flex,
-  Select,
-  createListCollection,
+  Heading,
 } from "@chakra-ui/react";
 
 import LegislatorProfileHeader from "../components/Legislators/LegislatorProfileHeader";
-import LegislatorStatsOverview from "../components/Legislators/LegislatorStatsOverview";
+import MemberSummaryCard from "../components/Legislators/MemberSummaryCard";
 import MainCategoryGrid from "../components/Legislators/MainCategoriesGrid";
 import AxesGrid from "../components/Legislators/AxesGrid";
-import { IdeologyScoreReminder } from "../components/Legislators/IdeologyScoreReminder";
+import NotableVotes from "../components/Legislators/NotableVotes";
+import LegislatorMethodology from "../components/Legislators/LegislatorMethodology";
+import LegislatorAbout from "../components/Legislators/LegislatorAbout";
+import {
+  displayName,
+  voteHistoryUrl,
+  type ChamberName,
+  type Comparison,
+  type MemberContext,
+} from "../components/Legislators/percentiles";
+import type { LegislatorData } from "../components/Legislators/types";
 import { modelLabel, DEFAULT_MODEL, buildSpecHash } from "../components/CongressData/modelLabels";
 import { useAxisRoster } from "../components/CongressData/useAxisRoster";
 import { Helmet } from "react-helmet-async";
-
-interface AxisInfo {
-  score: number;
-  raw_score: number;
-  bill_count: number;
-  within_party_z: number | null;
-  by_category: Record<string, { score: number; bill_count: number }>;
-  rank: number;
-  percentile_rank: number;
-  total_members: number;
-  current_rank: number;
-  current_percentile_rank: number;
-  total_current_members: number;
-  defection_rate?: number;
-}
-
-interface LegislatorData {
-  member_id: string;
-  name: { official_full: string };
-  bio: { gender: string; birthday: string };
-  id: {};
-  state: string;
-  district: number;
-  vote_count: number;
-  primary_categories: Record<
-    string,
-    {
-      score: number;
-      rank: number;
-      percentile_rank: number;
-      bill_count: number;
-      current_rank: number;
-      current_percentile_rank: number;
-    }
-  >;
-  axes?: Record<string, AxisInfo>;
-  recent_votes?: {
-    conservative: {
-      bill_id: string;
-      vote: string;
-      date: string;
-      score_impact: number;
-      category: string;
-    }[];
-    liberal: {
-      bill_id: string;
-      vote: string;
-      date: string;
-      score_impact: number;
-      category: string;
-    }[];
-  };
-}
 
 export default function LegislatorProfile() {
   const { id } = useParams();
@@ -82,6 +38,7 @@ export default function LegislatorProfile() {
   const [model, setModel] = useState(DEFAULT_MODEL);
   const [availableModels, setAvailableModels] = useState<string[]>([DEFAULT_MODEL]);
   const [loading, setLoading] = useState(true);
+  const [comparison, setComparison] = useState<Comparison>("chamber");
 
   useEffect(() => {
     async function loadModels() {
@@ -102,29 +59,56 @@ export default function LegislatorProfile() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadLegislator() {
+      setLoading(true);
       try {
         const res = await fetch(
           `${import.meta.env.VITE_API_URL}/api/legislators/${id}/${model}`,
         );
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
         const json = await res.json();
-        setData(json);
+        if (!cancelled) setData(json);
       } catch (err) {
         console.error("Error loading legislator:", err);
+        if (!cancelled) setData(null);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     loadLegislator();
+    return () => {
+      cancelled = true;
+    };
   }, [id, model]);
 
-  // Same chamber-inference convention already used in LegislatorStatsOverview.tsx.
-  const chamber = data?.member_id?.startsWith("S") ? "senate" : "house";
-  const rosterSpecHash = data ? buildSpecHash(model, chamber) : null;
-  const { roster } = useAxisRoster(rosterSpecHash);
+  const terms = data?.terms;
+  const currentTerm = terms?.[terms.length - 1];
+  const chamber: ChamberName = currentTerm?.type === "sen" ? "Senate" : "House";
+  const rosterSpecHash = data ? buildSpecHash(model, chamber.toLowerCase()) : null;
+  const { roster } = useAxisRoster(rosterSpecHash, true);
 
-  if (loading) {
+  const party = data?.party;
+  // Independents have no party group, and a former member isn't part of the
+  // current party they'd be compared against.
+  const canComparePartyPeers = (party === "R" || party === "D") && Boolean(data?.current);
+
+  const ctx: MemberContext | null = useMemo(() => {
+    if (!data) return null;
+    return {
+      memberId: data.member_id,
+      lastName: data.name.last ?? displayName(data.name),
+      model,
+      chamber,
+      party,
+      comparison: canComparePartyPeers ? comparison : "chamber",
+      canComparePartyPeers,
+    };
+  }, [data, model, chamber, party, comparison, canComparePartyPeers]);
+
+  if (!data && loading) {
     return (
       <Center minH="60vh">
         <Spinner size="xl" />
@@ -132,25 +116,33 @@ export default function LegislatorProfile() {
     );
   }
 
-  if (!data) {
+  if (!data || !ctx) {
     return (
       <Center minH="60vh">
-        <Text>No legislator found.</Text>
+        <VStack gap={3}>
+          <Text>
+            No record for this legislator under {modelLabel(model)}.
+          </Text>
+          {model !== DEFAULT_MODEL && (
+            <Button size="sm" onClick={() => setModel(DEFAULT_MODEL)}>
+              Switch to {modelLabel(DEFAULT_MODEL)}
+            </Button>
+          )}
+        </VStack>
       </Center>
     );
   }
 
   return (
-    <Container maxW="7xl" py={8}>
+    <Container maxW="5xl" py={{ base: 4, md: 8 }} px={{ base: 4, md: 6 }}>
       <Helmet>
-        <title>{`${data.name.official_full} (${data.state}) | US PoliTrack`}</title>
+        <title>{`${displayName(data.name)} (${data.state}) | US PoliTrack`}</title>
         <meta
           name="description"
-          content={`Legislator Profile with ideology scores and spectrum analysis for ${data.name.official_full} from ${data.state}.`}
+          content={`How ${displayName(data.name)} of ${data.state} compares with the rest of Congress, issue by issue, based on their voting record.`}
         />
       </Helmet>
 
-      {/* Breadcrumb */}
       <Flex justifyContent="flex-start" mb={4}>
         <Breadcrumb.Root>
           <Breadcrumb.List>
@@ -164,66 +156,67 @@ export default function LegislatorProfile() {
         </Breadcrumb.Root>
       </Flex>
 
-      {/* Compact header — full width */}
-      <Box mb={4}>
+      <VStack
+        align="stretch"
+        gap={{ base: 5, md: 6 }}
+        opacity={loading ? 0.6 : 1}
+        transition="opacity 0.15s"
+      >
         <LegislatorProfileHeader data={data} />
-      </Box>
+        <MemberSummaryCard ctx={ctx} data={data} roster={roster} />
 
-      {/* Ideology score reminder */}
-      <Box mb={4}>
-        <IdeologyScoreReminder />
-      </Box>
+        {data.axes && (
+          <AxesGrid
+            ctx={ctx}
+            axes={data.axes}
+            roster={roster}
+            onComparisonChange={setComparison}
+          />
+        )}
 
-      {/* Sidebar + main content */}
-      <Box bg="bgLightShade" p={4} rounded="card" borderWidth="1px" borderColor="borderSubtle">
-        <HStack align="flex-start" gap={4}>
-          {/* Left sidebar */}
-          <VStack align="stretch" gap={4} flexShrink={0} w="180px">
-            {/* Model selector */}
-            <Select.Root
-              collection={createListCollection({
-                items: availableModels.map((m) => ({
-                  label: modelLabel(m),
-                  value: m,
-                })),
-              })}
-              value={[model]}
-              onValueChange={(details) => setModel(details.value[0])}
-            >
-              <Select.Label fontSize="sm" fontWeight="600">
-                Model
-              </Select.Label>
-              <Select.Trigger>
-                <Select.ValueText placeholder="Select Model" />
-              </Select.Trigger>
-              <Select.Content>
-                {availableModels.map((m) => (
-                  <Select.Item key={m} item={m}>
-                    <Select.ItemText>{modelLabel(m)}</Select.ItemText>
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
+        <NotableVotes ctx={ctx} />
 
-            {/* Stats overview in sidebar */}
-            <LegislatorStatsOverview data={data} />
-          </VStack>
+        <MainCategoryGrid
+          ctx={ctx}
+          categories={data.primary_categories ?? {}}
+          roster={roster}
+          onComparisonChange={setComparison}
+        />
 
-          {/* Main content — category grid + axes */}
-          <Box flex={1} minW={0}>
-            <MainCategoryGrid
-              categories={data.primary_categories}
-              recentVotes={data.recent_votes}
-              model={model}
-            />
-            {data.axes && (
-              <Box mt={6}>
-                <AxesGrid axes={data.axes} roster={roster} memberId={data.member_id} />
-              </Box>
-            )}
-          </Box>
-        </HStack>
-      </Box>
+        <Box
+          bg="surface"
+          rounded="card"
+          borderWidth="1px"
+          borderColor="border"
+          px={{ base: 4, md: 6 }}
+          py={3}
+        >
+          <Flex justify="space-between" align="center" gap={3} wrap="wrap">
+            <Box>
+              <Heading size="sm" color="text">
+                Full Vote History
+              </Heading>
+              <Text fontSize="sm" color="textMuted">
+                Search and filter every scored vote by {ctx.lastName}.
+              </Text>
+            </Box>
+            <Link to={voteHistoryUrl(ctx)}>
+              <Text fontSize="sm" color="accent" fontWeight="600">
+                Open vote history →
+              </Text>
+            </Link>
+          </Flex>
+        </Box>
+
+        <LegislatorMethodology
+          data={data}
+          model={model}
+          availableModels={availableModels}
+          loading={loading}
+          onModelChange={setModel}
+        />
+        <LegislatorAbout data={data} />
+      </VStack>
     </Container>
   );
 }

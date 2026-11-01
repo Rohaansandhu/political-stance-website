@@ -182,6 +182,26 @@ const LITE_AXES_EXPR = {
   },
 };
 
+// Same idea for primary_categories, for the legislator page's within-party
+// category percentiles: drops top_bills and the other heavy per-category fields.
+const LITE_CATEGORIES_EXPR = {
+  $arrayToObject: {
+    $map: {
+      input: { $objectToArray: { $ifNull: ["$primary_categories", {}] } },
+      as: "c",
+      in: {
+        k: "$$c.k",
+        v: {
+          score: "$$c.v.score",
+          bill_count: "$$c.v.bill_count",
+          current_percentile_rank: "$$c.v.current_percentile_rank",
+          current_rank: "$$c.v.current_rank",
+        },
+      },
+    },
+  },
+};
+
 export const getLegislatorProfilesBySpecHash = async (req, res) => {
   try {
     if (!req.params.spec_hash) {
@@ -206,6 +226,9 @@ export const getLegislatorProfilesBySpecHash = async (req, res) => {
             current: "$legislator_data.current",
             official_full_name: "$legislator_data.name.official_full",
             axes: LITE_AXES_EXPR,
+            ...(req.query.categories === "true"
+              ? { primary_categories: LITE_CATEGORIES_EXPR }
+              : {}),
           },
         }
       : {

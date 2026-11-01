@@ -7,6 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import Landing from "./pages/Landing";
 import ExploreLegislators from "./pages/ExploreLegislators";
 import LegislatorProfile from "./pages/LegislatorProfile";
+import LegislatorVotes from "./pages/LegislatorVotes";
 import BillAnalysesPage from "./pages/BillAnalyses";
 import BillDetailPage from "./pages/BillDetailPage";
 
@@ -33,6 +34,7 @@ function App() {
                 element={<ExploreLegislators />}
               />
               <Route path="/legislators/:id" element={<LegislatorProfile />} />
+              <Route path="/legislators/:id/votes" element={<LegislatorVotes />} />
               <Route path="/congress-data" element={<CongressDataPage />} />
               <Route path="/political-compass" element={<PoliticalCompassPage />} />
               <Route path="/bill-analyses" element={<BillAnalysesPage />} />

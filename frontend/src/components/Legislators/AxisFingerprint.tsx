@@ -7,57 +7,92 @@ import {
   domainForScale,
   jitter,
   type RosterMember,
-  type ScaleMode,
 } from "../CongressData/axisStats";
 import { subjectPoles } from "../CongressData/subjectDisplayName";
+import { useChartTheme } from "../CongressData/chartTheme";
+import type { Comparison, Side } from "./percentiles";
 
 interface AxisFingerprintProps {
   axisId: string;
   memberId: string;
+  party: string | undefined;
   roster: RosterMember[];
-  scaleMode: ScaleMode;
-  highlightColor: string;
+  comparison: Comparison;
+  // null when the member has too few votes to place on the strip.
+  selfSide: Side | null;
 }
 
 const STRIP_HEIGHT = 56;
-const JITTER_AMPLITUDE = 14;
+const MIDLINE = STRIP_HEIGHT / 2;
+const JITTER_AMPLITUDE = 18;
 
+const SIDE_FILL: Record<Side, string> = {
+  negative: "var(--chakra-colors-cyan-fg)",
+  positive: "var(--chakra-colors-orange-fg)",
+};
+
+// One SVG per axis rather than a styled element per dot: a page draws 11 of
+// these with 400+ members each, or 100 each in the Senate.
 export default function AxisFingerprint({
   axisId,
   memberId,
+  party,
   roster,
-  scaleMode,
-  highlightColor,
+  comparison,
+  selfSide,
 }: AxisFingerprintProps) {
-  const currentRoster = useMemo(() => filterCurrent(roster), [roster]);
-  const domain = domainForScale(scaleMode);
+  const { partyColors } = useChartTheme();
+  const scale = comparison === "party" ? "party" : "chamber";
+  const domain = domainForScale(scale);
   const poles = subjectPoles("axes", axisId);
+  const formerSelfId = roster.find((m) => m.member_id === memberId && !m.current)?.member_id;
 
   const points = useMemo(() => {
-    return currentRoster
+    const peers = filterCurrent(roster).filter(
+      (m) => comparison === "chamber" || m.party === party,
+    );
+    // A former member isn't in the current roster but still gets plotted.
+    const formerSelf = roster.find((m) => m.member_id === memberId && !m.current);
+    return (formerSelf ? [...peers, formerSelf] : peers)
       .map((member) => {
-        const raw = getScaledValue(member, axisId, scaleMode);
-        if (raw === null) return null;
+        const raw = member.axes ? getScaledValue(member, axisId, scale) : null;
+        if (raw === null || raw === undefined) return null;
         const { clamped, isPinned } = clampToDomain(raw, domain);
-        const pct = ((clamped - domain[0]) / (domain[1] - domain[0])) * 100;
         return {
           member_id: member.member_id,
-          pct,
+          party: member.party,
+          pct: ((clamped - domain[0]) / (domain[1] - domain[0])) * 100,
           isPinned,
-          isSelf: member.member_id === memberId,
         };
       })
       .filter((p): p is NonNullable<typeof p> => p !== null);
-  }, [currentRoster, axisId, scaleMode, domain, memberId]);
+    // domain is derived from scale.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roster, axisId, scale, comparison, party, memberId]);
 
-  const self = points.find((p) => p.isSelf);
-  const peers = points.filter((p) => !p.isSelf);
+  // Independents are too few for an average to mean anything.
+  const partyAverages = useMemo(() => {
+    return (["R", "D"] as const)
+      .map((p) => {
+        const group = points.filter(
+          (point) => point.party === p && point.member_id !== formerSelfId,
+        );
+        if (group.length === 0) return null;
+        return {
+          party: p,
+          pct: group.reduce((sum, point) => sum + point.pct, 0) / group.length,
+        };
+      })
+      .filter((a): a is NonNullable<typeof a> => a !== null);
+  }, [points, formerSelfId]);
+
+  const self =points.find((p) => p.member_id === memberId);
 
   if (points.length === 0) {
     return (
-      <Box py={2} textAlign="center">
+      <Box h={`${STRIP_HEIGHT}px`} display="flex" alignItems="center" justifyContent="center">
         <Text fontSize="xs" color="textMuted">
-          Not enough data to compare against peers.
+          Loading the {comparison === "party" ? "party" : "chamber"}…
         </Text>
       </Box>
     );
@@ -65,66 +100,64 @@ export default function AxisFingerprint({
 
   return (
     <Box>
-      <Box position="relative" h={`${STRIP_HEIGHT}px`}>
-        {/* Baseline */}
-        <Box
-          position="absolute"
-          left={0}
-          right={0}
-          top="50%"
-          h="1px"
-          bg="borderSubtle"
+      <svg
+        width="100%"
+        height={STRIP_HEIGHT}
+        role="img"
+        aria-label={`Where this member sits among ${points.length} peers, from ${poles.negative} to ${poles.positive}`}
+        style={{ display: "block", overflow: "visible" }}
+      >
+        <line
+          x1="0"
+          x2="100%"
+          y1={MIDLINE}
+          y2={MIDLINE}
+          stroke="var(--chakra-colors-border-subtle)"
         />
-        {/* Zero line */}
-        <Box
-          position="absolute"
-          left={`${((0 - domain[0]) / (domain[1] - domain[0])) * 100}%`}
-          top={0}
-          bottom={0}
-          w="1px"
-          bg="border"
-        />
-
-        {peers.map((p) => (
-          <Box
-            key={p.member_id}
-            position="absolute"
-            left={`${p.pct}%`}
-            top={`calc(50% + ${jitter(p.member_id, JITTER_AMPLITUDE)}px)`}
-            transform="translate(-50%, -50%)"
-            w={p.isPinned ? "7px" : "6px"}
-            h={p.isPinned ? "7px" : "6px"}
-            rounded="full"
-            bg={p.isPinned ? "transparent" : "textMuted"}
-            opacity={p.isPinned ? 1 : 0.35}
-            borderWidth={p.isPinned ? "1.5px" : "0"}
-            borderColor="textMuted"
+        {points
+          .filter((p) => p.member_id !== memberId)
+          .map((p) => (
+            <circle
+              key={p.member_id}
+              cx={`${p.pct}%`}
+              cy={MIDLINE + jitter(p.member_id, JITTER_AMPLITUDE)}
+              r={2.5}
+              fill={p.isPinned ? "none" : partyColors[p.party]}
+              stroke={p.isPinned ? partyColors[p.party] : "none"}
+              opacity={p.isPinned ? 0.7 : 0.3}
+            />
+          ))}
+        {partyAverages.map((a) => (
+          <line
+            key={a.party}
+            x1={`${a.pct}%`}
+            x2={`${a.pct}%`}
+            y1={2}
+            y2={STRIP_HEIGHT - 2}
+            stroke={partyColors[a.party]}
+            strokeWidth={2}
           />
         ))}
-
-        {self && (
-          <Box
-            position="absolute"
-            left={`${self.pct}%`}
-            top="50%"
-            transform="translate(-50%, -50%)"
-            w="14px"
-            h="14px"
-            rounded="full"
-            bg={self.isPinned ? "transparent" : highlightColor}
-            borderWidth="2.5px"
-            borderColor={highlightColor}
-            boxShadow="sm"
-            zIndex={1}
-          />
+        {self && selfSide && (
+          <>
+            <circle
+              cx={`${self.pct}%`}
+              cy={MIDLINE}
+              r={9}
+              fill="var(--chakra-colors-surface)"
+              stroke={SIDE_FILL[selfSide]}
+              strokeWidth={2.5}
+            />
+            <circle cx={`${self.pct}%`} cy={MIDLINE} r={4.5} fill={SIDE_FILL[selfSide]} />
+          </>
         )}
-      </Box>
+      </svg>
 
-      <HStack justify="space-between" mt={1}>
+      <HStack justify="space-between" mt={1} gap={4}>
         <Text fontSize="xs" color="cyan.fg">
           {poles.negative}
         </Text>
-        <Text fontSize="xs" color="orange.fg">
+        <Text fontSize="xs" color="orange.fg" textAlign="right">
           {poles.positive}
         </Text>
       </HStack>

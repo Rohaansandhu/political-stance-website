@@ -21,6 +21,8 @@ export interface RosterMember {
   state: string;
   current: boolean;
   axes: Record<string, RosterAxisEntry>;
+  // Only present when the roster is fetched with categories=true.
+  primary_categories?: Record<string, { score: number; bill_count: number }>;
 }
 
 export type ScaleMode = "chamber" | "party" | "raw";

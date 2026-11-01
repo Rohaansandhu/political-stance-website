@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Box,
   Container,
@@ -39,11 +40,17 @@ const AXIS_OPTIONS = AXIS_ORDER
   .map((a) => ({ label: a.name, value: a.id }));
 
 export default function PoliticalCompassPage() {
-  const [chamber, setChamber] = useState("house");
+  // A legislator page links here with ?member=&chamber= to highlight that member.
+  const [searchParams] = useSearchParams();
+  const [chamber, setChamber] = useState(
+    searchParams.get("chamber") === "senate" ? "senate" : "house",
+  );
   const [model, setModel] = useState(DEFAULT_MODEL);
   const [availableModels, setAvailableModels] = useState<string[]>([DEFAULT_MODEL]);
   const [searchIndex, setSearchIndex] = useState<Legislator[]>([]);
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(
+    searchParams.get("member"),
+  );
   const [compassX, setCompassX] = useState("economic");
   const [compassY, setCompassY] = useState("state_power");
   const [compassPresetId, setCompassPresetId] = useState<string | null>("political_compass");
@@ -53,7 +60,11 @@ export default function PoliticalCompassPage() {
     fetchModels();
   }, []);
 
+  // Runs on chamber changes only, so the member from the URL survives first load.
+  const previousChamber = useRef(chamber);
   useEffect(() => {
+    if (previousChamber.current === chamber) return;
+    previousChamber.current = chamber;
     setSelectedMemberId(null);
   }, [chamber]);
 

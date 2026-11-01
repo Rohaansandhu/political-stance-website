@@ -1,266 +1,477 @@
-import { useState } from "react";
-import { Box, Heading, Text, HStack, VStack, Badge } from "@chakra-ui/react";
-import IdeologyAxisBar from "../CongressData/IdeologyAxisBar";
+import { useMemo, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
+import {
+  Box,
+  Flex,
+  Heading,
+  HStack,
+  SimpleGrid,
+  Spinner,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import AxisFingerprint from "./AxisFingerprint";
-import ScaleModeToggle from "../CongressData/ScaleModeToggle";
-import type { RosterMember, ScaleMode } from "../CongressData/axisStats";
-import politicalAxes from "../../../data/politicalAxes.json";
+import ComparisonToggle from "./ComparisonToggle";
+import PercentileBar from "./PercentileBar";
+import VoteRow from "./VoteRow";
+import { useAxisCategories, useMemberVotes } from "./useMemberVotes";
+import { useChartTheme } from "../CongressData/chartTheme";
+import type { RosterMember } from "../CongressData/axisStats";
+import {
+  AXIS_GROUPS,
+  MIN_BILLS,
+  SIDE_COLOR,
+  axisDefinition,
+  axisName,
+  axisPartyPosition,
+  axisPolePhrases,
+  chamberPartyLabel,
+  chamberPosition,
+  describePosition,
+  distinctiveness,
+  loyaltyComparison,
+  partyPlural,
+  voteHistoryUrl,
+  type Comparison,
+  type MemberContext,
+  type Position,
+  type Side,
+} from "./percentiles";
+import type { AxisInfo } from "./types";
 
-interface AxisInfo {
-  score: number;
-  raw_score: number;
-  bill_count: number;
-  within_party_z: number | null;
-  by_category: Record<string, { score: number; bill_count: number }>;
-  rank: number;
-  percentile_rank: number;
-  total_members: number;
-  current_rank: number;
-  current_percentile_rank: number;
-  total_current_members: number;
-  defection_rate?: number;
+// The stored descriptions for Left-Right name internal fields, so these replace them.
+const POLE_DESCRIPTION_OVERRIDES: Record<string, Record<Side, string>> = {
+  left_right: {
+    negative: "Votes in line with the liberal position on each policy area.",
+    positive: "Votes in line with the conservative position on each policy area.",
+  },
+};
+
+interface AxisPositions {
+  chamber: Position | null;
+  party: Position | null;
 }
 
-// Display order: left_right first, then the next most independent signals,
-// then the rest.
-const AXIS_ORDER = [
-  "left_right",
-  "state_power",
-  "fiscal",
-  "security",
-  "trade",
-  "federalism",
-  "institutional",
-  "economic",
-  "social",
-  "global",
-  "executive_power",
-];
-
-// Axes with relatively few scored bills — treat per-member scores as weaker evidence.
-const SPARSE_BILL_COUNT_THRESHOLD = 15;
-
-function axisName(axisId: string): string {
-  return politicalAxes.political_axes.find((a) => a.id === axisId)?.name ?? axisId;
+function poleDescription(axisId: string, side: Side): string {
+  const override = POLE_DESCRIPTION_OVERRIDES[axisId]?.[side];
+  if (override) return override;
+  const axis = axisDefinition(axisId);
+  return (side === "negative" ? axis?.negative_pole : axis?.positive_pole)?.description ?? "";
 }
 
-function AxisRow({
+function PoleVotes({
+  ctx,
   axisId,
-  info,
-  roster,
-  memberId,
-  scaleMode,
+  side,
 }: {
+  ctx: MemberContext;
   axisId: string;
-  info: AxisInfo;
-  roster: RosterMember[];
-  memberId: string;
-  scaleMode: ScaleMode;
+  side: Side;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const isInstitutional = axisId === "institutional";
-  const hasSufficientData = info.bill_count > 0 && info.rank !== -1;
-  const isSparse = !isInstitutional && info.bill_count < SPARSE_BILL_COUNT_THRESHOLD;
-
-  // institutional is compressed near -1 (most members vote with leadership
-  // ~90% of the time); show defection rate as a % instead of the raw score.
-  const displayValue = isInstitutional && info.defection_rate !== undefined
-    ? `${(info.defection_rate * 100).toFixed(0)}%`
-    : hasSufficientData
-      ? info.score.toFixed(3)
-      : "—";
-
-  const scoreColor = info.score < -0.05 ? "#06b6d4" : info.score > 0.05 ? "#f97316" : "#8b5cf6";
+  const { data, loading } = useMemberVotes(ctx.memberId, ctx.model, {
+    axis: axisId,
+    pole: side,
+    limit: 3,
+  });
+  const pole = axisPolePhrases(axisId)[side];
 
   return (
-    <Box
-      bg="surface"
-      rounded="lg"
-      borderWidth="1px"
-      borderColor="borderSubtle"
-      borderLeft="3px solid"
-      borderLeftColor={scoreColor}
-      overflow="hidden"
-    >
-      <HStack
-        px={3}
-        py={2}
-        cursor="pointer"
-        onClick={() => setExpanded(!expanded)}
-        _hover={{ bg: "bgLightShade" }}
-        transition="background 0.15s"
-        gap={3}
-      >
-        <VStack align="flex-start" gap={0} flex={1} minW={0}>
-          <Text fontSize="sm" fontWeight="600" color="text" truncate>
-            {axisName(axisId)}
-          </Text>
-        </VStack>
-        {isSparse && (
-          <Badge colorPalette="yellow" variant="subtle" fontSize="2xs">
-            Sparse data
-          </Badge>
-        )}
-        <Text
-          fontSize="sm"
-          fontWeight="700"
-          color={scoreColor}
-          flexShrink={0}
-          w="48px"
-          textAlign="right"
-        >
-          {displayValue}
+    <VStack align="stretch" gap={1.5}>
+      <Text fontSize="xs" fontWeight="700" color={SIDE_COLOR[side]}>
+        Toward {pole}
+      </Text>
+      {loading && <Spinner size="sm" />}
+      {data?.results.map((vote) => (
+        <VoteRow key={vote.vote_id} vote={vote} model={ctx.model} />
+      ))}
+      {data && data.results.length === 0 && (
+        <Text fontSize="xs" color="textMuted">
+          No contested votes pushed this member toward {pole}.
         </Text>
-        <Text
-          fontSize="sm"
-          color="textMuted"
-          flexShrink={0}
-          w="44px"
-          textAlign="right"
-        >
-          {info.current_rank !== -1
-            ? `${(info.current_percentile_rank * 100).toFixed(0)}%`
-            : "—"}
-        </Text>
-        <Text fontSize="xs" color="textMuted" flexShrink={0}>
-          {expanded ? "▲" : "▼"}
-        </Text>
-      </HStack>
-
-      {expanded && (
-        <Box px={4} pb={4} pt={2} borderTopWidth="1px" borderColor="borderSubtle">
-          {!hasSufficientData ? (
-            <Box py={3} textAlign="center">
-              <Text fontSize="sm" color="textMuted" fontWeight="600">
-                Not Enough Voting Data
-              </Text>
-              <Text fontSize="xs" color="textMuted">
-                Bills analyzed: {info.bill_count}
-              </Text>
-            </Box>
-          ) : (
-            <VStack align="stretch" gap={3}>
-              <HStack gap={6} wrap="wrap">
-                <VStack gap={0} align="flex-start">
-                  <Text fontSize="xs" color="textMuted" fontWeight="600" textTransform="uppercase">
-                    {isInstitutional ? "Roll Calls" : "Bills"}
-                  </Text>
-                  <Text fontSize="lg" fontWeight="700" color="text">
-                    {info.bill_count}
-                  </Text>
-                </VStack>
-                <VStack gap={0} align="flex-start">
-                  <Text fontSize="xs" color="textMuted" fontWeight="600" textTransform="uppercase">
-                    Score
-                  </Text>
-                  <Text fontSize="lg" fontWeight="700" color={scoreColor}>
-                    {info.score.toFixed(3)}
-                  </Text>
-                </VStack>
-                {info.within_party_z !== null && info.within_party_z !== undefined && (
-                  <VStack gap={0} align="flex-start">
-                    <Text fontSize="xs" color="textMuted" fontWeight="600" textTransform="uppercase">
-                      Within-Party Z
-                    </Text>
-                    <Text fontSize="lg" fontWeight="700" color="text">
-                      {info.within_party_z > 0 ? "+" : ""}
-                      {info.within_party_z.toFixed(2)}
-                    </Text>
-                  </VStack>
-                )}
-                <VStack gap={0} align="flex-start">
-                  <Text fontSize="xs" color="textMuted" fontWeight="600" textTransform="uppercase">
-                    Rank
-                  </Text>
-                  <Text fontSize="lg" fontWeight="700" color="text">
-                    #{info.current_rank}{" "}
-                    <Text as="span" fontSize="xs" color="textMuted">
-                      of {info.total_current_members}
-                    </Text>
-                  </Text>
-                </VStack>
-              </HStack>
-
-              <Box>
-                <Text fontSize="xs" color="textMuted" fontWeight="600" textTransform="uppercase" mb={1}>
-                  Vs. {scaleMode === "chamber" ? "Chamber" : scaleMode === "party" ? "Own Party" : "Raw Score"}
-                </Text>
-                <AxisFingerprint
-                  axisId={axisId}
-                  memberId={memberId}
-                  roster={roster}
-                  scaleMode={scaleMode}
-                  highlightColor={scoreColor}
-                />
-              </Box>
-
-              {Object.keys(info.by_category).length > 0 && (
-                <Box>
-                  <Text fontSize="xs" fontWeight="700" color="textMuted" mb={2} textTransform="uppercase">
-                    By Policy Category
-                  </Text>
-                  <VStack align="stretch" gap={1}>
-                    {Object.entries(info.by_category)
-                      .sort((a, b) => b[1].bill_count - a[1].bill_count)
-                      .map(([cat, catInfo]) => (
-                        <HStack key={cat} justify="space-between" fontSize="xs">
-                          <Text color="textMuted" truncate flex={1}>
-                            {cat}
-                          </Text>
-                          <Text color="text" fontWeight="600" flexShrink={0}>
-                            {catInfo.score.toFixed(2)} ({catInfo.bill_count})
-                          </Text>
-                        </HStack>
-                      ))}
-                  </VStack>
-                </Box>
-              )}
-
-              <IdeologyAxisBar axisId={axisId} compact />
-            </VStack>
-          )}
-        </Box>
       )}
+    </VStack>
+  );
+}
+
+function PartyBreakVotes({ ctx }: { ctx: MemberContext }) {
+  const { data, loading } = useMemberVotes(ctx.memberId, ctx.model, {
+    filter: "broke",
+    limit: 4,
+  });
+
+  return (
+    <VStack align="stretch" gap={1.5}>
+      {loading && <Spinner size="sm" />}
+      {data?.results.map((vote) => (
+        <VoteRow key={vote.vote_id} vote={vote} model={ctx.model} />
+      ))}
+      {data && data.results.length === 0 && (
+        <Text fontSize="xs" color="textMuted">
+          No scored votes against most of their party.
+        </Text>
+      )}
+    </VStack>
+  );
+}
+
+function CategoryBreakdown({ ctx, axisId }: { ctx: MemberContext; axisId: string }) {
+  const { data, loading } = useAxisCategories(ctx.memberId, ctx.model, {
+    axis: axisId,
+  });
+  const poles = axisPolePhrases(axisId);
+
+  if (loading) return <Spinner size="sm" />;
+  if (!data || data.cells.length === 0) return null;
+
+  return (
+    <Box>
+      <Text fontSize="xs" fontWeight="700" color="textMuted" textTransform="uppercase" mb={2}>
+        By category
+      </Text>
+      <VStack align="stretch" gap={2}>
+        {data.cells.map((cell) => {
+          const stats =
+            ctx.comparison === "party" ? cell.stats?.party : cell.stats?.chamber;
+          const text = stats ? describePosition(stats, poles, ctx) : null;
+          return (
+            <Box key={cell.category}>
+              <Flex justify="space-between" gap={3} wrap="wrap" mb={1}>
+                <Text fontSize="xs" fontWeight="600" color="text">
+                  {cell.category}
+                </Text>
+                <Text fontSize="xs" color={text ? SIDE_COLOR[text.side] : "textMuted"}>
+                  {text ? text.headline : "Not enough votes"}
+                </Text>
+              </Flex>
+              {stats && <PercentileBar percentile={stats.percentile} />}
+            </Box>
+          );
+        })}
+      </VStack>
     </Box>
   );
 }
 
+function AxisDetails({
+  ctx,
+  axisId,
+  info,
+}: {
+  ctx: MemberContext;
+  axisId: string;
+  info: AxisInfo;
+}) {
+  const isInstitutional = axisId === "institutional";
+  const poles = axisPolePhrases(axisId);
+
+  return (
+    <VStack
+      align="stretch"
+      gap={4}
+      px={4}
+      py={3}
+      borderTopWidth="1px"
+      borderColor="borderSubtle"
+    >
+      {!isInstitutional && <CategoryBreakdown ctx={ctx} axisId={axisId} />}
+
+      <Box>
+        <Text fontSize="xs" fontWeight="700" color="textMuted" textTransform="uppercase" mb={2}>
+          {isInstitutional ? "Votes against their party" : "Defining votes"}
+        </Text>
+        {isInstitutional ? (
+          <PartyBreakVotes ctx={ctx} />
+        ) : (
+          <SimpleGrid columns={{ base: 1, lg: 2 }} gap={3}>
+            <PoleVotes ctx={ctx} axisId={axisId} side="negative" />
+            <PoleVotes ctx={ctx} axisId={axisId} side="positive" />
+          </SimpleGrid>
+        )}
+      </Box>
+
+      <Box>
+        <Text fontSize="xs" fontWeight="700" color="textMuted" textTransform="uppercase" mb={1}>
+          What the poles mean
+        </Text>
+        {(["negative", "positive"] as const).map((side) => (
+          <Text key={side} fontSize="xs" color="textMuted">
+            <Text as="span" fontWeight="600" color={SIDE_COLOR[side]}>
+              {poles[side]}:
+            </Text>{" "}
+            {poleDescription(axisId, side)}
+          </Text>
+        ))}
+      </Box>
+
+      <Flex justify="space-between" gap={3} wrap="wrap">
+        <Text fontSize="xs" color="textMuted">
+          {info.bill_count.toLocaleString()} {isInstitutional ? "roll calls counted" : "bills scored"}
+        </Text>
+        <RouterLink to={voteHistoryUrl(ctx, { axis: axisId })}>
+          <Text fontSize="xs" color="accent" fontWeight="600">
+            See all votes on this axis →
+          </Text>
+        </RouterLink>
+      </Flex>
+    </VStack>
+  );
+}
+
+function AxisRow({
+  ctx,
+  axisId,
+  info,
+  positions,
+  roster,
+}: {
+  ctx: MemberContext;
+  axisId: string;
+  info: AxisInfo;
+  positions: AxisPositions;
+  roster: RosterMember[];
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const position = ctx.comparison === "party" ? positions.party : positions.chamber;
+  const text = position ? describePosition(position, axisPolePhrases(axisId), ctx) : null;
+  const Chevron = expanded ? ChevronUp : ChevronDown;
+
+  const groupLabel =
+    ctx.comparison === "party" ? chamberPartyLabel(ctx) : `the ${ctx.chamber}`;
+  const isLoyaltyRow = axisId === "institutional" && info.defection_rate !== undefined;
+  const headline =
+    isLoyaltyRow && position
+      ? `Votes with party leadership ${Math.round((1 - info.defection_rate!) * 100)}% · ${loyaltyComparison(position, groupLabel)}`
+      : text?.headline;
+
+  return (
+    <Box bg="surface" rounded="lg" borderWidth="1px" borderColor="borderSubtle" overflow="hidden">
+      <Box
+        as="button"
+        w="100%"
+        textAlign="left"
+        px={4}
+        pt={3}
+        pb={1}
+        cursor="pointer"
+        aria-expanded={expanded}
+        onClick={() => setExpanded(!expanded)}
+        _hover={{ bg: "bgLightShade" }}
+        transition="background 0.15s"
+      >
+        <Flex justify="space-between" align="flex-start" gap={3}>
+          <Box minW={0}>
+            <HStack gap={2} wrap="wrap">
+              <Text fontSize="sm" fontWeight="700" color="text">
+                {axisName(axisId)}
+              </Text>
+              {text && (
+                <Text fontSize="xs" fontWeight="600" color={SIDE_COLOR[text.side]}>
+                  {text.band}
+                </Text>
+              )}
+            </HStack>
+            {text ? (
+              <Text fontSize="sm" color="text">
+                {headline}{" "}
+                <Text as="span" fontSize="xs" color="textMuted" whiteSpace="nowrap">
+                  · {text.rankText}
+                </Text>
+              </Text>
+            ) : (
+              <Text fontSize="sm" color="textMuted">
+                {info.bill_count < MIN_BILLS || ctx.comparison === "chamber"
+                  ? "Not enough votes"
+                  : "Loading…"}
+              </Text>
+            )}
+          </Box>
+          <Box color="textMuted" flexShrink={0} mt={0.5}>
+            <Chevron size={16} />
+          </Box>
+        </Flex>
+      </Box>
+
+      <Box px={4} pb={3} pt={1}>
+        <AxisFingerprint
+          axisId={axisId}
+          memberId={ctx.memberId}
+          party={ctx.party}
+          roster={roster}
+          comparison={ctx.comparison}
+          selfSide={text?.side ?? null}
+        />
+      </Box>
+
+      {expanded && <AxisDetails ctx={ctx} axisId={axisId} info={info} />}
+    </Box>
+  );
+}
+
+function StripLegend({
+  ctx,
+  roster,
+}: {
+  ctx: MemberContext;
+  roster: RosterMember[];
+}) {
+  const { partyColors } = useChartTheme();
+  const showBothParties = ctx.comparison === "chamber";
+  const parties = showBothParties
+    ? (["R", "D"] as const)
+    : ctx.party === "R" || ctx.party === "D"
+      ? ([ctx.party] as const)
+      : [];
+  const showIndependents =
+    showBothParties && roster.some((m) => m.current && m.party === "I");
+
+  return (
+    <HStack gap={4} wrap="wrap" rowGap={1} fontSize="xs" color="textMuted">
+      {parties.map((party) => (
+        <HStack key={party} gap={1.5}>
+          <Box w="8px" h="8px" rounded="full" style={{ background: partyColors[party], opacity: 0.5 }} />
+          <Text>{partyPlural(party)}</Text>
+        </HStack>
+      ))}
+      {showIndependents && (
+        <HStack gap={1.5}>
+          <Box w="8px" h="8px" rounded="full" style={{ background: partyColors.I, opacity: 0.5 }} />
+          <Text>Independents</Text>
+        </HStack>
+      )}
+      {parties.map((party) => (
+        <HStack key={party} gap={1.5}>
+          <Box w="2px" h="12px" style={{ background: partyColors[party] }} />
+          <Text>{party === "R" ? "Republican" : "Democratic"} average</Text>
+        </HStack>
+      ))}
+      <HStack gap={1.5}>
+        <Box
+          w="12px"
+          h="12px"
+          rounded="full"
+          borderWidth="2px"
+          borderColor="textMuted"
+          bg="surface"
+        />
+        <Text>{ctx.lastName}</Text>
+      </HStack>
+    </HStack>
+  );
+}
+
 export default function AxesGrid({
+  ctx,
   axes,
   roster,
-  memberId,
+  onComparisonChange,
 }: {
+  ctx: MemberContext;
   axes: Record<string, AxisInfo>;
   roster: RosterMember[];
-  memberId: string;
+  onComparisonChange: (value: Comparison) => void;
 }) {
-  const [scaleMode, setScaleMode] = useState<ScaleMode>("chamber");
-  const ordered = AXIS_ORDER.filter((id) => axes[id]);
-  const rest = Object.keys(axes).filter((id) => !AXIS_ORDER.includes(id));
+  const [sortBy, setSortBy] = useState<"grouped" | "distinctive">("grouped");
 
-  if (Object.keys(axes).length === 0) return null;
+  const positions = useMemo(() => {
+    const result: Record<string, AxisPositions> = {};
+    for (const [axisId, info] of Object.entries(axes)) {
+      result[axisId] = {
+        chamber: chamberPosition(info),
+        party: ctx.canComparePartyPeers
+          ? axisPartyPosition(roster, ctx.party, axisId, info)
+          : null,
+      };
+    }
+    return result;
+  }, [axes, roster, ctx.party, ctx.canComparePartyPeers]);
+
+  const renderRow = (axisId: string) => (
+    <AxisRow
+      key={axisId}
+      ctx={ctx}
+      axisId={axisId}
+      info={axes[axisId]}
+      positions={positions[axisId]}
+      roster={roster}
+    />
+  );
+
+  const distinctiveOrder = Object.keys(axes).sort(
+    (a, b) =>
+      distinctiveness(positions[b].party ?? positions[b].chamber) -
+      distinctiveness(positions[a].party ?? positions[a].chamber),
+  );
 
   return (
     <Box w="100%">
-      <HStack justify="space-between" mb={3} flexWrap="wrap" gap={2}>
+      <Flex justify="space-between" align="center" mb={2} wrap="wrap" gap={2}>
         <Heading size="md" color="text">
           Ideological Axes
         </Heading>
-        <ScaleModeToggle value={scaleMode} onChange={setScaleMode} />
-      </HStack>
+        <HStack gap={3} wrap="wrap">
+          <HStack gap={1}>
+            {(
+              [
+                { key: "grouped", label: "By topic" },
+                { key: "distinctive", label: "Most distinctive" },
+              ] as const
+            ).map((option) => (
+              <Box
+                as="button"
+                key={option.key}
+                aria-pressed={sortBy === option.key}
+                onClick={() => setSortBy(option.key)}
+                px={2}
+                py={1}
+                rounded="md"
+                fontSize="xs"
+                fontWeight="600"
+                cursor="pointer"
+                color={sortBy === option.key ? "text" : "textMuted"}
+                textDecoration={sortBy === option.key ? "underline" : "none"}
+              >
+                {option.label}
+              </Box>
+            ))}
+          </HStack>
+          <ComparisonToggle ctx={ctx} onChange={onComparisonChange} />
+        </HStack>
+      </Flex>
 
-      <VStack align="stretch" gap={3}>
-        {[...ordered, ...rest].map((id) => (
-          <AxisRow
-            key={id}
-            axisId={id}
-            info={axes[id]}
-            roster={roster}
-            memberId={memberId}
-            scaleMode={scaleMode}
-          />
-        ))}
-      </VStack>
+      <Box mb={3}>
+        <StripLegend ctx={ctx} roster={roster} />
+      </Box>
+
+      {sortBy === "distinctive" ? (
+        <VStack align="stretch" gap={2}>
+          {distinctiveOrder.map(renderRow)}
+        </VStack>
+      ) : (
+        <VStack align="stretch" gap={5}>
+          {AXIS_GROUPS.map((group) => {
+            const ids = group.axes.filter((id) => axes[id]);
+            if (ids.length === 0) return null;
+            return (
+              <Box key={group.label}>
+                <Text
+                  fontSize="xs"
+                  fontWeight="700"
+                  color="textMuted"
+                  textTransform="uppercase"
+                  letterSpacing="0.05em"
+                  mb={2}
+                >
+                  {group.label}
+                </Text>
+                <VStack align="stretch" gap={2}>
+                  {ids.map(renderRow)}
+                </VStack>
+              </Box>
+            );
+          })}
+        </VStack>
+      )}
     </Box>
   );
 }

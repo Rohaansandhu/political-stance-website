@@ -1,724 +1,334 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
+  Flex,
+  Grid,
   Heading,
-  Text,
   HStack,
+  IconButton,
+  Popover,
+  Portal,
+  Spinner,
+  Text,
   VStack,
-  Badge,
-  Link,
 } from "@chakra-ui/react";
-import IdeologyViewsBar from "../CongressData/IdeologyViewBar";
+import { ChevronDown, ChevronUp, Info } from "lucide-react";
+import ComparisonToggle from "./ComparisonToggle";
+import PercentileBar from "./PercentileBar";
+import VoteRow from "./VoteRow";
+import { useAxisCategories, useMemberVotes } from "./useMemberVotes";
+import type { RosterMember } from "../CongressData/axisStats";
+import politicalCategories from "../../../data/politicalCategories.json";
+import {
+  CATEGORY_POLES,
+  SIDE_COLOR,
+  axisName,
+  axisPolePhrases,
+  categoryPartyPosition,
+  chamberPosition,
+  describePosition,
+  distinctiveness,
+  voteHistoryUrl,
+  type Comparison,
+  type MemberContext,
+  type Position,
+} from "./percentiles";
+import type { CategoryInfo } from "./types";
 
-interface BillVote {
-  bill_id: string;
-  vote: string;
-  date: string;
-  score_impact: number;
+type SortKey = "distinctive" | "alphabetical" | "percentile";
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "distinctive", label: "Most distinctive" },
+  { key: "alphabetical", label: "A–Z" },
+  { key: "percentile", label: "Percentile" },
+];
+
+const MAX_BREAKDOWN_AXES = 4;
+
+interface CategoryPositions {
+  chamber: Position | null;
+  party: Position | null;
 }
 
-interface TopBills {
-  conservative: BillVote[];
-  liberal: BillVote[];
-}
+function ViewsInfo({ category }: { category: string }) {
+  const definition = politicalCategories.political_categories.find(
+    (c) => c.name === category,
+  );
+  if (!definition) return null;
 
-interface CategoryInfo {
-  score: number;
-  rank: number;
-  percentile_rank: number;
-  bill_count: number;
-  current_rank: number;
-  current_percentile_rank: number;
-  total_members?: number;
-  total_current_members?: number;
-  top_bills?: TopBills;
-}
-
-interface Categories {
-  [key: string]: CategoryInfo;
-}
-
-function getIdeologyInfo(percentile: number) {
-  if (percentile < 0.4) return { label: "Liberal", color: "#3b82f6" };
-  if (percentile > 0.6) return { label: "Conservative", color: "#ef4444" };
-  return { label: "Moderate", color: "#8b5cf6" };
-}
-
-function getBillUrl(billId: string, model: string) {
-  return `https://www.uspolitrack.org/bill-analyses/${billId}/${model}`;
-}
-
-function ScoreBar({
-  value,
-  min = -1,
-  max = 1,
-  color,
-}: {
-  value: number;
-  min?: number;
-  max?: number;
-  color: string;
-}) {
-  const pct = ((value - min) / (max - min)) * 100;
   return (
-    <Box position="relative" h="8px" bg="bgLightShade" rounded="full">
-      <Box
-        position="absolute"
-        left={`${pct}%`}
-        top="50%"
-        transform="translate(-50%, -50%)"
-        w="12px"
-        h="12px"
-        bg={color}
-        rounded="full"
-        borderWidth="2px" borderColor="surface"
-        boxShadow="sm"
-      />
-    </Box>
+    <Popover.Root positioning={{ placement: "top-start" }}>
+      <Popover.Trigger asChild>
+        <IconButton aria-label={`What the poles mean for ${category}`} variant="ghost" size="2xs">
+          <Info />
+        </IconButton>
+      </Popover.Trigger>
+      <Portal>
+        <Popover.Positioner>
+          <Popover.Content maxW="sm">
+            <Popover.Body>
+              <VStack align="stretch" gap={2}>
+                <Text fontSize="xs" color="text">
+                  <Text as="span" fontWeight="700" color={SIDE_COLOR.negative}>
+                    Liberal view:{" "}
+                  </Text>
+                  {definition.liberal_view}
+                </Text>
+                <Text fontSize="xs" color="text">
+                  <Text as="span" fontWeight="700" color={SIDE_COLOR.positive}>
+                    Conservative view:{" "}
+                  </Text>
+                  {definition.conservative_view}
+                </Text>
+              </VStack>
+            </Popover.Body>
+          </Popover.Content>
+        </Popover.Positioner>
+      </Portal>
+    </Popover.Root>
   );
 }
 
-function formatBillId(bill_id: string) {
-  // e.g. "hr351-114" -> "H.R. 351 (114th)"
-  const match = bill_id.match(/^([a-z]+)(\d+)-(\d+)$/i);
-  if (!match) return bill_id.toUpperCase();
-  const [, type, num, congress] = match;
-  const typeMap: Record<string, string> = {
-    hr: "H.R.",
-    s: "S.",
-    hjres: "H.J.Res.",
-    sjres: "S.J.Res.",
-    hres: "H.Res.",
-    sres: "S.Res.",
-    hjres2: "H.J.Res.",
-    hjres45: "H.J.Res.",
-  };
-  const label = typeMap[type.toLowerCase()] ?? type.toUpperCase();
-  return `${label} ${num} (${congress}th)`;
-}
+function AxisBreakdown({ ctx, category }: { ctx: MemberContext; category: string }) {
+  const { data, loading } = useAxisCategories(ctx.memberId, ctx.model, { category });
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
+  if (loading) return <Spinner size="sm" />;
+  // Left-Right within a category is just the category's own position again.
+  const cells = (data?.cells ?? [])
+    .filter((cell) => cell.axis !== "left_right" && cell.stats)
+    .slice(0, MAX_BREAKDOWN_AXES);
+  if (cells.length === 0) return null;
 
-function BillRow({
-  bill,
-  side,
-  model,
-}: {
-  bill: BillVote;
-  side: "liberal" | "conservative";
-  model: string;
-}) {
-  const isLib = side === "liberal";
-  const color = isLib ? "blue" : "red";
-  const voteIsYea = ["yea", "aye", "yes"].includes(bill.vote.toLowerCase());
-
-  return (
-    <HStack
-      justify="space-between"
-      px={2}
-      py={1}
-      bg={isLib ? "blue.subtle" : "red.subtle"}
-      rounded="md"
-      gap={2}
-    >
-      <VStack align="flex-start" gap={0} flex={1} minW={0}>
-        <Text fontSize="xs" fontWeight="700" color={`${color}.fg`}>
-          <Link
-            href={getBillUrl(bill.bill_id, model)}
-            _hover={{ textDecoration: "underline" }}
-          >
-            {formatBillId(bill.bill_id)}
-          </Link>
-        </Text>
-        <Text fontSize="xs" color="textMuted">
-          {formatDate(bill.date)}
-        </Text>
-      </VStack>
-      <Badge
-        colorPalette={voteIsYea ? "green" : "red"}
-        variant="solid"
-        fontSize="xs"
-        fontWeight="bold"
-        px={2}
-        py={0.5}
-        borderRadius="md"
-        flexShrink={0}
-      >
-        {bill.vote.toUpperCase()}
-      </Badge>
-      <Text
-        fontSize="xs"
-        fontWeight="700"
-        color={isLib ? "blue.fg" : "red.fg"}
-        flexShrink={0}
-        w="36px"
-        textAlign="right"
-      >
-        {bill.score_impact > 0 ? "+" : ""}
-        {bill.score_impact.toFixed(2)}
-      </Text>
-    </HStack>
-  );
-}
-
-function TopBillsSection({
-  top_bills,
-  model,
-}: {
-  top_bills: TopBills;
-  model: string;
-}) {
   return (
     <Box>
-      <Text
-        fontSize="xs"
-        fontWeight="700"
-        color="textMuted"
-        textTransform="uppercase"
-        letterSpacing="0.05em"
-        mb={2}
-      >
-        Most Impactful Bills
+      <Text fontSize="xs" fontWeight="700" color="textMuted" textTransform="uppercase" mb={1}>
+        What drives it
       </Text>
-      <HStack align="flex-start" gap={3}>
-        {/* Liberal bills */}
-        <VStack align="stretch" gap={1} flex={1}>
-          <HStack gap={1} mb={1}>
-            <Box w="8px" h="8px" borderRadius="full" bg="partyDem" />
-            <Text fontSize="xs" fontWeight="700" color="blue.fg">
-              Most Liberal Votes
-            </Text>
-          </HStack>
-          {top_bills.liberal.slice(0, 3).map((bill) => (
-            <BillRow
-              key={`${bill.bill_id}-${bill.date}`}
-              bill={bill}
-              side="liberal"
-              model={model}
-            />
-          ))}
-        </VStack>
-
-        {/* Conservative bills */}
-        <VStack align="stretch" gap={1} flex={1}>
-          <HStack gap={1} mb={1}>
-            <Box w="8px" h="8px" borderRadius="full" bg="partyRep" />
-            <Text fontSize="xs" fontWeight="700" color="red.fg">
-              Most Conservative Votes
-            </Text>
-          </HStack>
-          {top_bills.conservative.slice(0, 3).map((bill) => (
-            <BillRow
-              key={`${bill.bill_id}-${bill.date}`}
-              bill={bill}
-              side="conservative"
-              model={model}
-            />
-          ))}
-        </VStack>
-      </HStack>
+      <Text fontSize="xs" color="textMuted" mb={2}>
+        Votes in this category mostly touch{" "}
+        {cells
+          .slice(0, 2)
+          .map((cell) => axisName(cell.axis))
+          .join(" and ")}
+        .
+      </Text>
+      <VStack align="stretch" gap={2}>
+        {cells.map((cell) => {
+          const stats = ctx.comparison === "party" ? cell.stats?.party : cell.stats?.chamber;
+          if (!stats) return null;
+          const text = describePosition(stats, axisPolePhrases(cell.axis), ctx);
+          return (
+            <Box key={cell.axis}>
+              <Flex justify="space-between" gap={3} wrap="wrap" mb={1}>
+                <Text fontSize="xs" fontWeight="600" color="text">
+                  {axisName(cell.axis)}
+                </Text>
+                <Text fontSize="xs" color={SIDE_COLOR[text.side]}>
+                  {text.headline}
+                </Text>
+              </Flex>
+              <PercentileBar percentile={stats.percentile} />
+            </Box>
+          );
+        })}
+      </VStack>
     </Box>
+  );
+}
+
+function CategoryDetails({ ctx, category }: { ctx: MemberContext; category: string }) {
+  const { data, loading } = useMemberVotes(ctx.memberId, ctx.model, {
+    category,
+    filter: "defining",
+    limit: 4,
+  });
+
+  return (
+    <VStack align="stretch" gap={4} px={4} py={3} borderTopWidth="1px" borderColor="borderSubtle">
+      <Box>
+        <HStack gap={1} mb={2}>
+          <Text fontSize="xs" fontWeight="700" color="textMuted" textTransform="uppercase">
+            Top votes
+          </Text>
+          <ViewsInfo category={category} />
+        </HStack>
+        {loading && <Spinner size="sm" />}
+        <VStack align="stretch" gap={1.5}>
+          {data?.results.map((vote) => (
+            <VoteRow key={vote.vote_id} vote={vote} model={ctx.model} />
+          ))}
+        </VStack>
+        {data && data.results.length === 0 && (
+          <Text fontSize="xs" color="textMuted">
+            No contested votes in this category.
+          </Text>
+        )}
+      </Box>
+
+      <AxisBreakdown ctx={ctx} category={category} />
+
+      <RouterLink to={voteHistoryUrl(ctx, { category })}>
+        <Text fontSize="xs" color="accent" fontWeight="600">
+          See all votes in this category →
+        </Text>
+      </RouterLink>
+    </VStack>
   );
 }
 
 function CategoryRow({
+  ctx,
   category,
-  info,
-  model,
+  positions,
 }: {
+  ctx: MemberContext;
   category: string;
-  info: CategoryInfo;
-  model: string;
+  positions: CategoryPositions;
 }) {
   const [expanded, setExpanded] = useState(false);
-
-  const hasSufficientData = info.bill_count > 10 && info.rank !== -1;
-  const hasCurrentData = info.current_rank !== -1 && hasSufficientData;
-
-  const ideology = hasSufficientData
-    ? getIdeologyInfo(info.current_percentile_rank)
-    : { label: "No Data", color: "#9ca3af" };
-
-  const scoreColor =
-    info.score < -0.2 ? "#3b82f6" : info.score > 0.2 ? "#ef4444" : "#8b5cf6";
+  const position = ctx.comparison === "party" ? positions.party : positions.chamber;
+  const text = position ? describePosition(position, CATEGORY_POLES, ctx) : null;
+  const Chevron = expanded ? ChevronUp : ChevronDown;
 
   return (
-    <Box
-      bg="surface"
-      rounded="lg"
-      borderWidth="1px"
-      borderColor="borderSubtle"
-      borderLeft="3px solid"
-      borderLeftColor={ideology.color}
-      overflow="hidden"
-    >
-      {/* Collapsed row — always visible */}
-      <HStack
-        px={3}
-        py={2}
+    <Box bg="surface" rounded="lg" borderWidth="1px" borderColor="borderSubtle" overflow="hidden">
+      <Grid
+        as="button"
+        w="100%"
+        textAlign="left"
         cursor="pointer"
+        aria-expanded={expanded}
         onClick={() => setExpanded(!expanded)}
         _hover={{ bg: "bgLightShade" }}
         transition="background 0.15s"
-        gap={3}
+        px={4}
+        py={2.5}
+        gap={{ base: 1.5, md: 4 }}
+        alignItems="center"
+        templateColumns={{ base: "1fr auto", md: "minmax(170px, 1fr) 150px minmax(240px, 1.4fr) auto" }}
       >
-        <Text
-          fontSize="sm"
-          fontWeight="600"
-          color="text"
-          flex={1}
-          minW={0}
-          truncate
-        >
+        <Text fontSize="sm" fontWeight="600" color="text">
           {category}
         </Text>
-        <Text
-          fontSize="sm"
-          fontWeight="700"
-          color={scoreColor}
-          flexShrink={0}
-          w="40px"
-          textAlign="right"
-        >
-          {hasSufficientData ? info.score.toFixed(2) : "—"}
-        </Text>
-        <Text
-          fontSize="sm"
-          color="textMuted"
-          flexShrink={0}
-          w="44px"
-          textAlign="right"
-        >
-          {hasCurrentData
-            ? `${(info.current_percentile_rank * 100).toFixed(0)}%`
-            : "—"}
-        </Text>
-        <Box
-          px={2}
-          py="2px"
-          rounded="md"
-          bg={ideology.color}
-          color="white"
-          fontSize="xs"
-          fontWeight="600"
-          flexShrink={0}
-          w="110px"
-          textAlign="center"
-        >
-          {ideology.label}
+        <Box gridColumn={{ base: "1 / -1", md: "auto" }} gridRow={{ base: 2, md: "auto" }}>
+          {position ? (
+            <PercentileBar percentile={position.percentile} />
+          ) : null}
         </Box>
-        <Text fontSize="xs" color="textMuted" flexShrink={0}>
-          {expanded ? "▲" : "▼"}
-        </Text>
-      </HStack>
-
-      {/* Expanded content */}
-      {expanded && (
-        <Box px={4} pb={4} pt={2} borderTopWidth="1px" borderColor="borderSubtle">
-          {!hasSufficientData ? (
-            <Box py={3} textAlign="center">
-              <Text fontSize="sm" color="textMuted" fontWeight="600">
-                Not Enough Voting Data
+        <Box gridColumn={{ base: "1 / -1", md: "auto" }} gridRow={{ base: 3, md: "auto" }}>
+          {text ? (
+            <>
+              <Text fontSize="xs" fontWeight="600" color={SIDE_COLOR[text.side]}>
+                {text.band}
               </Text>
-              <Text fontSize="xs" color="textMuted">
-                Bills analyzed: {info.bill_count}
+              <Text fontSize="xs" color="text">
+                {text.headline}{" "}
+                <Text as="span" color="textMuted" whiteSpace="nowrap">
+                  · {text.rankText}
+                </Text>
               </Text>
-            </Box>
+            </>
           ) : (
-            <VStack align="stretch" gap={3}>
-              {/* Key metrics */}
-              <HStack gap={6}>
-                <VStack gap={0} align="flex-start">
-                  <Text
-                    fontSize="xs"
-                    color="textMuted"
-                    fontWeight="600"
-                    textTransform="uppercase"
-                  >
-                    Bills
-                  </Text>
-                  <Text fontSize="lg" fontWeight="700" color="text">
-                    {info.bill_count}
-                  </Text>
-                </VStack>
-                <VStack gap={0} align="flex-start">
-                  <Text
-                    fontSize="xs"
-                    color="textMuted"
-                    fontWeight="600"
-                    textTransform="uppercase"
-                  >
-                    Score
-                  </Text>
-                  <Text fontSize="lg" fontWeight="700" color={scoreColor}>
-                    {info.score.toFixed(3)}
-                  </Text>
-                </VStack>
-                <VStack gap={0} align="flex-start">
-                  <Text
-                    fontSize="xs"
-                    color="textMuted"
-                    fontWeight="600"
-                    textTransform="uppercase"
-                  >
-                    Percentile
-                  </Text>
-                  <Text fontSize="lg" fontWeight="700" color={ideology.color}>
-                    {hasCurrentData
-                      ? `${(info.current_percentile_rank * 100).toFixed(1)}%`
-                      : "—"}
-                  </Text>
-                </VStack>
-                {hasCurrentData && (
-                  <VStack gap={0} align="flex-start">
-                    <Text
-                      fontSize="xs"
-                      color="textMuted"
-                      fontWeight="600"
-                      textTransform="uppercase"
-                    >
-                      Rank
-                    </Text>
-                    <Text fontSize="lg" fontWeight="700" color="text">
-                      #{info.current_rank}{" "}
-                      <Text as="span" fontSize="xs" color="textMuted">
-                        of {info.total_current_members}
-                      </Text>
-                    </Text>
-                  </VStack>
-                )}
-              </HStack>
-
-              {/* Ideology score bar */}
-              <Box>
-                <HStack justify="space-between" mb={1}>
-                  <Text fontSize="xs" color="textMuted" fontWeight="600">
-                    Ideology Score
-                  </Text>
-                </HStack>
-                <ScoreBar
-                  value={info.score}
-                  min={-1}
-                  max={1}
-                  color={scoreColor}
-                />
-                <HStack justify="space-between" mt={1}>
-                  <Text fontSize="xs" color="partyDem">
-                    Liberal (−1)
-                  </Text>
-                  <Text fontSize="xs" color="partyRep">
-                    Conservative (+1)
-                  </Text>
-                </HStack>
-              </Box>
-
-              {/* Percentile bar */}
-              {hasCurrentData && (
-                <Box>
-                  <HStack justify="space-between" mb={1}>
-                    <Text fontSize="xs" color="textMuted" fontWeight="600">
-                      Ideological Position
-                    </Text>
-                  </HStack>
-                  <ScoreBar
-                    value={info.current_percentile_rank}
-                    min={0}
-                    max={1}
-                    color={ideology.color}
-                  />
-                  <HStack justify="space-between" mt={1}>
-                    <Text fontSize="xs" color="partyDem">
-                      Liberal
-                    </Text>
-                    <Text fontSize="xs" color="partyRep">
-                      Conservative
-                    </Text>
-                  </HStack>
-                </Box>
-              )}
-
-              {/* Position description */}
-              {hasCurrentData && (
-                <Box
-                  p={3}
-                  bg={`${ideology.color}10`}
-                  rounded="lg"
-                  borderLeft="3px solid"
-                  borderLeftColor={ideology.color}
-                >
-                  <Text fontSize="sm" color="text">
-                    <strong>Position:</strong> This legislator takes a{" "}
-                    <strong>{ideology.label.toLowerCase()}</strong> stance on{" "}
-                    {category.toLowerCase()} issues, ranking more{" "}
-                    {info.current_percentile_rank < 0.5
-                      ? "liberal"
-                      : "conservative"}{" "}
-                    than{" "}
-                    {Math.abs(info.current_percentile_rank - 0.5) < 0.15
-                      ? "about half"
-                      : info.current_percentile_rank < 0.5
-                        ? `${((1 - info.current_percentile_rank) * 100).toFixed(0)}%`
-                        : `${(info.current_percentile_rank * 100).toFixed(0)}%`}{" "}
-                    of their peers.
-                  </Text>
-                </Box>
-              )}
-
-              {/* Top bills */}
-              {info.top_bills && (
-                <TopBillsSection top_bills={info.top_bills} model={model} />
-              )}
-
-              {/* Liberal/Conservative view definitions */}
-              <IdeologyViewsBar subject={category} compact />
-            </VStack>
+            <Text fontSize="xs" color="textMuted">
+              Not enough votes
+            </Text>
           )}
         </Box>
-      )}
+        <Box color="textMuted" gridRow={{ base: 1, md: "auto" }} gridColumn={{ base: 2, md: "auto" }}>
+          <Chevron size={16} />
+        </Box>
+      </Grid>
+
+      {expanded && <CategoryDetails ctx={ctx} category={category} />}
     </Box>
   );
 }
 
 export default function MainCategoryGrid({
+  ctx,
   categories,
-  recentVotes,
-  model = "gpt-6-luna",
+  roster,
+  onComparisonChange,
 }: {
-  categories: Categories;
-  recentVotes?: {
-    conservative: (BillVote & { category: string })[];
-    liberal: (BillVote & { category: string })[];
-  };
-  model?: string;
+  ctx: MemberContext;
+  categories: Record<string, CategoryInfo>;
+  roster: RosterMember[];
+  onComparisonChange: (value: Comparison) => void;
 }) {
-  const [sortBy, setSortBy] = useState("bills");
+  const [sortBy, setSortBy] = useState<SortKey>("distinctive");
 
-  const sortedCategories = Object.entries(categories).sort((a, b) => {
-    const aInsufficient = a[1].bill_count <= 10 || a[1].rank === -1;
-    const bInsufficient = b[1].bill_count <= 10 || b[1].rank === -1;
-    if (aInsufficient && !bInsufficient) return 1;
-    if (!aInsufficient && bInsufficient) return -1;
-    if (aInsufficient && bInsufficient) return 0;
-    if (sortBy === "ideology")
-      return (
-        Math.abs(b[1].percentile_rank - 0.5) -
-        Math.abs(a[1].percentile_rank - 0.5)
+  const positions = useMemo(() => {
+    const result: Record<string, CategoryPositions> = {};
+    for (const [category, info] of Object.entries(categories)) {
+      result[category] = {
+        chamber: chamberPosition(info),
+        party: ctx.canComparePartyPeers
+          ? categoryPartyPosition(roster, ctx.party, category, info)
+          : null,
+      };
+    }
+    return result;
+  }, [categories, roster, ctx.party, ctx.canComparePartyPeers]);
+
+  const sorted = useMemo(() => {
+    const active = (name: string) =>
+      ctx.comparison === "party" ? positions[name].party : positions[name].chamber;
+    const names = Object.keys(categories);
+    if (sortBy === "alphabetical") return names.sort((a, b) => a.localeCompare(b));
+    if (sortBy === "percentile") {
+      return names.sort(
+        (a, b) => (active(b)?.percentile ?? -1) - (active(a)?.percentile ?? -1),
       );
-    if (sortBy === "bills") return b[1].bill_count - a[1].bill_count;
-    if (sortBy === "score") return b[1].score - a[1].score;
-    return 0;
-  });
+    }
+    return names.sort(
+      (a, b) =>
+        distinctiveness(positions[b].party ?? positions[b].chamber) -
+        distinctiveness(positions[a].party ?? positions[a].chamber),
+    );
+  }, [categories, positions, sortBy, ctx.comparison]);
 
   return (
     <Box w="100%">
-      {/* Header */}
-      <HStack justify="space-between" mb={3} flexWrap="wrap">
+      <Flex justify="space-between" align="center" mb={3} wrap="wrap" gap={2}>
         <Heading size="md" color="text">
           Policy Categories
         </Heading>
-        <HStack gap={2}>
-          <Text fontSize="xs" color="textMuted">
-            Sort by:
-          </Text>
-          {[
-            { key: "ideology", label: "Ideology" },
-            { key: "bills", label: "Bills" },
-            { key: "score", label: "Score" },
-          ].map((option) => (
-            <Box
-              key={option.key}
-              onClick={() => setSortBy(option.key)}
-              px={3}
-              py={1}
-              rounded="md"
-              bg={sortBy === option.key ? "primary" : "bgLightShade"}
-              color={sortBy === option.key ? "bg" : "textMuted"}
-              cursor="pointer"
-              fontSize="xs"
-              fontWeight="600"
-              transition="all 0.2s"
-              _hover={{ bg: sortBy === option.key ? "primaryHover" : "border" }}
-            >
-              {option.label}
-            </Box>
-          ))}
+        <HStack gap={3} wrap="wrap">
+          <HStack gap={1}>
+            {SORT_OPTIONS.map((option) => (
+              <Box
+                as="button"
+                key={option.key}
+                aria-pressed={sortBy === option.key}
+                onClick={() => setSortBy(option.key)}
+                px={2}
+                py={1}
+                rounded="md"
+                fontSize="xs"
+                fontWeight="600"
+                cursor="pointer"
+                color={sortBy === option.key ? "text" : "textMuted"}
+                textDecoration={sortBy === option.key ? "underline" : "none"}
+              >
+                {option.label}
+              </Box>
+            ))}
+          </HStack>
+          <ComparisonToggle ctx={ctx} onChange={onComparisonChange} />
         </HStack>
-      </HStack>
+      </Flex>
 
-      {/* Column headers */}
-      <HStack px={3} pb={1} gap={3}>
-        <Text fontSize="xs" color="textMuted" flex={1}>
-          Category
-        </Text>
-        <Text fontSize="xs" color="textMuted" w="40px" textAlign="right">
-          Score
-        </Text>
-        <Text fontSize="xs" color="textMuted" w="44px" textAlign="right">
-          Pctile
-        </Text>
-        <Text fontSize="xs" color="textMuted" w="110px" textAlign="center">
-          Position
-        </Text>
-        <Box w="16px" />
-      </HStack>
-
-      {/* Category rows */}
-      <VStack align="stretch" gap={1}>
-        {sortedCategories.map(([category, info]) => (
+      <VStack align="stretch" gap={1.5}>
+        {sorted.map((category) => (
           <CategoryRow
             key={category}
+            ctx={ctx}
             category={category}
-            info={info}
-            model={model}
+            positions={positions[category]}
           />
         ))}
       </VStack>
-
-      {/* Recent Votes section - Statically Expanded */}
-      {recentVotes && (
-        <Box
-          mt={6}
-          mb={4}
-          bg="surface"
-          rounded="lg"
-          borderWidth="1px"
-          borderColor="border"
-          overflow="hidden"
-        >
-          <HStack
-            px={4}
-            py={3}
-            bg="bgLightShade"
-            borderBottomWidth="1px"
-            borderColor="border"
-          >
-            <Text fontSize="sm" fontWeight="700" color="text">
-              Recent Votes
-            </Text>
-          </HStack>
-
-          <Box px={4} py={4}>
-            <HStack align="flex-start" gap={3}>
-              <VStack align="stretch" gap={1} flex={1}>
-                <HStack gap={1} mb={1}>
-                  <Box w="8px" h="8px" borderRadius="full" bg="partyDem" />
-                  <Text fontSize="xs" fontWeight="700" color="blue.fg">
-                    Most Liberal
-                  </Text>
-                </HStack>
-                {recentVotes.liberal.slice(0, 5).map((bill) => (
-                  <Box
-                    key={`${bill.bill_id}-${bill.date}`}
-                    px={2}
-                    py={1}
-                    bg="blue.subtle"
-                    rounded="md"
-                  >
-                    <HStack justify="space-between">
-                      <VStack align="flex-start" gap={0} flex={1} minW={0}>
-                        <Text fontSize="xs" fontWeight="700" color="blue.fg">
-                          <Link
-                            href={getBillUrl(bill.bill_id, model)}
-                            _hover={{ textDecoration: "underline" }}
-                          >
-                            {formatBillId(bill.bill_id)}
-                          </Link>
-                        </Text>
-                        <HStack gap={2}>
-                          <Text fontSize="xs" color="textMuted">
-                            {formatDate(bill.date)}
-                          </Text>
-                          <Badge fontSize="2xs" variant="solid" colorPalette="purple">
-                            {bill.category}
-                          </Badge>
-                        </HStack>
-                      </VStack>
-                      <Badge
-                        variant="solid"
-                        fontSize="xs"
-                        fontWeight="bold"
-                        px={2}
-                        py={0.5}
-                        borderRadius="md"
-                        colorPalette={
-                          ["yea", "aye", "yes"].includes(
-                            bill.vote.toLowerCase(),
-                          )
-                            ? "green"
-                            : "red"
-                        }
-                      >
-                        {bill.vote.toUpperCase()}
-                      </Badge>
-                    </HStack>
-                  </Box>
-                ))}
-              </VStack>
-              <VStack align="stretch" gap={1} flex={1}>
-                <HStack gap={1} mb={1}>
-                  <Box w="8px" h="8px" borderRadius="full" bg="partyRep" />
-                  <Text fontSize="xs" fontWeight="700" color="red.fg">
-                    Most Conservative
-                  </Text>
-                </HStack>
-                {recentVotes.conservative.slice(0, 5).map((bill) => (
-                  <Box
-                    key={`${bill.bill_id}-${bill.date}`}
-                    px={2}
-                    py={1}
-                    bg="red.subtle"
-                    rounded="md"
-                  >
-                    <HStack justify="space-between">
-                      <VStack align="flex-start" gap={0} flex={1} minW={0}>
-                        <Text fontSize="xs" fontWeight="700" color="red.fg">
-                          <Link
-                            href={getBillUrl(bill.bill_id, model)}
-                            _hover={{ textDecoration: "underline" }}
-                          >
-                            {formatBillId(bill.bill_id)}
-                          </Link>
-                        </Text>
-                        <HStack gap={2}>
-                          <Text fontSize="xs" color="textMuted">
-                            {formatDate(bill.date)}
-                          </Text>
-                          <Badge fontSize="2xs" variant="solid" colorPalette="purple">
-                            {bill.category}
-                          </Badge>
-                        </HStack>
-                      </VStack>
-                      <Badge
-                        variant="solid"
-                        fontSize="xs"
-                        fontWeight="bold"
-                        px={2}
-                        py={0.5}
-                        borderRadius="md"
-                        colorPalette={
-                          ["yea", "aye", "yes"].includes(
-                            bill.vote.toLowerCase(),
-                          )
-                            ? "green"
-                            : "red"
-                        }
-                      >
-                        {bill.vote.toUpperCase()}
-                      </Badge>
-                    </HStack>
-                  </Box>
-                ))}
-              </VStack>
-            </HStack>
-          </Box>
-        </Box>
-      )}
     </Box>
   );
 }
