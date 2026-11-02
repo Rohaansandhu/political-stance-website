@@ -12,6 +12,7 @@ import {
 import { Menu, X } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { ColorModeButton } from "./ui/color-mode";
+import BetaBadge from "./Hwyv/BetaBadge";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +22,7 @@ function Navbar() {
     { label: "Legislators", to: "/explore-legislators" },
     { label: "Congress Data", to: "/congress-data" },
     { label: "Political Compass", to: "/political-compass" },
-    { label: "How Would You Vote?", to: "/how-would-you-vote" },
+    { label: "How Would You Vote?", to: "/how-would-you-vote", beta: true },
     { label: "Bill Analyses", to: "/bill-analyses" },
     { label: "About", to: "/about" },
   ];
@@ -75,7 +76,17 @@ function Navbar() {
                 }}
                 transition="all 0.2s"
               >
-                <RouterLink to={item.to}>{item.label}</RouterLink>
+                <RouterLink to={item.to}>
+                  {item.label}
+                  {/* Hidden below lg, where the links already wrap onto two lines */}
+                  {item.beta && (
+                    <BetaBadge
+                      display={{ base: "none", lg: "inline-flex" }}
+                      fontSize="2xs"
+                      px={1.5}
+                    />
+                  )}
+                </RouterLink>
               </Link>
             ))}
             <ColorModeButton
@@ -125,7 +136,10 @@ function Navbar() {
                   }}
                   onClick={() => setIsOpen(false)}
                 >
-                  <RouterLink to={item.to}>{item.label}</RouterLink>
+                  <RouterLink to={item.to}>
+                    {item.label}
+                    {item.beta && <BetaBadge ms={2} />}
+                  </RouterLink>
                 </Link>
               ))}
             </VStack>

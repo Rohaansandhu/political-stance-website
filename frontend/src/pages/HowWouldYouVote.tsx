@@ -17,6 +17,7 @@ import { Helmet } from "react-helmet-async";
 import { Link as RouterLink, useSearchParams } from "react-router-dom";
 import politicalCategories from "../../data/politicalCategories.json";
 import { fetchDeck } from "../components/Hwyv/api";
+import BetaBadge from "../components/Hwyv/BetaBadge";
 import CardPlayer from "../components/Hwyv/CardPlayer";
 import { chamberLabel, deckPath, parseChamber } from "../components/Hwyv/display";
 import { ChamberBar, VoteProgress } from "../components/Hwyv/PageChrome";
@@ -207,9 +208,12 @@ export default function HowWouldYouVotePage() {
       <Container maxW="3xl" py={8}>
         <VStack align="stretch" gap={5}>
           <Box>
-            <Heading size="2xl" mb={2} color="text" letterSpacing="tight">
-              How Would You Vote?
-            </Heading>
+            <HStack gap={3} mb={2} wrap="wrap">
+              <Heading size="2xl" color="text" letterSpacing="tight">
+                How Would You Vote?
+              </Heading>
+              <BetaBadge size="md" />
+            </HStack>
             <Text fontSize="lg" color="textMuted">
               Read a real bill, cast your vote, then see how Congress voted.
               Your votes stay in this browser.

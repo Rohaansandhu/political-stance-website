@@ -5,6 +5,7 @@ import {
   Center,
   Container,
   Heading,
+  HStack,
   Spinner,
   Text,
   VStack,
@@ -17,6 +18,7 @@ import {
   useParams,
 } from "react-router-dom";
 import { fetchCard } from "../components/Hwyv/api";
+import BetaBadge from "../components/Hwyv/BetaBadge";
 import CardPlayer from "../components/Hwyv/CardPlayer";
 import { deckPath, parseChamber } from "../components/Hwyv/display";
 import { ChamberBar, VoteProgress } from "../components/Hwyv/PageChrome";
@@ -100,9 +102,12 @@ export default function HwyvCardPage() {
         <title>{`How Would You Vote? | US PoliTrack`}</title>
       </Helmet>
       <Container maxW="3xl" py={8}>
-        <Heading size="xl" mb={5} color="text" letterSpacing="tight">
-          How Would You Vote?
-        </Heading>
+        <HStack gap={3} mb={5} wrap="wrap">
+          <Heading size="xl" color="text" letterSpacing="tight">
+            How Would You Vote?
+          </Heading>
+          <BetaBadge />
+        </HStack>
         <CardLoader key={`${chamber}|${voteId}`} chamber={chamber} voteId={voteId} />
       </Container>
     </Box>

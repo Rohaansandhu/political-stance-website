@@ -20,6 +20,7 @@ import { Link as RouterLink, Navigate, useParams } from "react-router-dom";
 import CongressCompass from "../components/CongressData/CongressCompass";
 import { axisName } from "../components/Legislators/percentiles";
 import { postMatch, specHashFor } from "../components/Hwyv/api";
+import BetaBadge from "../components/Hwyv/BetaBadge";
 import {
   chamberLabel,
   deckPath,
@@ -384,9 +385,12 @@ export default function HwyvMatchesPage() {
       </Helmet>
       <Container maxW="5xl" py={8}>
         <VStack align="stretch" gap={5}>
-          <Heading size="2xl" color="text" letterSpacing="tight">
-            Your matches
-          </Heading>
+          <HStack gap={3} wrap="wrap">
+            <Heading size="2xl" color="text" letterSpacing="tight">
+              Your matches
+            </Heading>
+            <BetaBadge size="md" />
+          </HStack>
           <ChamberBar
             chamber={chamber}
             homeState={homeState}
