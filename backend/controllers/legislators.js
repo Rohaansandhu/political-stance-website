@@ -174,6 +174,7 @@ const LITE_AXES_EXPR = {
           score: "$$a.v.score",
           within_party_z: "$$a.v.within_party_z",
           chamber_z: "$$a.v.chamber_z",
+          agreement_chamber_z: "$$a.v.agreement.chamber_z",
           bill_count: "$$a.v.bill_count",
           current_percentile_rank: "$$a.v.current_percentile_rank",
         },

@@ -21,6 +21,7 @@ function Navbar() {
     { label: "Legislators", to: "/explore-legislators" },
     { label: "Congress Data", to: "/congress-data" },
     { label: "Political Compass", to: "/political-compass" },
+    { label: "How Would You Vote?", to: "/how-would-you-vote" },
     { label: "Bill Analyses", to: "/bill-analyses" },
     { label: "About", to: "/about" },
   ];

@@ -24,6 +24,9 @@ export interface AxisStatsDoc {
     raw: Record<string, Record<string, AxisCorrelation>>;
     party: Record<string, Record<string, AxisCorrelation>>;
   };
+  agreement_correlations?: {
+    raw: Record<string, Record<string, AxisCorrelation>>;
+  };
 }
 
 // Fetches the pipeline's precomputed per-axis chamber stats and axis-pair
@@ -71,9 +74,12 @@ export function useAxisStatsDoc(
 
 export function lookupCorrelation(
   stats: AxisStatsDoc | null,
-  scale: "raw" | "party",
+  scale: "raw" | "party" | "agreement",
   xAxis: string,
   yAxis: string,
 ): number | null {
+  if (scale === "agreement") {
+    return stats?.agreement_correlations?.raw?.[xAxis]?.[yAxis]?.r ?? null;
+  }
   return stats?.correlations?.[scale]?.[xAxis]?.[yAxis]?.r ?? null;
 }

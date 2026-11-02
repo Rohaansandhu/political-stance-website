@@ -10,6 +10,8 @@ export interface RosterAxisEntry {
   // the browser, which has no minimum-bill-count cutoff and can drift
   // slightly from what the pipeline's own stats/correlations assume.
   chamber_z: number | null;
+  // The same z-score on the contested-vote agreement index.
+  agreement_chamber_z?: number | null;
   bill_count: number;
   current_percentile_rank: number;
 }
@@ -25,7 +27,9 @@ export interface RosterMember {
   primary_categories?: Record<string, { score: number; bill_count: number }>;
 }
 
-export type ScaleMode = "chamber" | "party" | "raw";
+// "agreement" is "Vs. chamber" on the agreement index, the scale a How Would You
+// Vote? user can be placed on.
+export type ScaleMode = "chamber" | "party" | "raw" | "agreement";
 
 export function filterCurrent(roster: RosterMember[]): RosterMember[] {
   return roster.filter((m) => m.current);
@@ -41,6 +45,7 @@ export function getScaledValue(
 
   if (scale === "raw") return entry.score;
   if (scale === "party") return entry.within_party_z;
+  if (scale === "agreement") return entry.agreement_chamber_z ?? null;
   return entry.chamber_z; // scale === "chamber"
 }
 

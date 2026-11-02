@@ -48,6 +48,8 @@ interface CongressCompassProps {
   selectedMemberId?: string | null;
   onSelect: (memberId: string | null) => void;
   onRosterLoaded?: (legislators: Legislator[]) => void;
+  // A How Would You Vote? user, drawn on top of the members.
+  userPoint?: { x: number; y: number } | null;
 }
 
 interface PlottedPoint {
@@ -72,6 +74,7 @@ export default function CongressCompass({
   selectedMemberId = null,
   onSelect,
   onRosterLoaded,
+  userPoint = null,
 }: CongressCompassProps) {
   const chart = useChartTheme();
   const PARTY_COLORS = chart.partyColors;
@@ -138,12 +141,22 @@ export default function CongressCompass({
       .filter((a): a is { party: "D" | "R" | "I"; x: number; y: number; n: number } => a !== null);
   }, [points, domain]);
 
+  const userPoints = useMemo(() => {
+    if (!userPoint) return [];
+    return [
+      {
+        x: clampToDomain(userPoint.x, domain).clamped,
+        y: clampToDomain(userPoint.y, domain).clamped,
+      },
+    ];
+  }, [userPoint, domain]);
+
   // Prefer the pipeline's precomputed correlation (it applies the same
   // minimum-bill-count cutoff as the chamber/party z-scores); fall back to
   // computing it from what's plotted if there's no precomputed entry.
   const precomputedR = lookupCorrelation(
     axisStatsDoc,
-    scaleMode === "party" ? "party" : "raw",
+    scaleMode === "party" ? "party" : scaleMode === "agreement" ? "agreement" : "raw",
     xAxis,
     yAxis,
   );
@@ -194,11 +207,15 @@ export default function CongressCompass({
   }
 
   const chamber = specHash.includes("senate") ? "Senate" : "House";
-  const showPartyRepeatNote = Math.abs(r ?? 0) >= 0.9 && scaleMode !== "party" && r !== null;
+  // The tip points at the "Vs. own party" scale, which the agreement chart doesn't offer.
+  const showPartyRepeatNote =
+    Math.abs(r ?? 0) >= 0.9 && scaleMode !== "party" && scaleMode !== "agreement" && r !== null;
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const point: PlottedPoint = payload[0].payload;
+      // The user's dot and the party averages aren't members
+      if (!point.member) return null;
       const color = PARTY_COLORS[point.member.party] ?? "#718096";
       const xEntry = point.member.axes[xAxis];
       const yEntry = point.member.axes[yAxis];
@@ -216,16 +233,27 @@ export default function CongressCompass({
               {point.member.state}
             </Text>
           </HStack>
-          <VStack align="flex-start" gap={0} mt={2}>
-            <Text fontSize="sm" color="textMuted">
-              {subjectDisplayName("axes", xAxis)}: <b>{xEntry?.score.toFixed(3)}</b>{" "}
-              ({((xEntry?.current_percentile_rank ?? 0) * 100).toFixed(0)}th pctile)
-            </Text>
-            <Text fontSize="sm" color="textMuted">
-              {subjectDisplayName("axes", yAxis)}: <b>{yEntry?.score.toFixed(3)}</b>{" "}
-              ({((yEntry?.current_percentile_rank ?? 0) * 100).toFixed(0)}th pctile)
-            </Text>
-          </VStack>
+          {scaleMode === "agreement" ? (
+            <VStack align="flex-start" gap={0} mt={2}>
+              <Text fontSize="sm" color="textMuted">
+                {subjectDisplayName("axes", xAxis)}: <b>{point.rawX.toFixed(2)} SD</b>
+              </Text>
+              <Text fontSize="sm" color="textMuted">
+                {subjectDisplayName("axes", yAxis)}: <b>{point.rawY.toFixed(2)} SD</b>
+              </Text>
+            </VStack>
+          ) : (
+            <VStack align="flex-start" gap={0} mt={2}>
+              <Text fontSize="sm" color="textMuted">
+                {subjectDisplayName("axes", xAxis)}: <b>{xEntry?.score.toFixed(3)}</b>{" "}
+                ({((xEntry?.current_percentile_rank ?? 0) * 100).toFixed(0)}th pctile)
+              </Text>
+              <Text fontSize="sm" color="textMuted">
+                {subjectDisplayName("axes", yAxis)}: <b>{yEntry?.score.toFixed(3)}</b>{" "}
+                ({((yEntry?.current_percentile_rank ?? 0) * 100).toFixed(0)}th pctile)
+              </Text>
+            </VStack>
+          )}
         </Box>
       );
     }
@@ -253,9 +281,14 @@ export default function CongressCompass({
       </HStack>
 
       {/* Compass chart */}
-      <Box bg="surface" p={6} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card">
-        <Grid templateColumns="minmax(110px, auto) 1fr minmax(110px, auto)" templateRows="auto 350px auto" gap={2}>
-          <GridItem textAlign="left" alignSelf="end">
+      <Box bg="surface" p={{ base: 3, md: 6 }} rounded="card" borderWidth="1px" borderColor="border" boxShadow="card">
+        {/* On a phone the side columns would squeeze the chart to nothing, so the x poles move under it. */}
+        <Grid
+          templateColumns={{ base: "minmax(0, 1fr)", md: "minmax(110px, auto) 1fr minmax(110px, auto)" }}
+          templateRows={{ base: "auto 350px auto auto", md: "auto 350px auto" }}
+          gap={2}
+        >
+          <GridItem textAlign="left" alignSelf="end" display={{ base: "none", md: "block" }}>
             <Text fontSize="2xs" color="textMuted" fontStyle="italic">
               {quadrants.tl}
             </Text>
@@ -265,13 +298,13 @@ export default function CongressCompass({
               ↑ {yPoles.positive}
             </Text>
           </GridItem>
-          <GridItem textAlign="right" alignSelf="end">
+          <GridItem textAlign="right" alignSelf="end" display={{ base: "none", md: "block" }}>
             <Text fontSize="2xs" color="textMuted" fontStyle="italic">
               {quadrants.tr}
             </Text>
           </GridItem>
 
-          <GridItem display="flex" alignItems="center" justifyContent="center">
+          <GridItem display={{ base: "none", md: "flex" }} alignItems="center" justifyContent="center">
             <Text fontSize="xs" color="textMuted" fontWeight="600" textAlign="center" whiteSpace="normal">
               ← {xPoles.negative}
             </Text>
@@ -383,16 +416,40 @@ export default function CongressCompass({
                     );
                   }}
                 />
+
+                {userPoints.length > 0 && (
+                  <Scatter
+                    data={userPoints}
+                    isAnimationActive={false}
+                    shape={(props: any) => (
+                      <g pointerEvents="none">
+                        <circle cx={props.cx} cy={props.cy} r={16} fill="var(--chakra-colors-primary)" fillOpacity={0.25} />
+                        <circle
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={8}
+                          fill="var(--chakra-colors-primary)"
+                          stroke="#ffffff"
+                          strokeWidth={2}
+                        />
+                        <rect x={props.cx - 20} y={props.cy - 38} width={40} height={22} rx={11} fill="var(--chakra-colors-primary)" />
+                        <text x={props.cx} y={props.cy - 22} textAnchor="middle" fontSize={12} fontWeight={800} fill="#ffffff">
+                          You
+                        </text>
+                      </g>
+                    )}
+                  />
+                )}
               </ScatterChart>
             </ResponsiveContainer>
           </GridItem>
-          <GridItem display="flex" alignItems="center" justifyContent="center">
+          <GridItem display={{ base: "none", md: "flex" }} alignItems="center" justifyContent="center">
             <Text fontSize="xs" color="textMuted" fontWeight="600" textAlign="center" whiteSpace="normal">
               {xPoles.positive} →
             </Text>
           </GridItem>
 
-          <GridItem textAlign="left" alignSelf="start">
+          <GridItem textAlign="left" alignSelf="start" display={{ base: "none", md: "block" }}>
             <Text fontSize="2xs" color="textMuted" fontStyle="italic">
               {quadrants.bl}
             </Text>
@@ -402,9 +459,17 @@ export default function CongressCompass({
               ↓ {yPoles.negative}
             </Text>
           </GridItem>
-          <GridItem textAlign="right" alignSelf="start">
+          <GridItem textAlign="right" alignSelf="start" display={{ base: "none", md: "block" }}>
             <Text fontSize="2xs" color="textMuted" fontStyle="italic">
               {quadrants.br}
+            </Text>
+          </GridItem>
+          <GridItem display={{ base: "flex", md: "none" }} justifyContent="space-between" gap={4}>
+            <Text fontSize="xs" color="textMuted" fontWeight="600">
+              ← {xPoles.negative}
+            </Text>
+            <Text fontSize="xs" color="textMuted" fontWeight="600" textAlign="right">
+              {xPoles.positive} →
             </Text>
           </GridItem>
         </Grid>
@@ -425,6 +490,12 @@ export default function CongressCompass({
             </svg>
             <Text fontSize="sm" color="textMuted">Independents</Text>
           </HStack>
+          {userPoint && (
+            <HStack>
+              <Box w="10px" h="10px" rounded="full" bg="primary" />
+              <Text fontSize="sm" color="textMuted">You</Text>
+            </HStack>
+          )}
           <Text fontSize="xs" color="textMuted">Hollow = beyond ±3</Text>
         </HStack>
       </Box>

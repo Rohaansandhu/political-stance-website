@@ -18,6 +18,9 @@ import CongressDataPage from "./pages/CongressData";
 import PoliticalCompassPage from "./pages/PoliticalCompass";
 import { About } from "./pages/About";
 import ScrollToTop from "./components/ScrollToTop";
+import HowWouldYouVotePage from "./pages/HowWouldYouVote";
+import HwyvCardPage from "./pages/HwyvCardPage";
+import HwyvMatchesPage from "./pages/HwyvMatches";
 
 function App() {
   return (
@@ -37,6 +40,9 @@ function App() {
               <Route path="/legislators/:id/votes" element={<LegislatorVotes />} />
               <Route path="/congress-data" element={<CongressDataPage />} />
               <Route path="/political-compass" element={<PoliticalCompassPage />} />
+              <Route path="/how-would-you-vote" element={<HowWouldYouVotePage />} />
+              <Route path="/how-would-you-vote/:chamber/matches" element={<HwyvMatchesPage />} />
+              <Route path="/how-would-you-vote/:chamber/:vote_id" element={<HwyvCardPage />} />
               <Route path="/bill-analyses" element={<BillAnalysesPage />} />
               <Route
                 path="/bill-analyses/:bill_id/:model"
