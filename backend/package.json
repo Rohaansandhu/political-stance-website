@@ -4,8 +4,8 @@
   "description": "Website to display the analysis of voting records to show where US Congress Members stand on major political issues.",
   "main": "server.js",
   "scripts": {
-    "test": "node --test tests/",
-    "dev": "nodemon backend/server.js",
+    "test": "node --test tests/*.test.js",
+    "dev": "nodemon server.js",
     "start": "node server.js"
   },
   "type": "module",

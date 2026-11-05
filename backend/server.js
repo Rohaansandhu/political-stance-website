@@ -31,6 +31,27 @@ app.use(
   })
 );
 
+// Make sure the DB is connected before any API handler runs
+app.use("/api", async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+// Data only changes when the pipeline runs, so let the CDN cache GET responses
+app.use("/api", (req, res, next) => {
+  if (req.method === "GET") {
+    res.set(
+      "Cache-Control",
+      "public, s-maxage=3600, stale-while-revalidate=86400"
+    );
+  }
+  next();
+});
+
 app.get("/", (req, res) => {
   res.send("Server is ready");
 });
@@ -46,9 +67,13 @@ app.get("/robots.txt", (req, res) => {
     res.send("User-agent: *\nAllow: /");
 });
 
-const port = process.env.PORT || 5001;
+// Vercel imports the app and handles requests itself; only listen locally
+if (!process.env.VERCEL) {
+  const port = process.env.PORT || 5001;
+  app.listen(port, async () => {
+    await connectDB();
+    console.log("Server start at http://localhost:" + port);
+  });
+}
 
-app.listen(port, async () => {
-  await connectDB();
-  console.log("Server start at http://localhost:" + port);
-});
+export default app;
